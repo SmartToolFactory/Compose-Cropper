@@ -2,6 +2,7 @@ package com.smarttoolfactory.cropper.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -50,25 +51,28 @@ fun getCropRect(
 /**
  * Create [IntRect] to draw overlay based on selected aspect ratio
  */
-internal fun getOverlayUtilFromAspectratio(
-    containerSize: IntSize,
+internal fun getOverlayUtilFromAspectRatio(
+    containerWidth: Float,
+    containerHeight: Float,
     aspectRatio: Float
-): IntRect {
+): Rect {
 
-    val containerWidth: Int = containerSize.width
-    val containerHeight: Int = containerSize.height
+    if (aspectRatio < 0) return Rect(
+        offset = Offset.Zero,
+        size = Size(containerWidth, containerHeight)
+    )
 
-    var height: Int = (containerWidth * aspectRatio).toInt()
-    var width: Int = containerWidth
+    var height = containerWidth * aspectRatio
+    var width = containerWidth
 
     if (height > containerHeight) {
         height = containerHeight
-        width = (height / aspectRatio).toInt()
+        width = height / aspectRatio
     }
 
-    val posX: Int = ((containerWidth - width) / 2)
-    val posY: Int = ((containerHeight - height) / 2)
+    val posX = ((containerWidth - width) / 2)
+    val posY = ((containerHeight - height) / 2)
 
-    return IntRect(offset = IntOffset(posX, posY), size = IntSize(width, height))
+    return Rect(offset = Offset(posX, posY), size = Size(width, height))
 
 }
