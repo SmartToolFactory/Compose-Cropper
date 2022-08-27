@@ -49,9 +49,33 @@ fun getCropRect(
 }
 
 /**
- * Create [IntRect] to draw overlay based on selected aspect ratio
+ * Get crop rectangle initially from overlay rectangle
  */
-internal fun getOverlayUtilFromAspectRatio(
+internal fun getInitialCropRect(
+    bitmapWidth: Int,
+    bitmapHeight: Int,
+    containerWidth: Float,
+    containerHeight: Float,
+    rectDraw: Rect
+): IntRect {
+    val overlayWidth = rectDraw.width
+    val overlayHeight = rectDraw.height
+
+    val widthRatio = bitmapWidth / containerWidth
+    val heightRatio = bitmapHeight / containerHeight
+
+    val width = (overlayWidth * widthRatio).toInt()
+    val height = (overlayHeight * heightRatio).toInt()
+
+    val left = (rectDraw.left * widthRatio).toInt()
+    val top = (rectDraw.top * heightRatio).toInt()
+    return IntRect(offset = IntOffset(left, top), size = IntSize(width, height))
+}
+
+/**
+ * Create [Rect] to draw overlay based on selected aspect ratio
+ */
+internal fun getOverlayFromAspectRatio(
     containerWidth: Float,
     containerHeight: Float,
     aspectRatio: Float
@@ -74,5 +98,4 @@ internal fun getOverlayUtilFromAspectRatio(
     val posY = ((containerHeight - height) / 2)
 
     return Rect(offset = Offset(posX, posY), size = Size(width, height))
-
 }
