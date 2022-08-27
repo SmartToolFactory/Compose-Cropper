@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
  *
  */
 @Stable
-internal open class TransformState(
+  open class TransformState(
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
     minZoom: Float = 1f,
@@ -39,7 +39,7 @@ internal open class TransformState(
     protected val animatableZoom = Animatable(zoomInitial)
     protected val animatableRotation = Animatable(rotationInitial)
 
-    protected var size: IntSize = IntSize.Zero
+    internal var size: IntSize = IntSize.Zero
 
     init {
         animatableZoom.updateBounds(zoomMin, zoomMax)
