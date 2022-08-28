@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.IntRect
 /**
  * Class that contains information about
  * current zoom, pan and rotation, and rectangle of zoomed and panned area for cropping [cropRect],
- * and area of overlay as[drawRect]
+ * and area of overlay as[overlayRect]
  *
  */
 @Immutable
@@ -17,6 +17,6 @@ data class CropData(
     val zoom: Float = 1f,
     val pan: Offset = Offset.Zero,
     val rotation: Float = 0f,
-    val drawRect: Rect,
+    val overlayRect: Rect,
     val cropRect: IntRect
 )
