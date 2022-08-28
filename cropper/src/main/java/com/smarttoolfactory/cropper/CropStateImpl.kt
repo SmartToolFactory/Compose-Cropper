@@ -6,11 +6,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.CropData
+import com.smarttoolfactory.cropper.util.calculateRectBounds
 import com.smarttoolfactory.cropper.util.coerceIn
-import com.smarttoolfactory.cropper.util.getCropRect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -57,7 +56,7 @@ import kotlinx.coroutines.launch
     limitPan = limitPan
 ) {
 
-    private val rectDraw: Rect
+    internal val overlayRect: Rect
         get() = Rect(
             offset = Offset.Zero,
             size = Size(size.width.toFloat(), size.height.toFloat())
@@ -68,43 +67,9 @@ import kotlinx.coroutines.launch
             zoom = animatableZoom.targetValue,
             pan = Offset(animatablePanX.targetValue, animatablePanY.targetValue),
             rotation = animatableRotation.targetValue,
-            drawRect = rectDraw,
+            overlayRect = overlayRect,
             cropRect = calculateRectBounds()
         )
-
-
-    private fun calculateRectBounds(): IntRect {
-        val width = size.width
-        val height = size.height
-
-        val bounds = getBounds()
-        val zoom = animatableZoom.targetValue
-        val panX = animatablePanX.targetValue.coerceIn(-bounds.x, bounds.x)
-        val panY = animatablePanY.targetValue.coerceIn(-bounds.y, bounds.y)
-
-        // Offset for interpolating offset from (imageWidth/2,-imageWidth/2) interval
-        // to (0, imageWidth) interval when
-        // transform origin is TransformOrigin(0.5f,0.5f)
-        val horizontalCenterOffset = width * (zoom - 1) / 2f
-        val verticalCenterOffset = height * (zoom - 1) / 2f
-
-        val offsetX = (horizontalCenterOffset - panX)
-            .coerceAtLeast(0f) / zoom
-        val offsetY = (verticalCenterOffset - panY)
-            .coerceAtLeast(0f) / zoom
-
-        val offset = Offset(offsetX, offsetY)
-
-        return getCropRect(
-            bitmapWidth = imageSize.width,
-            bitmapHeight = imageSize.height,
-            containerWidth = width.toFloat(),
-            containerHeight = height.toFloat(),
-            pan = offset,
-            zoom = zoom,
-            rectSelection = rectDraw
-        )
-    }
 }
 
   abstract class BaseCropState internal constructor(
