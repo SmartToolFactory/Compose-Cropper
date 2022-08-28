@@ -34,10 +34,10 @@ import kotlinx.coroutines.launch
     internal val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
     internal val rotationInitial = initialRotation % 360
 
-    protected val animatablePanX = Animatable(0f)
-    protected val animatablePanY = Animatable(0f)
-    protected val animatableZoom = Animatable(zoomInitial)
-    protected val animatableRotation = Animatable(rotationInitial)
+    internal val animatablePanX = Animatable(0f)
+    internal val animatablePanY = Animatable(0f)
+    internal val animatableZoom = Animatable(zoomInitial)
+    internal val animatableRotation = Animatable(rotationInitial)
 
     internal var size: IntSize = IntSize.Zero
 
@@ -85,7 +85,7 @@ import kotlinx.coroutines.launch
     /**
      * Get bounds of Composables that can be panned based on zoom level using [size]
      */
-    protected open fun getBounds(): Offset {
+    internal open fun getBounds(): Offset {
         return getBounds(size)
     }
 
