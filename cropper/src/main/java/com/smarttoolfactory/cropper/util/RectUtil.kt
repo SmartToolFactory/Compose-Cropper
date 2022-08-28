@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
+import com.smarttoolfactory.cropper.CropState
 
 /**
  * Get rectangle of current transformation of [pan], [zoom] and current bounds of the Composable's
@@ -98,4 +99,38 @@ internal fun getOverlayFromAspectRatio(
     val posY = ((containerHeight - height) / 2)
 
     return Rect(offset = Offset(posX, posY), size = Size(width, height))
+}
+
+
+internal fun CropState.calculateRectBounds(): IntRect {
+    val width = size.width
+    val height = size.height
+
+    val bounds = getBounds()
+    val zoom = animatableZoom.targetValue
+    val panX = animatablePanX.targetValue.coerceIn(-bounds.x, bounds.x)
+    val panY = animatablePanY.targetValue.coerceIn(-bounds.y, bounds.y)
+
+    // Offset for interpolating offset from (imageWidth/2,-imageWidth/2) interval
+    // to (0, imageWidth) interval when
+    // transform origin is TransformOrigin(0.5f,0.5f)
+    val horizontalCenterOffset = width * (zoom - 1) / 2f
+    val verticalCenterOffset = height * (zoom - 1) / 2f
+
+    val offsetX = (horizontalCenterOffset - panX)
+        .coerceAtLeast(0f) / zoom
+    val offsetY = (verticalCenterOffset - panY)
+        .coerceAtLeast(0f) / zoom
+
+    val offset = Offset(offsetX, offsetY)
+
+    return getCropRect(
+        bitmapWidth = imageSize.width,
+        bitmapHeight = imageSize.height,
+        containerWidth = width.toFloat(),
+        containerHeight = height.toFloat(),
+        pan = offset,
+        zoom = zoom,
+        rectSelection = overlayRect
+    )
 }
