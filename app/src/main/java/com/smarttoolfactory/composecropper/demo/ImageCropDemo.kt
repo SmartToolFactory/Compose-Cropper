@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.smarttoolfactory.composecropper.demo
 
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
@@ -110,48 +109,26 @@ private fun MainContent(bottomSheetScaffoldState: BottomSheetScaffoldState) {
                 .verticalScroll(rememberScrollState())
         ) {
 
-            if (!showDialog) {
+            ContentScaleSelectionMenu(contentScale) {
+                contentScale = it
+            }
 
-                ContentScaleSelectionMenu(contentScale) {
-                    contentScale = it
-                }
-
-                ImageCropper(
-                    modifier = modifier,
-                    imageBitmap = imageBitmap,
-                    contentScale = contentScale,
-                    aspectRatio = 1f,
-                    contentDescription = "Image Cropper",
-                    crop = crop,
-                ) {
-                    croppedImage = it
-                    crop = false
-                    showDialog = true
-                }
-
-            } else {
-                croppedImage?.let {
-                    Image(
-                        bitmap = it,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.None
-                    )
-                }
+            ImageCropper(
+                modifier = modifier,
+                imageBitmap = imageBitmap,
+                contentScale = contentScale,
+                contentDescription = "Image Cropper",
+                crop = crop,
+            ) {
+                croppedImage = it
+                crop = false
+                showDialog = true
             }
         }
 
         BottomAppBar(
             modifier = Modifier.align(Alignment.BottomStart),
             actions = {
-
-                IconButton(
-                    onClick = {
-
-                    }
-                ) {
-                    Icon(Icons.Filled.Clear, contentDescription = "Localized description")
-                }
 
                 IconButton(
                     onClick = {
