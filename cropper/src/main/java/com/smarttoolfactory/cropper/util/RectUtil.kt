@@ -3,10 +3,13 @@ package com.smarttoolfactory.cropper.util
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.CropState
+import com.smarttoolfactory.cropper.TouchRegion
 
 /**
  * Get rectangle of current transformation of [pan], [zoom] and current bounds of the Composable's
@@ -134,3 +137,155 @@ internal fun CropState.calculateRectBounds(): IntRect {
         rectSelection = overlayRect
     )
 }
+
+/**
+ * Update overlay rectangle based on touch gesture
+ */
+fun updateDrawRect(
+    distanceToEdgeFromTouch: Offset,
+    touchRegion: TouchRegion,
+    minDimension: Float,
+    rectTemp: Rect,
+    rectDraw: Rect,
+    change: PointerInputChange
+): Rect {
+
+    val position = change.position
+    // Get screen coordinates from touch position inside composable
+    // and add how far it's from corner to not jump edge to user's touch position
+    val screenPositionX = position.x + distanceToEdgeFromTouch.x
+    val screenPositionY = position.y + distanceToEdgeFromTouch.y
+
+    return when (touchRegion) {
+
+        // Corners
+        TouchRegion.TopLeft -> {
+
+            // Set position of top left while moving with top left handle and
+            // limit position to not intersect other handles
+            val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
+            val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+            Rect(
+                left = left,
+                top = top,
+                right = rectTemp.right,
+                bottom = rectTemp.bottom
+            )
+        }
+
+        TouchRegion.BottomLeft -> {
+
+            // Set position of top left while moving with bottom left handle and
+            // limit position to not intersect other handles
+            val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
+            val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+            Rect(
+                left = left,
+                top = rectTemp.top,
+                right = rectTemp.right,
+                bottom = bottom,
+            )
+
+        }
+
+        TouchRegion.TopRight -> {
+
+            // Set position of top left while moving with top right handle and
+            // limit position to not intersect other handles
+            val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
+            val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+
+            Rect(
+                left = rectTemp.left,
+                top = top,
+                right = right,
+                bottom = rectTemp.bottom,
+            )
+
+        }
+
+        TouchRegion.BottomRight -> {
+
+            // Set position of top left while moving with bottom right handle and
+            // limit position to not intersect other handles
+            val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
+            val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+
+            Rect(
+                left = rectTemp.left,
+                top = rectTemp.top,
+                right = right,
+                bottom = bottom
+            )
+        }
+
+        TouchRegion.Inside -> {
+            val drag = change.positionChange()
+
+            val scaledDragX = drag.x
+            val scaledDragY = drag.y
+
+            rectDraw.translate(scaledDragX, scaledDragY)
+        }
+
+        else -> rectDraw
+    }
+}
+
+/**
+ * Returns how far user touched to corner or center of sides of the screen. [TouchRegion]
+ * where user exactly has touched is already passed to this function. For instance user
+ * touched top left then this function returns distance to top left from user's position so
+ * we can add an offset to not jump edge to position user touched.
+ */
+fun getDistanceToEdgeFromTouch(
+    touchRegion: TouchRegion,
+    rect: Rect,
+    touchPosition: Offset
+) = when (touchRegion) {
+    TouchRegion.TopLeft -> {
+        rect.topLeft - touchPosition
+    }
+    TouchRegion.TopRight -> {
+        rect.topRight - touchPosition
+    }
+    TouchRegion.BottomLeft -> {
+        rect.bottomLeft - touchPosition
+    }
+    TouchRegion.BottomRight -> {
+        rect.bottomRight - touchPosition
+    }
+    else -> {
+        Offset.Zero
+    }
+}
+
+/**
+ * get touch region inside this rectangle based on touch position.
+ */
+fun getTouchRegion(
+    position: Offset,
+    rect: Rect,
+    threshold: Float
+): TouchRegion {
+
+    return when {
+
+        position.x - rect.left in 0.0f..threshold &&
+                position.y - rect.top in 0.0f..threshold -> TouchRegion.TopLeft
+
+        rect.right - position.x in 0f..threshold &&
+                position.y - rect.top in 0.0f..threshold -> TouchRegion.TopRight
+
+        rect.right - position.x in 0f..threshold &&
+                rect.bottom - position.y in 0.0f..threshold -> TouchRegion.BottomRight
+
+        position.x - rect.left in 0.0f..threshold &&
+                rect.bottom - position.y in 0.0f..threshold -> TouchRegion.BottomLeft
+
+
+        rect.contains(offset = position) -> TouchRegion.Inside
+        else -> TouchRegion.None
+    }
+}
+
