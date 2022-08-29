@@ -6,10 +6,12 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.CropData
 import com.smarttoolfactory.cropper.util.calculateRectBounds
 import com.smarttoolfactory.cropper.util.coerceIn
+import com.smarttoolfactory.cropper.util.getCropRect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -33,8 +35,8 @@ import kotlinx.coroutines.launch
  * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
  * empty space on sides or edges of parent
  */
- class CropState internal constructor(
-    val imageSize: IntSize,
+class StaticCropState internal constructor(
+    imageSize: IntSize,
     initialZoom: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
@@ -44,7 +46,8 @@ import kotlinx.coroutines.launch
     pannable: Boolean = true,
     rotatable: Boolean = false,
     limitPan: Boolean = false
-) : BaseCropState(
+) : CropState(
+    imageSize = imageSize,
     initialZoom = initialZoom,
     minZoom = minZoom,
     maxZoom = maxZoom,
@@ -55,67 +58,25 @@ import kotlinx.coroutines.launch
     rotatable = rotatable,
     limitPan = limitPan
 ) {
-
-    internal val overlayRect: Rect
+    override val overlayRect: Rect
         get() = Rect(
             offset = Offset.Zero,
             size = Size(size.width.toFloat(), size.height.toFloat())
         )
 
-    val cropData: CropData
-        get() = CropData(
-            zoom = animatableZoom.targetValue,
-            pan = Offset(animatablePanX.targetValue, animatablePanY.targetValue),
-            rotation = animatableRotation.targetValue,
-            overlayRect = overlayRect,
-            cropRect = calculateRectBounds()
-        )
-}
+    override val cropRect: IntRect
+        get() = calculateRectBounds()
 
-  abstract class BaseCropState internal constructor(
-    initialZoom: Float = 1f,
-    minZoom: Float = .5f,
-    maxZoom: Float = 5f,
-    val fling: Boolean = true,
-    val moveToBounds: Boolean = true,
-    zoomable: Boolean = true,
-    pannable: Boolean = true,
-    rotatable: Boolean = false,
-    limitPan: Boolean = false
-) : TransformState(
-    initialZoom = initialZoom,
-    initialRotation = 0f,
-    minZoom = minZoom,
-    maxZoom = maxZoom,
-    zoomable = zoomable,
-    pannable = pannable,
-    rotatable = rotatable,
-    limitPan = limitPan
-) {
-    private val velocityTracker = VelocityTracker()
+    override fun onDown(position: Offset) = Unit
+    override fun onMove(position: Offset) = Unit
+    override fun onUp(position: Offset) = Unit
 
     private var doubleTapped = false
 
     /*
-        Touch gestures
-     */
-    open fun onDown(position: Offset) {
-
-    }
-
-    open fun onMove(position: Offset) {
-
-    }
-
-    open fun onUp(position: Offset) {
-
-    }
-
-
-    /*
         Transform gestures
-     */
-    internal suspend fun onGesture(
+    */
+    override suspend fun onGesture(
         centroid: Offset,
         pan: Offset,
         zoom: Float,
@@ -141,9 +102,9 @@ import kotlinx.coroutines.launch
         }
     }
 
-    internal suspend fun onGestureStart() = coroutineScope {}
+    override suspend fun onGestureStart() = coroutineScope {}
 
-      internal suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {
+    override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {
 
         // Gesture end might be called after second tap and we don't want to fling
         // or animate back to valid bounds when doubled tapped
@@ -166,10 +127,10 @@ import kotlinx.coroutines.launch
     }
 
     // Double Tap
-    internal suspend fun onDoubleTap(
-        pan: Offset = Offset.Zero,
-        zoom: Float = 1f,
-        rotation: Float = 0f,
+    override suspend fun onDoubleTap(
+        pan: Offset,
+        zoom: Float,
+        rotation: Float,
         onAnimationEnd: () -> Unit
     ) {
         doubleTapped = true
@@ -180,12 +141,84 @@ import kotlinx.coroutines.launch
         resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
         onAnimationEnd()
     }
+}
+
+val CropState.cropData: CropData
+    get() = CropData(
+        zoom = animatableZoom.targetValue,
+        pan = Offset(animatablePanX.targetValue, animatablePanY.targetValue),
+        rotation = animatableRotation.targetValue,
+        overlayRect = overlayRect,
+        cropRect = cropRect
+    )
+
+abstract class CropState internal constructor(
+    val imageSize: IntSize,
+    initialZoom: Float = 1f,
+    minZoom: Float = .5f,
+    maxZoom: Float = 5f,
+    val fling: Boolean = true,
+    val moveToBounds: Boolean = true,
+    zoomable: Boolean = true,
+    pannable: Boolean = true,
+    rotatable: Boolean = false,
+    limitPan: Boolean = false
+) : TransformState(
+    initialZoom = initialZoom,
+    initialRotation = 0f,
+    minZoom = minZoom,
+    maxZoom = maxZoom,
+    zoomable = zoomable,
+    pannable = pannable,
+    rotatable = rotatable,
+    limitPan = limitPan
+) {
+
+    open val overlayRect: Rect =
+        Rect(offset = Offset.Zero, size = Size(size.width.toFloat(), size.height.toFloat()))
+
+    open val cropRect: IntRect = IntRect.Zero
+
+    private val velocityTracker = VelocityTracker()
+
+    /*
+        Touch gestures
+     */
+    abstract fun onDown(position: Offset)
+
+    abstract fun onMove(position: Offset)
+
+    abstract fun onUp(position: Offset)
+
+    /*
+        Transform gestures
+     */
+    abstract suspend fun onGesture(
+        centroid: Offset,
+        pan: Offset,
+        zoom: Float,
+        rotation: Float,
+        mainPointer: PointerInputChange,
+        changes: List<PointerInputChange>
+    )
+
+    abstract suspend fun onGestureStart()
+
+    abstract suspend fun onGestureEnd(onBoundsCalculated: () -> Unit)
+
+    // Double Tap
+    abstract suspend fun onDoubleTap(
+        pan: Offset = Offset.Zero,
+        zoom: Float = 1f,
+        rotation: Float = 0f,
+        onAnimationEnd: () -> Unit
+    )
 
     // TODO Add resetting back to bounds for rotated state as well
     /**
      * Resets to bounds with animation and resets tracking for fling animation
      */
-    private suspend fun resetToValidBounds() {
+    internal suspend fun resetToValidBounds() {
         val zoom = zoom.coerceAtLeast(1f)
         val bounds = getBounds()
         val pan = pan.coerceIn(-bounds.x..bounds.x, -bounds.y..bounds.y)
@@ -196,7 +229,7 @@ import kotlinx.coroutines.launch
     /*
         Fling gesture
      */
-    private fun addPosition(timeMillis: Long, position: Offset) {
+    internal fun addPosition(timeMillis: Long, position: Offset) {
         velocityTracker.addPosition(
             timeMillis = timeMillis,
             position = position
@@ -207,7 +240,7 @@ import kotlinx.coroutines.launch
      * Create a fling gesture when user removes finger from scree to have continuous movement
      * until [velocityTracker] speed reached to lower bound
      */
-    private suspend fun fling(onFlingStart: () -> Unit) = coroutineScope {
+    internal suspend fun fling(onFlingStart: () -> Unit) = coroutineScope {
         val velocityTracker = velocityTracker.calculateVelocity()
         val velocity = Offset(velocityTracker.x, velocityTracker.y)
         var flingStarted = false
@@ -241,7 +274,7 @@ import kotlinx.coroutines.launch
         }
     }
 
-    private fun resetTracking() {
+    internal fun resetTracking() {
         velocityTracker.resetTracking()
     }
 }

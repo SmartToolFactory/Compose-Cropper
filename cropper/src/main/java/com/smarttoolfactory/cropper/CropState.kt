@@ -38,9 +38,9 @@ fun rememberCropState(
     rotatable: Boolean = false,
     limitPan: Boolean = false,
     key1: Any? = Unit
-): CropState {
+): StaticCropState {
     return remember(key1) {
-        CropState(
+        StaticCropState(
             imageSize = imageSize,
             initialZoom = initialZoom,
             minZoom = minZoom,
@@ -90,9 +90,9 @@ fun rememberCropState(
     limitPan: Boolean = false,
     key1: Any?,
     key2: Any?,
-): CropState {
+): StaticCropState {
     return remember(key1, key2) {
-        CropState(
+        StaticCropState(
             imageSize = imageSize,
             initialZoom = initialZoom,
             minZoom = minZoom,
@@ -141,9 +141,9 @@ fun rememberCropState(
     rotatable: Boolean = false,
     limitPan: Boolean = false,
     vararg keys: Any?
-): CropState {
+): StaticCropState {
     return remember(*keys) {
-        CropState(
+        StaticCropState(
             imageSize = imageSize,
             initialZoom = initialZoom,
             minZoom = minZoom,
