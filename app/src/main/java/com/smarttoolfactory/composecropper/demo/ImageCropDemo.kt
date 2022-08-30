@@ -179,10 +179,7 @@ private fun ShowCroppedImageDialog(imageBitmap: ImageBitmap, onDismissRequest: (
         onDismissRequest = onDismissRequest,
         text = {
             Image(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4 / 3f)
-                    .border(2.dp, Color.Red),
+                modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.Fit,
                 bitmap = imageBitmap,
                 contentDescription = "result"
