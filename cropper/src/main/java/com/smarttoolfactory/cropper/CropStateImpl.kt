@@ -6,12 +6,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.CropData
-import com.smarttoolfactory.cropper.util.calculateRectBounds
 import com.smarttoolfactory.cropper.util.coerceIn
-import com.smarttoolfactory.cropper.util.getCropRect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -46,21 +45,21 @@ abstract class CropState internal constructor(
     limitPan = limitPan
 ) {
 
-    open val overlayRect: Rect =
+    open var overlayRect: Rect =
         Rect(offset = Offset.Zero, size = Size(size.width.toFloat(), size.height.toFloat()))
 
-    open val cropRect: IntRect = IntRect.Zero
+    open var cropRect: IntRect = IntRect(offset = IntOffset.Zero, size = size)
 
     private val velocityTracker = VelocityTracker()
 
     /*
         Touch gestures
      */
-    abstract fun onDown(position: Offset)
+    abstract fun onDown(change: PointerInputChange)
 
-    abstract fun onMove(position: Offset)
+    abstract fun onMove(change: PointerInputChange)
 
-    abstract fun onUp(position: Offset)
+    abstract fun onUp(change: PointerInputChange)
 
     /*
         Transform gestures
