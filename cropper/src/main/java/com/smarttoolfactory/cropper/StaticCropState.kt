@@ -52,18 +52,17 @@ class StaticCropState internal constructor(
     rotatable = rotatable,
     limitPan = limitPan
 ) {
-    override val overlayRect: Rect
-        get() = Rect(
-            offset = Offset.Zero,
-            size = Size(size.width.toFloat(), size.height.toFloat())
-        )
+    override var overlayRect: Rect = Rect(
+        offset = Offset.Zero,
+        size = Size(size.width.toFloat(), size.height.toFloat())
+    )
 
-    override val cropRect: IntRect
+    override var cropRect: IntRect = calculateRectBounds()
         get() = calculateRectBounds()
 
-    override fun onDown(position: Offset) = Unit
-    override fun onMove(position: Offset) = Unit
-    override fun onUp(position: Offset) = Unit
+    override fun onDown(change: PointerInputChange) = Unit
+    override fun onMove(change: PointerInputChange) = Unit
+    override fun onUp(change: PointerInputChange) = Unit
 
     private var doubleTapped = false
 
