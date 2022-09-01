@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.AspectRatio
@@ -89,6 +88,9 @@ class DynamicCropState internal constructor(
         val touchPositionScreenY = position.y
 
         val touchPositionOnScreen = Offset(touchPositionScreenX, touchPositionScreenY)
+
+        // Get whether user touched outside, handles of rectangle or inner region or overlay
+        // rectangle. Depending on where is touched we can move or scale overlay
         touchRegion = getTouchRegion(
             position = touchPositionOnScreen,
             rect = overlayRect,
@@ -102,11 +104,9 @@ class DynamicCropState internal constructor(
     }
 
     override suspend fun onMove(change: PointerInputChange) {
-        println(
-            "🚗 DynamicCropState() onMove()\n" +
-                    "position: ${change.position}, positionChange ${change.positionChange()} " +
-                    "positionChangeIgnoreConsumed: $${change.positionChangeIgnoreConsumed()}"
-        )
+
+        // update overlay rectangle based on where its touched and touch position to corners
+        // This function moves and/or scales overlay rectangle
         val newRect = updateOverlayRect(
             distanceToEdgeFromTouch = distanceToEdgeFromTouch,
             touchRegion = touchRegion,
@@ -116,27 +116,42 @@ class DynamicCropState internal constructor(
             change = change
         )
 
-        snapOverlayRectTo(newRect)
+        val bounds = getBounds()
+        val positionChange = change.positionChangeIgnoreConsumed()
 
-//        println("🔥 DynamicCropState() onMove overLayRect: $overlayRect, touchRegion: $touchRegion")
+        // When zoom is bigger than 100% and dynamic overlay is not at any edge of
+        // image we can pan in the same direction motion goes towards when touch region
+        // of rectangle is not one of the handles but region inside
+        val isPanRequired = touchRegion == TouchRegion.Inside && zoom > 1f
+
+        // Overlay moving right
+        if (isPanRequired && -pan.x < bounds.x && newRect.right >= containerSize.width) {
+            snapOverlayRectTo(newRect.translate(-positionChange.x, 0f))
+            snapPanXto(pan.x - positionChange.x * zoom)
+            // Overlay moving left
+        } else if (isPanRequired && pan.x < bounds.x && newRect.left <= 0f) {
+            snapOverlayRectTo(newRect.translate(-positionChange.x, 0f))
+            snapPanXto(pan.x - positionChange.x * zoom)
+        } else if (isPanRequired && pan.y < bounds.y && newRect.top <= 0f) {
+            // Overlay moving top
+            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
+            snapPanYto(pan.y - positionChange.y * zoom)
+        } else if (isPanRequired && -pan.y < bounds.y && newRect.bottom >= containerSize.height) {
+            // Overlay moving bottom
+            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
+            snapPanYto(pan.y - positionChange.y * zoom)
+        } else {
+            snapOverlayRectTo(newRect)
+        }
         if (touchRegion != TouchRegion.None) {
             change.consume()
         }
-
-        // Calculate crop rectangle
-//        cropRect = calculateRectBounds()
-
     }
 
     override suspend fun onUp(change: PointerInputChange) = coroutineScope {
         touchRegion = TouchRegion.None
-
         rectTemp = moveOverlayRectToBounds(rectBounds, overlayRect)
-
         animateOverlayRectTo(rectTemp)
-
-        // Calculate crop rectangle
-//        cropRect = calculateRectBounds()
     }
 
     override suspend fun onGesture(
@@ -175,7 +190,10 @@ class DynamicCropState internal constructor(
         onAnimationEnd()
     }
 
-    internal fun moveOverlayRectToBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
+    /**
+     * When pointer is up calculate valid position and size overlay can be updated to
+     */
+    private fun moveOverlayRectToBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
         var width = rectCurrent.width
         var height = rectCurrent.height
 
