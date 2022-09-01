@@ -141,12 +141,12 @@ internal fun CropState.calculateRectBounds(): IntRect {
 /**
  * Update overlay rectangle based on touch gesture
  */
-fun updateDrawRect(
+fun updateOverlayRect(
     distanceToEdgeFromTouch: Offset,
     touchRegion: TouchRegion,
     minDimension: Float,
     rectTemp: Rect,
-    rectDraw: Rect,
+    overlayRect: Rect,
     change: PointerInputChange
 ): Rect {
 
@@ -222,10 +222,10 @@ fun updateDrawRect(
             val drag = change.positionChangeIgnoreConsumed()
             val scaledDragX = drag.x
             val scaledDragY = drag.y
-            rectDraw.translate(scaledDragX, scaledDragY)
+            overlayRect.translate(scaledDragX, scaledDragY)
         }
 
-        else -> rectDraw
+        else -> overlayRect
     }
 }
 

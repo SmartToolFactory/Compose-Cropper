@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
  */
 @Stable
 open class TransformState(
+    internal val imageSize: IntSize,
     internal val containerSize: IntSize,
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
