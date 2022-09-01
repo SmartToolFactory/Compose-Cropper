@@ -1,5 +1,7 @@
 package com.smarttoolfactory.cropper
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -24,7 +26,8 @@ val CropState.cropData: CropData
     )
 
 abstract class CropState internal constructor(
-    val imageSize: IntSize,
+    imageSize: IntSize,
+    containerSize: IntSize,
     initialZoom: Float = 1f,
     minZoom: Float = .5f,
     maxZoom: Float = 5f,
@@ -35,6 +38,8 @@ abstract class CropState internal constructor(
     rotatable: Boolean = false,
     limitPan: Boolean = false
 ) : TransformState(
+    imageSize = imageSize,
+    containerSize = containerSize,
     initialZoom = initialZoom,
     initialRotation = 0f,
     minZoom = minZoom,
@@ -45,21 +50,44 @@ abstract class CropState internal constructor(
     limitPan = limitPan
 ) {
 
-    open var overlayRect: Rect =
-        Rect(offset = Offset.Zero, size = Size(size.width.toFloat(), size.height.toFloat()))
+    internal val animatableRectOverlay = Animatable(
+        Rect(
+            offset = Offset.Zero,
+            size = Size(this.containerSize.width.toFloat(), this.containerSize.height.toFloat())
+        ),
+        Rect.VectorConverter
+    )
 
-    open var cropRect: IntRect = IntRect(offset = IntOffset.Zero, size = size)
+    val overlayRect: Rect
+        get() = animatableRectOverlay.value
+
+
+    open var cropRect: IntRect = IntRect(offset = IntOffset.Zero, size = this.containerSize)
 
     private val velocityTracker = VelocityTracker()
+
+    /**
+     * Animate overlay rectangle to target value
+     */
+    suspend fun animateOverlayRectTo(rect: Rect) {
+        animatableRectOverlay.animateTo(rect)
+    }
+
+    /**
+     * Snap overlay rectangle to target value
+     */
+    internal suspend fun snapOverlayRectTo(rect: Rect) {
+        animatableRectOverlay.snapTo(rect)
+    }
 
     /*
         Touch gestures
      */
-    abstract fun onDown(change: PointerInputChange)
+    abstract suspend fun onDown(change: PointerInputChange)
 
-    abstract fun onMove(change: PointerInputChange)
+    abstract suspend fun onMove(change: PointerInputChange)
 
-    abstract fun onUp(change: PointerInputChange)
+    abstract suspend fun onUp(change: PointerInputChange)
 
     /*
         Transform gestures
