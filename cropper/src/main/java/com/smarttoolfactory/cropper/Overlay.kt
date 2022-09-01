@@ -13,15 +13,15 @@ import com.smarttoolfactory.cropper.util.drawGrid
 import kotlin.math.roundToInt
 
 /**
- * Draw overlay composed of 9 rectangles. When [dynamicOverlay]
+ * Draw overlay composed of 9 rectangles. When [drawHandles]
  * is set draw handles for changing drawing rectangle
  */
 @Composable
 internal fun DrawingOverlay(
     modifier: Modifier,
     rect: Rect,
-    dynamicOverlay: Boolean,
-    touchRegionWidth: Float
+    drawHandles: Boolean,
+    handleSize: Float
 ) {
 
     val path = remember(rect) {
@@ -29,24 +29,24 @@ internal fun DrawingOverlay(
 
             if (rect != Rect.Zero) {
                 // Top left lines
-                moveTo(rect.topLeft.x, rect.topLeft.y + touchRegionWidth)
+                moveTo(rect.topLeft.x, rect.topLeft.y + handleSize)
                 lineTo(rect.topLeft.x, rect.topLeft.y)
-                lineTo(rect.topLeft.x + touchRegionWidth, rect.topLeft.y)
+                lineTo(rect.topLeft.x + handleSize, rect.topLeft.y)
 
                 // Top right lines
-                moveTo(rect.topRight.x - touchRegionWidth, rect.topRight.y)
+                moveTo(rect.topRight.x - handleSize, rect.topRight.y)
                 lineTo(rect.topRight.x, rect.topRight.y)
-                lineTo(rect.topRight.x, rect.topRight.y + touchRegionWidth)
+                lineTo(rect.topRight.x, rect.topRight.y + handleSize)
 
                 // Bottom right lines
-                moveTo(rect.bottomRight.x, rect.bottomRight.y - touchRegionWidth)
+                moveTo(rect.bottomRight.x, rect.bottomRight.y - handleSize)
                 lineTo(rect.bottomRight.x, rect.bottomRight.y)
-                lineTo(rect.bottomRight.x - touchRegionWidth, rect.bottomRight.y)
+                lineTo(rect.bottomRight.x - handleSize, rect.bottomRight.y)
 
                 // Bottom left lines
-                moveTo(rect.bottomLeft.x + touchRegionWidth, rect.bottomLeft.y)
+                moveTo(rect.bottomLeft.x + handleSize, rect.bottomLeft.y)
                 lineTo(rect.bottomLeft.x, rect.bottomLeft.y)
-                lineTo(rect.bottomLeft.x, rect.bottomLeft.y - touchRegionWidth)
+                lineTo(rect.bottomLeft.x, rect.bottomLeft.y - handleSize)
             }
         }
     }
@@ -73,13 +73,13 @@ internal fun DrawingOverlay(
         }
 
         drawGrid(rect)
-       if(dynamicOverlay){
-           drawPath(
-               path,
-               color,
-               style = Stroke(strokeWidth * 2)
-           )
-       }
+        if (drawHandles) {
+            drawPath(
+                path,
+                color,
+                style = Stroke(strokeWidth * 2)
+            )
+        }
     }
 }
 
