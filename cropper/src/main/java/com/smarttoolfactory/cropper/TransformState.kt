@@ -10,6 +10,11 @@ import kotlinx.coroutines.launch
 /**
  * State of the pan, zoom and rotation. Allows to change zoom, pan via [Animatable]
  * objects' [Animatable.animateTo], [Animatable.snapTo].
+ * @param containerSize size of the Composable that used for cropping
+ * @param initialZoom initial zoom level
+ * @param initialRotation initial angle in degrees
+ * @param minZoom minimum zoom
+ * @param maxZoom maximum zoom
  * @param zoomable when set to true zoom is enabled
  * @param pannable when set to true pan is enabled
  * @param rotatable when set to true rotation is enabled
@@ -18,15 +23,16 @@ import kotlinx.coroutines.launch
  *
  */
 @Stable
-  open class TransformState(
+open class TransformState(
+    internal val containerSize: IntSize,
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
-    internal open val zoomable: Boolean = true,
-    internal open val pannable: Boolean = true,
-    internal open val rotatable: Boolean = true,
-    internal open val limitPan: Boolean = false
+    internal val zoomable: Boolean = true,
+    internal val pannable: Boolean = true,
+    internal val rotatable: Boolean = true,
+    internal val limitPan: Boolean = false
 ) {
 
     internal val zoomMin = minZoom.coerceAtLeast(.5f)
@@ -39,7 +45,6 @@ import kotlinx.coroutines.launch
     internal val animatableZoom = Animatable(zoomInitial)
     internal val animatableRotation = Animatable(rotationInitial)
 
-    internal var size: IntSize = IntSize.Zero
 
     init {
         animatableZoom.updateBounds(zoomMin, zoomMax)
@@ -83,10 +88,10 @@ import kotlinx.coroutines.launch
     }
 
     /**
-     * Get bounds of Composables that can be panned based on zoom level using [size]
+     * Get bounds of Composables that can be panned based on zoom level using [containerSize]
      */
     internal open fun getBounds(): Offset {
-        return getBounds(size)
+        return getBounds(containerSize)
     }
 
     /**
@@ -114,7 +119,7 @@ import kotlinx.coroutines.launch
             val boundPan = limitPan && !rotatable
 
             if (boundPan) {
-                val bound = getBounds(size)
+                val bound = getBounds(containerSize)
                 updateBounds(bound.times(-1f), bound)
             }
             snapPanXto(newPan.x)
