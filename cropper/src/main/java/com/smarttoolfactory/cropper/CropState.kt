@@ -2,6 +2,7 @@ package com.smarttoolfactory.cropper
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -11,7 +12,8 @@ import androidx.compose.ui.unit.dp
 /**
  * Create and [remember] the [CropState] based on the currently appropriate transform
  * configuration to allow changing pan, zoom, and rotation.
- *
+ * @param imageSize size of the [ImageBitmap]
+ * @param containerSize size of the Composable that draws [ImageBitmap]
  * @param initialZoom zoom set initially
  * @param minZoom minimum zoom value
  * @param maxZoom maximum zoom value
@@ -32,12 +34,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun rememberCropState(
     imageSize: IntSize,
+    containerSize: IntSize,
     initialZoom: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
     cropType: CropType = CropType.Dynamic,
-    touchRegionSize: Dp = 20.dp,
-    minDimension: Dp = 40.dp,
+    handleSize: Dp = 20.dp,
+    minCropSize: Dp = 40.dp,
     fling: Boolean = false,
     moveToBounds: Boolean = true,
     zoomable: Boolean = true,
@@ -47,12 +50,20 @@ fun rememberCropState(
     vararg keys: Any?
 ): CropState {
     val density = LocalDensity.current
+    val handleSizeInPx: Float
+    val minCropSizePx: Float
+
+    with(density) {
+        handleSizeInPx = handleSize.toPx()
+        minCropSizePx = minCropSize.toPx()
+    }
 
     return remember(*keys) {
         when (cropType) {
             CropType.Static -> {
                 StaticCropState(
                     imageSize = imageSize,
+                    containerSize = containerSize,
                     initialZoom = initialZoom,
                     minZoom = minZoom,
                     maxZoom = maxZoom,
@@ -64,27 +75,24 @@ fun rememberCropState(
                     limitPan = limitPan
                 )
             }
-            else-> {
+            else -> {
 
                 DynamicCropState(
                     imageSize = imageSize,
+                    containerSize = containerSize,
                     initialZoom = initialZoom,
                     minZoom = minZoom,
                     maxZoom = maxZoom,
-                    touchRegionSize = 100f,
-                    minDimension = 200f,
+                    handleSize = handleSizeInPx,
+                    minCropSize = minCropSizePx,
                     fling = fling,
                     moveToBounds = moveToBounds,
                     zoomable = zoomable,
                     pannable = pannable,
                     rotatable = rotatable,
-                    limitPan = limitPan
+                    limitPan = true
                 )
             }
         }
     }
-}
-
-enum class CropType {
-    Static, Dynamic
 }
