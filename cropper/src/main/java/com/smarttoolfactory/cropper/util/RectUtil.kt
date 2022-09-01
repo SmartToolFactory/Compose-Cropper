@@ -106,8 +106,8 @@ internal fun getOverlayFromAspectRatio(
 
 
 internal fun CropState.calculateRectBounds(): IntRect {
-    val width = size.width
-    val height = size.height
+    val width = containerSize.width
+    val height = containerSize.height
 
     val bounds = getBounds()
     val zoom = animatableZoom.targetValue
