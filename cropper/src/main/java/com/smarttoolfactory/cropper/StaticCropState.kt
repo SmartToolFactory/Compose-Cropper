@@ -2,7 +2,6 @@ package com.smarttoolfactory.cropper
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -31,6 +30,7 @@ import kotlinx.coroutines.coroutineScope
  */
 class StaticCropState internal constructor(
     imageSize: IntSize,
+    containerSize:IntSize,
     initialZoom: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
@@ -42,6 +42,7 @@ class StaticCropState internal constructor(
     limitPan: Boolean = false
 ) : CropState(
     imageSize = imageSize,
+    containerSize = containerSize,
     initialZoom = initialZoom,
     minZoom = minZoom,
     maxZoom = maxZoom,
@@ -52,17 +53,13 @@ class StaticCropState internal constructor(
     rotatable = rotatable,
     limitPan = limitPan
 ) {
-    override var overlayRect: Rect = Rect(
-        offset = Offset.Zero,
-        size = Size(size.width.toFloat(), size.height.toFloat())
-    )
 
     override var cropRect: IntRect = calculateRectBounds()
         get() = calculateRectBounds()
 
-    override fun onDown(change: PointerInputChange) = Unit
-    override fun onMove(change: PointerInputChange) = Unit
-    override fun onUp(change: PointerInputChange) = Unit
+    override suspend fun onDown(change: PointerInputChange) = Unit
+    override suspend fun onMove(change: PointerInputChange) = Unit
+    override suspend fun onUp(change: PointerInputChange) = Unit
 
     private var doubleTapped = false
 

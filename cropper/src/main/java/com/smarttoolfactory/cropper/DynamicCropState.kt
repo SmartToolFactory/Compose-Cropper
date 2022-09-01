@@ -4,16 +4,20 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.util.*
+import kotlinx.coroutines.coroutineScope
 
 class DynamicCropState internal constructor(
     imageSize: IntSize,
+    containerSize: IntSize,
+    private val handleSize: Float,
+    private val minCropSize: Float,
     initialZoom: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
-    private val touchRegionSize: Float,
-    private val minDimension: Float,
     fling: Boolean = false,
     moveToBounds: Boolean = true,
     zoomable: Boolean = true,
@@ -22,6 +26,7 @@ class DynamicCropState internal constructor(
     limitPan: Boolean = false
 ) : CropState(
     imageSize = imageSize,
+    containerSize = containerSize,
     initialZoom = initialZoom,
     minZoom = minZoom,
     maxZoom = maxZoom,
@@ -34,8 +39,10 @@ class DynamicCropState internal constructor(
 ) {
 
     // Rectangle that covers Image composable
-    private val rectBounds =
-        Rect(offset = Offset.Zero, size = Size(size.width.toFloat(), size.height.toFloat()))
+    private val rectBounds = Rect(
+        offset = Offset.Zero,
+        size = Size(containerSize.width.toFloat(), containerSize.height.toFloat())
+    )
 
     // This rectangle is needed to set bounds set at first touch position while
     // moving to constraint current bounds to temp one from first down
@@ -52,17 +59,9 @@ class DynamicCropState internal constructor(
 
     private var doubleTapped = false
 
-    override fun onDown(change: PointerInputChange) {
-
-        if (overlayRect.size == Size.Zero) {
-            overlayRect =
-                Rect(offset = Offset.Zero, size = Size(size.width.toFloat(), size.height.toFloat()))
-        }
+    override suspend fun onDown(change: PointerInputChange) {
 
         rectTemp = overlayRect.copy()
-
-        println("🍏 DynamicCropState() onDown overLayRect: $overlayRect, rectTemp: $rectTemp")
-
         val position = change.position
         val touchPositionScreenX = position.x
         val touchPositionScreenY = position.y
@@ -71,7 +70,7 @@ class DynamicCropState internal constructor(
         touchRegion = getTouchRegion(
             position = touchPositionOnScreen,
             rect = overlayRect,
-            threshold = touchRegionSize
+            threshold = handleSize
         )
 
         // This is the difference between touch position and edge
@@ -80,17 +79,24 @@ class DynamicCropState internal constructor(
             getDistanceToEdgeFromTouch(touchRegion, rectTemp, touchPositionOnScreen)
     }
 
-    override fun onMove(change: PointerInputChange) {
-        overlayRect = updateDrawRect(
+    override suspend fun onMove(change: PointerInputChange) {
+        println(
+            "🚗 DynamicCropState() onMove()\n" +
+                    "position: ${change.position}, positionChange ${change.positionChange()} " +
+                    "positionChangeIgnoreConsumed: $${change.positionChangeIgnoreConsumed()}"
+        )
+        val newRect = updateOverlayRect(
             distanceToEdgeFromTouch = distanceToEdgeFromTouch,
             touchRegion = touchRegion,
-            minDimension = minDimension,
+            minDimension = minCropSize,
             rectTemp = rectTemp,
-            rectDraw = overlayRect,
+            overlayRect = overlayRect.copy(),
             change = change
         )
 
-        println("🔥 DynamicCropState() onMove overLayRect: $overlayRect, touchRegion: $touchRegion")
+        snapOverlayRectTo(newRect)
+
+//        println("🔥 DynamicCropState() onMove overLayRect: $overlayRect, touchRegion: $touchRegion")
 
         if (touchRegion != TouchRegion.None) {
             change.consume()
@@ -101,17 +107,15 @@ class DynamicCropState internal constructor(
 
     }
 
-    override fun onUp(change: PointerInputChange) {
+    override suspend fun onUp(change: PointerInputChange) = coroutineScope {
         touchRegion = TouchRegion.None
 
-//        overlayRect = moveIntoBounds(rectBounds, overlayRect)
+        rectTemp = moveOverlayRectToBounds(rectBounds, overlayRect)
+
+        animateOverlayRectTo(rectTemp)
 
         // Calculate crop rectangle
         cropRect = calculateRectBounds()
-        rectTemp = overlayRect.copy()
-
-        println("🍎 DynamicCropState() onUp overLayRect: $overlayRect, cropRect: $cropRect")
-
     }
 
     override suspend fun onGesture(
@@ -122,11 +126,18 @@ class DynamicCropState internal constructor(
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     ) {
+        if (touchRegion == TouchRegion.None) {
+            updateTransformState(
+                centroid = centroid,
+                zoomChange = zoom,
+                panChange = pan,
+                rotationChange = 0f
+            )
+        }
     }
 
-    override suspend fun onGestureStart() {}
-
-    override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {}
+    override suspend fun onGestureStart() = Unit
+    override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) = Unit
 
     override suspend fun onDoubleTap(
         pan: Offset,
@@ -143,7 +154,7 @@ class DynamicCropState internal constructor(
         onAnimationEnd()
     }
 
-    internal fun moveIntoBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
+    internal fun moveOverlayRectToBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
         var width = rectCurrent.width
         var height = rectCurrent.height
 
