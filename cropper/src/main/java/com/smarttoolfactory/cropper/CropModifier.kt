@@ -67,9 +67,6 @@ fun Modifier.crop(
         val clipToBounds = (clip || boundPan)
 
         val transformModifier = Modifier.pointerInput(*keys) {
-            // Pass size of this Composable this Modifier is attached for constraining operations
-            // inside this bounds
-            cropState.size = this.size
             detectTransformGestures(
                 consume = false,
                 onGestureStart = {
@@ -111,9 +108,6 @@ fun Modifier.crop(
         }
 
         val tapModifier = Modifier.pointerInput(*keys) {
-            // Pass size of this Composable this Modifier is attached for constraining operations
-            // inside this bounds
-            cropState.size = this.size
             detectTapGestures(
                 onDoubleTap = {
                     coroutineScope.launch {
@@ -127,19 +121,25 @@ fun Modifier.crop(
             )
         }
 
-        val touchModifier = Modifier.pointerInput(*keys){
+        val touchModifier = Modifier.pointerInput(*keys) {
             detectMotionEvents(
                 onDown = {
-                    cropState.onDown(it)
-                    onGestureStart?.invoke(cropState.cropData)
+                    coroutineScope.launch {
+                        cropState.onDown(it)
+                        onGestureStart?.invoke(cropState.cropData)
+                    }
                 },
                 onMove = {
-                    cropState.onMove(it)
-                    onGesture?.invoke(cropState.cropData)
+                    coroutineScope.launch {
+                        cropState.onMove(it)
+                        onGesture?.invoke(cropState.cropData)
+                    }
                 },
                 onUp = {
-                    cropState.onUp(it)
-                    onGestureEnd?.invoke(cropState.cropData)
+                    coroutineScope.launch {
+                        cropState.onUp(it)
+                        onGestureEnd?.invoke(cropState.cropData)
+                    }
                 }
             )
         }
