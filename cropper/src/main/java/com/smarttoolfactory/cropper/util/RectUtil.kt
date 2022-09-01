@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -185,7 +185,6 @@ fun updateDrawRect(
                 right = rectTemp.right,
                 bottom = bottom,
             )
-
         }
 
         TouchRegion.TopRight -> {
@@ -220,11 +219,9 @@ fun updateDrawRect(
         }
 
         TouchRegion.Inside -> {
-            val drag = change.positionChange()
-
+            val drag = change.positionChangeIgnoreConsumed()
             val scaledDragX = drag.x
             val scaledDragY = drag.y
-
             rectDraw.translate(scaledDragX, scaledDragY)
         }
 
