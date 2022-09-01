@@ -1,7 +1,6 @@
 package com.smarttoolfactory.cropper
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -9,19 +8,16 @@ import com.smarttoolfactory.cropper.util.calculateRectBounds
 import kotlinx.coroutines.coroutineScope
 
 /**
- *  * State of the crop
- * @param imageSize size of the image that is zoomed or transformed. Size of the image
- * is required to get [Rect] of visible area after current transformation.
- * @param initialZoom zoom set initially
+ *  * State for cropper with dynamic overlay. When this state is selected instead of overlay
+ *  image is moved while overlay is stationary.
+ *
+ * @param imageSize size of the **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**
  * @param minZoom minimum zoom value
  * @param maxZoom maximum zoom value
  * @param fling when set to true dragging pointer builds up velocity. When last
- * pointer leaves Composable a movement invoked against friction till velocity drops down
+ * pointer leaves Composable a movement invoked against friction till velocity drops below
  * to threshold
- * @param moveToBounds when set to true if image zoom is lower than initial zoom or
- * panned out of image boundaries moves back to bounds with animation.
- * ##Note
- * Currently rotating back to borders is not available
  * @param zoomable when set to true zoom is enabled
  * @param pannable when set to true pan is enabled
  * @param rotatable when set to true rotation is enabled
@@ -30,12 +26,11 @@ import kotlinx.coroutines.coroutineScope
  */
 class StaticCropState internal constructor(
     imageSize: IntSize,
-    containerSize:IntSize,
-    initialZoom: Float = 1f,
+    containerSize: IntSize,
+    aspectRatio: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
     fling: Boolean = false,
-    moveToBounds: Boolean = true,
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
@@ -43,11 +38,11 @@ class StaticCropState internal constructor(
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
-    initialZoom = initialZoom,
+    aspectRatio = aspectRatio,
     minZoom = minZoom,
     maxZoom = maxZoom,
     fling = fling,
-    moveToBounds = moveToBounds,
+    moveToBounds = true,
     zoomable = zoomable,
     pannable = pannable,
     rotatable = rotatable,
@@ -74,7 +69,6 @@ class StaticCropState internal constructor(
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     ) = coroutineScope {
-
         doubleTapped = false
 
         updateTransformState(

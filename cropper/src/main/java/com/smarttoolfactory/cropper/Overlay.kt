@@ -7,8 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.util.drawGrid
 import kotlin.math.roundToInt
 
@@ -20,6 +20,9 @@ import kotlin.math.roundToInt
 internal fun DrawingOverlay(
     modifier: Modifier,
     rect: Rect,
+    drawGrid: Boolean,
+    color: Color,
+    strokeWidth: Dp,
     drawHandles: Boolean,
     handleSize: Float
 ) {
@@ -52,9 +55,7 @@ internal fun DrawingOverlay(
     }
 
     Canvas(modifier = modifier) {
-
-        val color = Color.White
-        val strokeWidth = 2.dp.toPx()
+        val strokeWidthPx = strokeWidth.toPx()
 
         with(drawContext.canvas.nativeCanvas) {
             val checkPoint = saveLayer(null, null)
@@ -72,12 +73,15 @@ internal fun DrawingOverlay(
             restoreToCount(checkPoint)
         }
 
-        drawGrid(rect)
+        if (drawGrid) {
+            drawGrid(rect = rect, strokeWidth = strokeWidth / 2, color = color)
+        }
+
         if (drawHandles) {
             drawPath(
-                path,
-                color,
-                style = Stroke(strokeWidth * 2)
+                path = path,
+                color = color,
+                style = Stroke(strokeWidthPx * 2)
             )
         }
     }

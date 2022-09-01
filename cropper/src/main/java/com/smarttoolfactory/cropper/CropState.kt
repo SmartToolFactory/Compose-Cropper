@@ -2,31 +2,17 @@ package com.smarttoolfactory.cropper
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 
 
 /**
  * Create and [remember] the [CropState] based on the currently appropriate transform
  * configuration to allow changing pan, zoom, and rotation.
- * @param imageSize size of the [ImageBitmap]
- * @param containerSize size of the Composable that draws [ImageBitmap]
- * @param initialZoom zoom set initially
- * @param minZoom minimum zoom value
- * @param maxZoom maximum zoom value
- * @param fling when set to true dragging pointer builds up velocity. When last
- * pointer leaves Composable a movement invoked against friction till velocity drops below
- * to threshold
- * @param moveToBounds when set to true if image zoom is lower than initial zoom or
- * panned out of image boundaries moves back to bounds with animation.
- * @param zoomable when set to true zoom is enabled
- * @param pannable when set to true pan is enabled
- * @param rotatable when set to true rotation is enabled
- * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
- * empty space on sides or edges of parent
+ * @param imageSize size of the **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**
+ * @param cropProperties wrapper class that contains crop state properties such as
+ * crop type,
  * @param keys are used to reset remember block to initial calculations. This can be used
  * when image, contentScale or any property changes which requires values to be reset to initial
  * values
@@ -35,27 +21,28 @@ import androidx.compose.ui.unit.dp
 fun rememberCropState(
     imageSize: IntSize,
     containerSize: IntSize,
-    initialZoom: Float = 1f,
-    minZoom: Float = 1f,
-    maxZoom: Float = 5f,
-    cropType: CropType = CropType.Dynamic,
-    handleSize: Dp = 40.dp,
-    minCropSize: Dp = 100.dp,
-    fling: Boolean = false,
-    moveToBounds: Boolean = true,
-    zoomable: Boolean = true,
-    pannable: Boolean = true,
-    rotatable: Boolean = false,
-    limitPan: Boolean = false,
+    cropProperties: CropProperties,
     vararg keys: Any?
 ): CropState {
-    val density = LocalDensity.current
-    val handleSizeInPx: Float
-    val minCropSizePx: Float
 
-    with(density) {
+    // Properties of crop state
+    val handleSize = cropProperties.handleSize
+    val minOverlaySize = cropProperties.minOverlaySize
+    val cropType = cropProperties.cropType
+    val aspectRatio = cropProperties.aspectRatio
+    val minZoom = cropProperties.minZoom
+    val maxZoom = cropProperties.maxZoom
+    val fling = cropProperties.fling
+    val zoomable = cropProperties.zoomable
+    val pannable = cropProperties.pannable
+    val rotatable = cropProperties.rotatable
+
+    val handleSizeInPx: Float
+    val minOverlaySizePx: Float
+
+    with(LocalDensity.current) {
         handleSizeInPx = handleSize.toPx()
-        minCropSizePx = minCropSize.toPx()
+        minOverlaySizePx = minOverlaySize.toPx()
     }
 
     return remember(*keys) {
@@ -64,15 +51,14 @@ fun rememberCropState(
                 StaticCropState(
                     imageSize = imageSize,
                     containerSize = containerSize,
-                    initialZoom = initialZoom,
+                    aspectRatio = aspectRatio,
                     minZoom = minZoom,
                     maxZoom = maxZoom,
                     fling = fling,
-                    moveToBounds = moveToBounds,
                     zoomable = zoomable,
                     pannable = pannable,
                     rotatable = rotatable,
-                    limitPan = limitPan
+                    limitPan = false
                 )
             }
             else -> {
@@ -80,13 +66,12 @@ fun rememberCropState(
                 DynamicCropState(
                     imageSize = imageSize,
                     containerSize = containerSize,
-                    initialZoom = initialZoom,
+                    aspectRatio = aspectRatio,
                     minZoom = minZoom,
                     maxZoom = maxZoom,
                     handleSize = handleSizeInPx,
-                    minCropSize = minCropSizePx,
+                    minOverlaySize = minOverlaySizePx,
                     fling = fling,
-                    moveToBounds = moveToBounds,
                     zoomable = zoomable,
                     pannable = pannable,
                     rotatable = rotatable,

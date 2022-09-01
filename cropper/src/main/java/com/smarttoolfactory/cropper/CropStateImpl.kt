@@ -25,11 +25,29 @@ val CropState.cropData: CropData
         cropRect = cropRect
     )
 
+/**
+ * Base class for crop operations. Any class that extends this class gets access to pan, zoom,
+ * rotation values and animations via [TransformState], fling and moving back to bounds animations.
+ * @param imageSize size of the **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**
+ * @param minZoom minimum zoom value
+ * @param maxZoom maximum zoom value
+ * @param fling when set to true dragging pointer builds up velocity. When last
+ * pointer leaves Composable a movement invoked against friction till velocity drops below
+ * to threshold
+ * @param moveToBounds when set to true if image zoom is lower than initial zoom or
+ * panned out of image boundaries moves back to bounds with animation.
+ * @param zoomable when set to true zoom is enabled
+ * @param pannable when set to true pan is enabled
+ * @param rotatable when set to true rotation is enabled
+ * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
+ * empty space on sides or edges of parent
+ */
 abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
-    initialZoom: Float = 1f,
-    minZoom: Float = .5f,
+    aspectRatio:Float= 1f,
+    minZoom: Float = 1f,
     maxZoom: Float = 5f,
     val fling: Boolean = true,
     val moveToBounds: Boolean = true,
@@ -40,7 +58,7 @@ abstract class CropState internal constructor(
 ) : TransformState(
     imageSize = imageSize,
     containerSize = containerSize,
-    initialZoom = initialZoom,
+    initialZoom = 1f,
     initialRotation = 0f,
     minZoom = minZoom,
     maxZoom = maxZoom,
@@ -50,7 +68,7 @@ abstract class CropState internal constructor(
     limitPan = limitPan
 ) {
 
-    internal val animatableRectOverlay = Animatable(
+    private val animatableRectOverlay = Animatable(
         Rect(
             offset = Offset.Zero,
             size = Size(this.containerSize.width.toFloat(), this.containerSize.height.toFloat())

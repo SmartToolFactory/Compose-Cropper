@@ -6,12 +6,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.cos
 import kotlin.math.sin
 
 
-fun DrawScope.drawGrid(rect: Rect, color: Color = Color.White) {
+fun DrawScope.drawGrid(rect: Rect, strokeWidth: Dp, color: Color) {
 
     val width = rect.width
     val height = rect.height
@@ -32,7 +33,7 @@ fun DrawScope.drawGrid(rect: Rect, color: Color = Color.White) {
             color = color,
             start = Offset(rect.left, rect.top + i * gridHeight),
             end = Offset(rect.right, rect.top + i * gridHeight),
-            strokeWidth = .7.dp.toPx()
+            strokeWidth = strokeWidth.toPx()
         )
     }
 

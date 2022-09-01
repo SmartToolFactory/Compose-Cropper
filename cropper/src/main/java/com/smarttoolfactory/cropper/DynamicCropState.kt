@@ -7,19 +7,41 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.util.*
+import com.smarttoolfactory.cropper.util.calculateRectBounds
+import com.smarttoolfactory.cropper.util.getDistanceToEdgeFromTouch
+import com.smarttoolfactory.cropper.util.getTouchRegion
+import com.smarttoolfactory.cropper.util.updateOverlayRect
 import kotlinx.coroutines.coroutineScope
 
+/**
+ * State for cropper with dynamic overlay. Overlay of this state can be moved or resized
+ * using handles or touching inner position of overlay. When overlay overflow out of image bounds
+ * or moves out of bounds it animates back to valid size and position
+ *
+ * @param handleSize size of the handle to control, move or scale dynamic overlay
+ * @param minOverlaySize minimum overlay size that can be shrunk to by moving handles
+ * @param imageSize size of the **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**
+ * @param minZoom minimum zoom value
+ * @param maxZoom maximum zoom value
+ * @param fling when set to true dragging pointer builds up velocity. When last
+ * pointer leaves Composable a movement invoked against friction till velocity drops below
+ * to threshold
+ * @param zoomable when set to true zoom is enabled
+ * @param pannable when set to true pan is enabled
+ * @param rotatable when set to true rotation is enabled
+ * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
+ * empty space on sides or edges of parent
+ */
 class DynamicCropState internal constructor(
+    private val handleSize: Float,
+    private val minOverlaySize: Float,
     imageSize: IntSize,
     containerSize: IntSize,
-    private val handleSize: Float,
-    private val minCropSize: Float,
-    initialZoom: Float = 1f,
+    aspectRatio: Float,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
     fling: Boolean = false,
-    moveToBounds: Boolean = true,
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
@@ -27,11 +49,11 @@ class DynamicCropState internal constructor(
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
-    initialZoom = initialZoom,
+    aspectRatio = aspectRatio,
     minZoom = minZoom,
     maxZoom = maxZoom,
     fling = fling,
-    moveToBounds = moveToBounds,
+    moveToBounds = true,
     zoomable = zoomable,
     pannable = pannable,
     rotatable = rotatable,
@@ -88,7 +110,7 @@ class DynamicCropState internal constructor(
         val newRect = updateOverlayRect(
             distanceToEdgeFromTouch = distanceToEdgeFromTouch,
             touchRegion = touchRegion,
-            minDimension = minCropSize,
+            minDimension = minOverlaySize,
             rectTemp = rectTemp,
             overlayRect = overlayRect.copy(),
             change = change

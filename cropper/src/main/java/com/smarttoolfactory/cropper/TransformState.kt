@@ -10,7 +10,8 @@ import kotlinx.coroutines.launch
 /**
  * State of the pan, zoom and rotation. Allows to change zoom, pan via [Animatable]
  * objects' [Animatable.animateTo], [Animatable.snapTo].
- * @param containerSize size of the Composable that used for cropping
+ * @param imageSize size of the **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**
  * @param initialZoom initial zoom level
  * @param initialRotation initial angle in degrees
  * @param minZoom minimum zoom
