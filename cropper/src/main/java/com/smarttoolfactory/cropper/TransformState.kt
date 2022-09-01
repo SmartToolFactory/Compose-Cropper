@@ -39,8 +39,8 @@ open class TransformState(
 
     internal val zoomMin = minZoom.coerceAtLeast(.5f)
     internal val zoomMax = maxZoom.coerceAtLeast(1f)
-    internal val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
-    internal val rotationInitial = initialRotation % 360
+    private val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
+    private val rotationInitial = initialRotation % 360
 
     internal val animatablePanX = Animatable(0f)
     internal val animatablePanY = Animatable(0f)

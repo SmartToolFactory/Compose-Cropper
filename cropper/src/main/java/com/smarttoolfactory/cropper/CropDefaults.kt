@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.smarttoolfactory.cropper.model.AspectRatio
 
 /**
  * Contains the default values used by [ImageCropper]
@@ -17,7 +18,7 @@ object CropDefaults {
         minOverlaySize: Dp = 100.dp,
         minZoom: Float = 1f,
         maxZoom: Float = 5f,
-        aspectRatio: Float = 1f,
+        aspectRatio: AspectRatio = AspectRatio.Unspecified,
         fling: Boolean = false,
         zoomable: Boolean = true,
         pannable: Boolean = true,
@@ -64,7 +65,7 @@ data class CropProperties internal constructor(
     val minOverlaySize: Dp = 100.dp,
     val minZoom: Float = 1f,
     val maxZoom: Float = 5f,
-    val aspectRatio: Float = 1f,
+    val aspectRatio: AspectRatio = AspectRatio.Unspecified,
     val fling: Boolean = false,
     val zoomable: Boolean = true,
     val pannable: Boolean = true,

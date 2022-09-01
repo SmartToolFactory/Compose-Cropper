@@ -7,7 +7,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.util.calculateRectBounds
+import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.util.getDistanceToEdgeFromTouch
 import com.smarttoolfactory.cropper.util.getTouchRegion
 import com.smarttoolfactory.cropper.util.updateOverlayRect
@@ -38,7 +38,7 @@ class DynamicCropState internal constructor(
     private val minOverlaySize: Float,
     imageSize: IntSize,
     containerSize: IntSize,
-    aspectRatio: Float,
+    aspectRatio: AspectRatio,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
     fling: Boolean = false,
@@ -112,20 +112,19 @@ class DynamicCropState internal constructor(
             touchRegion = touchRegion,
             minDimension = minOverlaySize,
             rectTemp = rectTemp,
-            overlayRect = overlayRect.copy(),
+            overlayRect = overlayRect,
             change = change
         )
 
         snapOverlayRectTo(newRect)
 
 //        println("🔥 DynamicCropState() onMove overLayRect: $overlayRect, touchRegion: $touchRegion")
-
         if (touchRegion != TouchRegion.None) {
             change.consume()
         }
 
         // Calculate crop rectangle
-        cropRect = calculateRectBounds()
+//        cropRect = calculateRectBounds()
 
     }
 
@@ -137,7 +136,7 @@ class DynamicCropState internal constructor(
         animateOverlayRectTo(rectTemp)
 
         // Calculate crop rectangle
-        cropRect = calculateRectBounds()
+//        cropRect = calculateRectBounds()
     }
 
     override suspend fun onGesture(

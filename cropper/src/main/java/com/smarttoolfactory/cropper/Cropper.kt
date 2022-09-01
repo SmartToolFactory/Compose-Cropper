@@ -19,7 +19,6 @@ import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
 import com.smarttoolfactory.cropper.model.CropData
 import com.smarttoolfactory.cropper.util.getInitialCropRect
-import com.smarttoolfactory.cropper.util.getOverlayFromAspectRatio
 
 @Composable
 fun ImageCropper(
@@ -69,62 +68,6 @@ fun ImageCropper(
 
         val aspectRatio = cropProperties.aspectRatio
 
-        /**
-         * This rectangle is the section of drawing on screen it's correlated with boundRect
-         * and its dimensions cannot be bigger than draw area.
-         *
-         * Corners of this [Rect] is used as handle to change bounds and grid is drawn
-         * inside this rect
-         */
-        /**
-         * This rectangle is the section of drawing on screen it's correlated with boundRect
-         * and its dimensions cannot be bigger than draw area.
-         *
-         * [Rect] that is used for drawing overlay
-         */
-        var rectOverlay by remember(imageWidthInPx, imageHeightInPx, contentScale, aspectRatio) {
-            mutableStateOf(
-                getOverlayFromAspectRatio(imageWidthInPx, imageHeightInPx, aspectRatio)
-            )
-        }
-
-        /**
-         * Rectangle that is used for cropping image, this rectangle is not the
-         * one that draws on screen. We might have 4000x3000 rect while we
-         * draw 1000x750px Composable on screen
-         */
-        var rectCrop by remember(
-            bitmapWidth,
-            bitmapHeight,
-            imageWidthInPx,
-            imageHeightInPx,
-            rectOverlay
-        ) {
-            mutableStateOf(
-                getInitialCropRect(
-                    bitmapWidth,
-                    bitmapHeight,
-                    imageWidthInPx,
-                    imageHeightInPx,
-                    rectOverlay
-                )
-            )
-        }
-
-        LaunchedEffect(crop) {
-            if (crop) {
-                val croppedBitmap = Bitmap.createBitmap(
-                    scaledImageBitmap.asAndroidBitmap(),
-                    rectCrop.left,
-                    rectCrop.top,
-                    rectCrop.width,
-                    rectCrop.height
-                ).asImageBitmap()
-
-                onCropSuccess(croppedBitmap)
-            }
-        }
-
         // these keys are for resetting cropper when image width/height, contentScale or
         // overlay aspect ratio changes
         val resetKeys = remember(
@@ -143,6 +86,43 @@ fun ImageCropper(
             cropProperties = cropProperties,
             keys = resetKeys
         )
+
+        /**
+         * Rectangle that is used for cropping image, this rectangle is not the
+         * one that draws on screen. We might have 4000x3000 rect while we
+         * draw 1000x750px Composable on screen
+         */
+        var rectCrop by remember(
+            bitmapWidth,
+            bitmapHeight,
+            imageWidthInPx,
+            imageHeightInPx
+        ) {
+            mutableStateOf(
+                getInitialCropRect(
+                    bitmapWidth,
+                    bitmapHeight,
+                    imageWidthInPx.toInt(),
+                    imageHeightInPx.toInt(),
+                    cropState.overlayRect
+                )
+            )
+        }
+
+        LaunchedEffect(crop) {
+            if (crop) {
+                val croppedBitmap = Bitmap.createBitmap(
+                    scaledImageBitmap.asAndroidBitmap(),
+                    rectCrop.left,
+                    rectCrop.top,
+                    rectCrop.width,
+                    rectCrop.height
+                ).asImageBitmap()
+
+                onCropSuccess(croppedBitmap)
+            }
+        }
+
 
         val imageModifier = Modifier
             .size(imageWidth, imageHeight)
@@ -180,7 +160,7 @@ fun ImageCropper(
                 text = "imageWidthInPx: $imageWidthInPx, imageHeightInPx: $imageHeightInPx\n" +
                         "bitmapWidth: $bitmapWidth, bitmapHeight: $bitmapHeight\n" +
                         "cropRect: $rectCrop, size: ${rectCrop.size}\n" +
-                        "drawRect: $rectOverlay, size: ${rectOverlay.size}"
+                        "drawRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}"
             )
         }
     }

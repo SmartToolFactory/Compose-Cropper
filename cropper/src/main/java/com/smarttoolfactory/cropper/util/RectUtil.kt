@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.CropState
 import com.smarttoolfactory.cropper.TouchRegion
+import com.smarttoolfactory.cropper.model.AspectRatio
 
 /**
  * Get rectangle of current transformation of [pan], [zoom] and current bounds of the Composable's
@@ -58,12 +59,12 @@ fun getCropRect(
 internal fun getInitialCropRect(
     bitmapWidth: Int,
     bitmapHeight: Int,
-    containerWidth: Float,
-    containerHeight: Float,
-    rectDraw: Rect
+    containerWidth: Int,
+    containerHeight: Int,
+    overlayRect: Rect
 ): IntRect {
-    val overlayWidth = rectDraw.width
-    val overlayHeight = rectDraw.height
+    val overlayWidth = overlayRect.width
+    val overlayHeight = overlayRect.height
 
     val widthRatio = bitmapWidth / containerWidth
     val heightRatio = bitmapHeight / containerHeight
@@ -71,8 +72,8 @@ internal fun getInitialCropRect(
     val width = (overlayWidth * widthRatio).toInt()
     val height = (overlayHeight * heightRatio).toInt()
 
-    val left = (rectDraw.left * widthRatio).toInt()
-    val top = (rectDraw.top * heightRatio).toInt()
+    val left = (overlayRect.left * widthRatio).toInt()
+    val top = (overlayRect.top * heightRatio).toInt()
     return IntRect(offset = IntOffset(left, top), size = IntSize(width, height))
 }
 
@@ -82,20 +83,22 @@ internal fun getInitialCropRect(
 internal fun getOverlayFromAspectRatio(
     containerWidth: Float,
     containerHeight: Float,
-    aspectRatio: Float
+    aspectRatio: AspectRatio
 ): Rect {
 
-    if (aspectRatio < 0) return Rect(
+    if (aspectRatio== AspectRatio.Unspecified) return Rect(
         offset = Offset.Zero,
         size = Size(containerWidth, containerHeight)
     )
 
-    var height = containerWidth * aspectRatio
+    val aspectRatioValue = aspectRatio.value
+
+    var height = containerWidth * aspectRatioValue
     var width = containerWidth
 
     if (height > containerHeight) {
         height = containerHeight
-        width = height / aspectRatio
+        width = height / aspectRatioValue
     }
 
     val posX = ((containerWidth - width) / 2)

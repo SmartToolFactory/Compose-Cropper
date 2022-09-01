@@ -2,9 +2,8 @@ package com.smarttoolfactory.cropper
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.util.calculateRectBounds
+import com.smarttoolfactory.cropper.model.AspectRatio
 import kotlinx.coroutines.coroutineScope
 
 /**
@@ -27,7 +26,7 @@ import kotlinx.coroutines.coroutineScope
 class StaticCropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
-    aspectRatio: Float = 1f,
+    aspectRatio: AspectRatio,
     minZoom: Float = 1f,
     maxZoom: Float = 5f,
     fling: Boolean = false,
@@ -48,9 +47,6 @@ class StaticCropState internal constructor(
     rotatable = rotatable,
     limitPan = limitPan
 ) {
-
-    override var cropRect: IntRect = calculateRectBounds()
-        get() = calculateRectBounds()
 
     override suspend fun onDown(change: PointerInputChange) = Unit
     override suspend fun onMove(change: PointerInputChange) = Unit

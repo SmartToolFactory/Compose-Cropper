@@ -5,14 +5,16 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
+import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
+import com.smarttoolfactory.cropper.util.calculateRectBounds
 import com.smarttoolfactory.cropper.util.coerceIn
+import com.smarttoolfactory.cropper.util.getInitialCropRect
+import com.smarttoolfactory.cropper.util.getOverlayFromAspectRatio
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -46,9 +48,9 @@ val CropState.cropData: CropData
 abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
-    aspectRatio:Float= 1f,
-    minZoom: Float = 1f,
-    maxZoom: Float = 5f,
+    aspectRatio: AspectRatio,
+    minZoom: Float ,
+    maxZoom: Float,
     val fling: Boolean = true,
     val moveToBounds: Boolean = true,
     zoomable: Boolean = true,
@@ -69,9 +71,10 @@ abstract class CropState internal constructor(
 ) {
 
     private val animatableRectOverlay = Animatable(
-        Rect(
-            offset = Offset.Zero,
-            size = Size(this.containerSize.width.toFloat(), this.containerSize.height.toFloat())
+        getOverlayFromAspectRatio(
+            containerSize.width.toFloat(),
+            containerSize.height.toFloat(),
+            aspectRatio
         ),
         Rect.VectorConverter
     )
@@ -79,8 +82,15 @@ abstract class CropState internal constructor(
     val overlayRect: Rect
         get() = animatableRectOverlay.value
 
-
-    open var cropRect: IntRect = IntRect(offset = IntOffset.Zero, size = this.containerSize)
+    var cropRect: IntRect = getInitialCropRect(
+        imageSize.width,
+        imageSize.height,
+        containerSize.width,
+        containerSize.height,
+        overlayRect
+    )
+        get() = calculateRectBounds()
+        private set
 
     private val velocityTracker = VelocityTracker()
 
