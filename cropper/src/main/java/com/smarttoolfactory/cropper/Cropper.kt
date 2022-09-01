@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
@@ -141,24 +142,27 @@ fun ImageCropper(
             arrayOf(scaledImageBitmap, imageWidthInPx, imageHeightInPx, contentScale, aspectRatio)
         }
 
+        val cropState = rememberCropState(
+            imageSize = IntSize(bitmapWidth, bitmapHeight),
+            containerSize = IntSize(imageWidthInPx.toInt(), imageHeightInPx.toInt()),
+            keys = resetKeys
+        )
+
         val imageModifier = Modifier
             .size(imageWidth, imageHeight)
             .crop(
                 keys = resetKeys,
-                cropState = rememberCropState(
-                    imageSize = IntSize(bitmapWidth, bitmapHeight),
-                    keys = resetKeys
-                ),
+                cropState = cropState,
                 onGestureStart = { cropData: CropData ->
-                    rectOverlay = cropData.overlayRect
+//                    rectOverlay = cropData.overlayRect
                     rectCrop = cropData.cropRect
                 },
                 onGesture = { cropData: CropData ->
-                    rectOverlay = cropData.overlayRect
+//                    rectOverlay = cropData.overlayRect
                     rectCrop = cropData.cropRect
                 },
                 onGestureEnd = { cropData: CropData ->
-                    rectOverlay = cropData.overlayRect
+//                    rectOverlay = cropData.overlayRect
                     rectCrop = cropData.cropRect
                 }
             )
@@ -169,7 +173,8 @@ fun ImageCropper(
                 imageBitmap = scaledImageBitmap,
                 imageWidth = imageWidth,
                 imageHeight = imageHeight,
-                rectOverlay = rectOverlay
+                handleSize = 40.dp,
+                rectOverlay = cropState.overlayRect
             )
 
             // TODO Remove this text when cropper is complete. This is for debugging
@@ -192,16 +197,19 @@ private fun CropperImpl(
     imageBitmap: ImageBitmap,
     imageWidth: Dp,
     imageHeight: Dp,
+    handleSize: Dp,
     rectOverlay: Rect
 ) {
+
+    val handleSizeInPx = LocalDensity.current.run { handleSize.toPx() }
     Box {
         ImageOverlay(modifier = modifier, imageBitmap = imageBitmap)
 
         DrawingOverlay(
             modifier = Modifier.size(imageWidth, imageHeight),
             rect = rectOverlay,
-            dynamicOverlay = true,
-            touchRegionWidth = 100f
+            drawHandles = true,
+            handleSize = handleSizeInPx
         )
     }
 }
