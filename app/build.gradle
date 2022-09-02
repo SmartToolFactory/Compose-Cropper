@@ -55,6 +55,8 @@ dependencies {
 
     implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:2.0.0'
 
+    implementation "dev.chrisbanes.snapper:snapper:0.3.0"
+
     implementation "androidx.compose.ui:ui:$compose_version"
     // Tooling support (Previews, etc.)
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
