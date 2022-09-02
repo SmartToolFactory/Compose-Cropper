@@ -14,8 +14,8 @@ object CropDefaults {
 
     fun properties(
         cropType: CropType = CropType.Dynamic,
-        handleSize: Dp = 40.dp,
-        minOverlaySize: Dp = 100.dp,
+        handleSize: Dp = 30.dp,
+        minOverlaySize: Dp = 70.dp,
         minZoom: Float = 1f,
         maxZoom: Float = 5f,
         aspectRatio: AspectRatio = AspectRatio.Unspecified,
@@ -61,8 +61,8 @@ object CropDefaults {
 @Immutable
 data class CropProperties internal constructor(
     val cropType: CropType = CropType.Dynamic,
-    val handleSize: Dp = 40.dp,
-    val minOverlaySize: Dp = 100.dp,
+    val handleSize: Dp = 30.dp,
+    val minOverlaySize: Dp = 70.dp,
     val minZoom: Float = 1f,
     val maxZoom: Float = 5f,
     val aspectRatio: AspectRatio = AspectRatio.Unspecified,
