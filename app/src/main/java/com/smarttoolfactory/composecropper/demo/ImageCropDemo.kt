@@ -2,14 +2,20 @@
 
 package com.smarttoolfactory.composecropper.demo
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,10 +26,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.IconButton
+import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.composecropper.ContentScaleSelectionMenu
 import com.smarttoolfactory.composecropper.ImageSelectionButton
 import com.smarttoolfactory.composecropper.R
@@ -41,20 +46,19 @@ fun ImageCropDemo() {
 
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
-        sheetElevation = 8.dp,
+        sheetElevation = 16.dp,
         sheetShape = RoundedCornerShape(
             bottomStart = 0.dp,
             bottomEnd = 0.dp,
-            topStart = 16.dp,
-            topEnd = 16.dp
+            topStart = 28.dp,
+            topEnd = 28.dp
         ),
 
         sheetGesturesEnabled = true,
         sheetContent = {
             SheetContent()
         },
-        drawerElevation = 16.dp,
-        drawerGesturesEnabled = true,
+
         // This is the height in collapsed state
         sheetPeekHeight = 0.dp
     ) {
@@ -66,15 +70,86 @@ fun ImageCropDemo() {
 @Composable
 private fun SheetContent() {
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .height(400.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Under Construction")
+
+    Column {
+        Box(
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(5.dp)
+                    .background(Color.LightGray, RoundedCornerShape(50))
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+
+
+            Title("Crop Type")
+            Text("Under Development")
+
+            Title("Aspect Ratio")
+            Text("Under Development")
+
+            // Handle size and overlay size applies only to Dynamic crop
+            Title("Handle Size")
+            Text("Under Development")
+
+            Title("Minimum Overlay Size")
+            Text("Under Development")
+
+            Title("Draw Overlay")
+            Text("Under Development")
+
+            Title("Overlay StrokeWidth")
+            Text("Under Development")
+
+            Title("Overlay Color")
+            Text("Under Development")
+
+            Title("Draw Grid")
+            Text("Under Development")
+
+            Title("Content Scale")
+            Text("Under Development")
+
+            Title("Min Zoom")
+            Text("Under Development")
+
+            Title("Max Zoom")
+            Text("Under Development")
+
+            Title("Fling")
+            Text("Under Development")
+
+            Title("Pan Enabled")
+            Text("Under Development")
+
+            Title("Zoom Enabled")
+            Text("Under Development")
+        }
     }
+}
+
+@Composable
+private fun Title(text: String) {
+    Text(
+        modifier = Modifier.padding(vertical = 1.dp),
+        text = text,
+        color = MaterialTheme.colorScheme.primary,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold
+    )
 }
 
 @Composable
