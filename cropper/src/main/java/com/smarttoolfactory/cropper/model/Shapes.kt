@@ -5,7 +5,7 @@ import com.smarttoolfactory.cropper.util.createRectShape
 /**
  * Aspect ratio list with pre-defined aspect ratios
  */
-val AspectRatios = listOf(
+val aspectRatios = listOf(
     ShapeModel("9:16", createRectShape(9 / 16f)),
     ShapeModel("2:3", createRectShape(2 / 3f)),
     ShapeModel("1:1", createRectShape(1 / 1f)),
