@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,7 @@ fun AspectRatioSelectionList(
     modifier: Modifier = Modifier,
     visibleItemCount: Int = 5,
     spaceBetweenItems: Dp = 4.dp,
-    contentPaddingValues: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     activeColor: Color = Color.Cyan,
     inactiveColor: Color = Color.Gray,
     inactiveScale: Float = .85f,
@@ -40,104 +41,114 @@ fun AspectRatioSelectionList(
 
     val argbEvaluator = remember { ArgbEvaluator() }
 
-    val lowerBound = inactiveScale
-    val space = spaceBetweenItems
-    val itemCount = visibleItemCount
+    val selectedColor = remember(activeColor) { activeColor.toArgb() }
+    val unSelectedColor = remember(inactiveColor) { inactiveColor.toArgb() }
 
-    val indexOfCenter = Int.MAX_VALUE / 2 + itemCount / 2
+    val indexOfCenter = Int.MAX_VALUE / 2 + visibleItemCount / 2
 
-    BoxWithConstraints(modifier = modifier) {
+    BoxWithConstraints(modifier = modifier.padding(contentPadding)) {
 
-
-        val width = constraints.maxWidth
-        val center = width / 2
+        val listWidth = constraints.maxWidth
 
         val density = LocalDensity.current
-        val spaceBetween = density.run { space.toPx() }
+        val spaceBetween = density.run { spaceBetweenItems.toPx() }
 
-        val itemWidth = (width - spaceBetween * (itemCount - 1)) / itemCount
+        val itemWidth = (listWidth - spaceBetween * (visibleItemCount - 1)) / visibleItemCount
         val itemWidthDp = density.run { itemWidth.toDp() }
 
         var selectedIndex by remember {
             mutableStateOf(-1)
         }
 
-        Column(Modifier) {
-            LazyRow(
-                modifier = modifier,
-                state = lazyListState,
-                horizontalArrangement = Arrangement.spacedBy(space),
-                flingBehavior = flingBehavior
-            ) {
-                items(Int.MAX_VALUE) { i ->
+        LazyRow(
+            modifier = modifier,
+            state = lazyListState,
+            horizontalArrangement = Arrangement.spacedBy(spaceBetweenItems),
+            flingBehavior = flingBehavior
+        ) {
+            items(Int.MAX_VALUE) { index ->
 
-                    val animationData by remember {
-                        derivedStateOf {
-                            val animationData = getAnimationData(
-                                lazyListState,
-                                i,
-                                center,
-                                itemWidth,
-                                itemCount,
-                                lowerBound = lowerBound
-                            )
+                val animationData by remember {
+                    derivedStateOf {
+                        val animationData = getAnimationData(
+                            lazyListState = lazyListState,
+                            argbEvaluator = argbEvaluator,
+                            indexOfCenter = indexOfCenter,
+                            index = index,
+                            selectorIndex = selectedIndex,
+                            listWidth = listWidth,
+                            itemWidth = itemWidth,
+                            visibleItemCount = visibleItemCount,
+                            totalItemCount = aspectRatios.size,
+                            lowerBound = inactiveScale,
+                            inactiveColor = unSelectedColor,
+                            activeColor = selectedColor
+                        )
 
-                            val itemIndex = if (selectedIndex > 0) {
-                                selectedIndex % aspectRatios.size
-                            } else {
-                                indexOfCenter % aspectRatios.size
-                            }
+                        val itemIndex = animationData.itemIndex
+                        selectedIndex = animationData.listIndex
 
-                            onSelectedItemChange(itemIndex)
+                        onSelectedItemChange(itemIndex)
 
-                            animationData
-                        }
 
+                        animationData
                     }
-
-                    selectedIndex = animationData.currentIndex
-
-                    var scale = animationData.scale
-                    var colorScale = animationData.colorScale
-
-                    if (selectedIndex == -1 && i == Int.MAX_VALUE / 2 + itemCount / 2) {
-                        scale = 1f
-                        colorScale = 1f
-
-                    }
-
-                    val color: Int = argbEvaluator.evaluate(
-                        colorScale, android.graphics.Color.GRAY, android.graphics.Color.CYAN
-                    ) as Int
-
-
-                    // Get which item in list this is
-                    val index = i % aspectRatios.size
-
-                    ShapeSelection(modifier = Modifier
-                        .graphicsLayer {
-                            scaleY = scale
-                            alpha = scale
-                        }
-                        .width(itemWidthDp),
-                        color = Color(color),
-                        shapeModel = aspectRatios[index])
                 }
+
+                val scale = animationData.scale
+                val color = animationData.color
+
+                ShapeSelection(modifier = Modifier
+                    .graphicsLayer {
+                        scaleY = scale
+                        alpha = scale
+                    }
+                    .width(itemWidthDp),
+                    color = color,
+                    shapeModel = aspectRatios[index % aspectRatios.size]
+                )
             }
         }
     }
 }
 
+/**
+ * get color, scale and selected index for scroll progress for infinite or circular list with
+ * [Int.MAX_VALUE] global index count
+ *
+ * @param lazyListState A state object that can be hoisted to control and observe scrolling
+ * @param argbEvaluator evaluator can be used to perform type interpolation between
+ * integer values that represent ARGB colors
+ * @param indexOfCenter global index of element at the center of infinite items
+ * @param index index of current item that is being placed and calls this function
+ * @param selectorIndex global index of selected item
+ * @param listWidth width of the [LazyRow]
+ * @param itemWidth width of each item of [LazyRow]
+ * @param visibleItemCount count of visible items on screen
+ * @param totalItemCount count of items that are displayed in circular list
+ * @param lowerBound lower scale that items can be scaled to. It should be less than 1f
+ * @param inactiveColor color of items when they are not selected
+ * @param activeColor color of item that is selected
+ */
 private fun getAnimationData(
     lazyListState: LazyListState,
+    argbEvaluator: ArgbEvaluator,
+    indexOfCenter: Int,
     index: Int,
-    center: Int,
+    selectorIndex: Int,
+    listWidth: Int,
     itemWidth: Float,
-    itemCount: Int,
+    visibleItemCount: Int,
+    totalItemCount: Int,
     lowerBound: Float,
+    inactiveColor: Int,
+    activeColor: Int,
 ): AnimationData {
 
     val lowerBoundToEndInterval = 1 - lowerBound
+
+    val centerOfList = listWidth / 2
+    val selectorPosX = centerOfList - itemWidth / 2
 
     val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
 
@@ -150,19 +161,28 @@ private fun getAnimationData(
     val itemOffset = (visibleItems.firstOrNull { it.index == index }?.offset ?: 0)
 
 
-    val pageOffset = ((itemOffset - center + itemWidth / 2) / center).absoluteValue.coerceIn(0f, 1f)
+    // Absolute value of fraction of Offset of items based on length of LazyRow.
+    // Item in center has 0f, this number grows bigger on both sides of center
+    val pageOffset =
+        ((itemOffset - selectorPosX) / centerOfList).absoluteValue.coerceIn(0f, 1f)
 
 
-    // When offset of an element is in range of
-    val scaleRegion = 2f / itemCount
+    // When offset of an element is in range of. For a list with 5 visible items
+    // it's 0.4f. Which means (half width) + center item width + (half width) is region
+    // for scaling and color change happens. When an item is in this region it's eligible
+    // for animation based on distance to selector position
+    val scaleRegion = 2f / visibleItemCount
 
     // Current item is not close to center item or one half of left or right
     // item
 
-    val scale = if (pageOffset > scaleRegion) {
+    var scale = if (pageOffset > scaleRegion) {
         lowerBound
     } else {
+        // Now item is in scale region. Check where exactly it is in this region for animation
         val fraction = (scaleRegion - pageOffset) / scaleRegion
+        // scale based on lower bound and 1f.
+        // If lower bound .9f and fraction is 50% our scale is .9f + .1f*50/100 = .95f
         lowerBound + fraction * lowerBoundToEndInterval
     }.coerceIn(lowerBound, 1f)
 
@@ -170,25 +190,53 @@ private fun getAnimationData(
     // Scale for color when scale is at lower bound color scale is zero
     // when scale reaches upper bound(1f) color scale is 1f which is target color
     // when argEvaluator evaluates color
-    val colorScale = (scale - lowerBound) / lowerBoundToEndInterval
+    var colorScale = (scale - lowerBound) / lowerBoundToEndInterval
 
     var distance = Int.MAX_VALUE
-    var currentIndex = -1
+
+    var newSelectorIndex = selectorIndex
 
     visibleItems.forEach {
-        val x = abs(it.offset - center + itemWidth / 2)
+        val x = abs(it.offset - selectorPosX)
         if (x < distance) {
             distance = x.toInt()
-            currentIndex = it.index
+            newSelectorIndex = it.index
         }
     }
 
-    return AnimationData(scale = scale, colorScale = colorScale, currentIndex = currentIndex)
+
+    // Index of item in list. If list has 7 item. initially we item index is 3
+    // When selector changes we get what it(in infinite list) corresponds to in item list
+    val itemIndex = if (newSelectorIndex > 0) {
+        newSelectorIndex % totalItemCount
+    } else {
+        indexOfCenter % totalItemCount
+    }
+
+    // Selector index -1 because visibleItems are returned asynchronously because of
+    // that not available on Composition. So we set initial values for these values to not
+    // jump unexpectedly
+    if (newSelectorIndex == -1 && index == Int.MAX_VALUE / 2 + visibleItemCount / 2) {
+        scale = 1f
+        colorScale = 1f
+    }
+
+    val color: Int = argbEvaluator.evaluate(
+        colorScale, inactiveColor, activeColor
+    ) as Int
+
+    return AnimationData(
+        scale = scale,
+        color = Color(color),
+        listIndex = newSelectorIndex,
+        itemIndex = itemIndex
+    )
 }
 
 @Immutable
 internal data class AnimationData(
     val scale: Float,
-    val colorScale: Float,
-    val currentIndex: Int
+    val color: Color,
+    val listIndex: Int,
+    val itemIndex: Int
 )
