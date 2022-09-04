@@ -1,39 +1,65 @@
+@file:OptIn(ExperimentalSnapperApi::class)
+
 package com.smarttoolfactory.cropper.widget
 
 import android.animation.ArgbEvaluator
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.cropper.model.aspectRatios
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 /**
- * Infinite list with color and scale animation for selecting aspect ratio
+ *  Infinite list with color and scale animation for selecting aspect ratio
+ *
+ * @param items the data list
+ * @param visibleItemCount count of items that are visible at any time
+ * @param spaceBetweenItems padding between 2 items
+ * @param contentPadding a padding around the whole content. This will add padding for the
+ * content after it has been clipped, which is not possible via [modifier] param. You can use it
+ * to add a padding before the first item or after the last one.
+ * @param activeColor color of selected item
+ * @param inactiveColor color of items are not selected
+ * @param key a factory of stable and unique keys representing the item. Using the same key
+ * for multiple items in the list is not allowed. Type of the key should be saveable
+ * via Bundle on Android. If null is passed the position in the list will represent the key.
+ * When you specify the key the scroll position will be maintained based on the key, which
+ * means if you add/remove items before the current visible item the item with the given key
+ * will be kept as the first visible one.
+ * @param contentType a factory of the content types for the item. The item compositions of
+ * the same type could be reused more efficiently. Note that null is a valid type and items of such
+ * type will be considered compatible.
+ * @param itemContent the content displayed by a single item
  */
-@OptIn(ExperimentalSnapperApi::class)
 @Composable
-fun AspectRatioSelectionList(
+fun <T> AnimatedCircularList(
     modifier: Modifier = Modifier,
+    items: List<T>,
     visibleItemCount: Int = 5,
     spaceBetweenItems: Dp = 4.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     activeColor: Color = Color.Cyan,
     inactiveColor: Color = Color.Gray,
-    inactiveScale: Float = .85f,
-    onSelectedItemChange: (Int) -> Unit
+    inactiveItemScale: Float = .85f,
+    key: ((index: Int) -> Any)? = null,
+    contentType: (index: Int) -> Any? = { null },
+    itemContent: @Composable LazyItemScope.(AnimationData, Int, Dp) -> Unit,
 ) {
+
     val lazyListState = rememberLazyListState(Int.MAX_VALUE / 2)
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState
@@ -48,7 +74,7 @@ fun AspectRatioSelectionList(
     val indexOfCenter = Int.MAX_VALUE / 2 + visibleItemCount / 2
 
     // number of items
-    val totalItemCount = aspectRatios.size
+    val totalItemCount = items.size
 
     BoxWithConstraints(modifier = modifier.padding(contentPadding)) {
 
@@ -70,7 +96,10 @@ fun AspectRatioSelectionList(
             horizontalArrangement = Arrangement.spacedBy(spaceBetweenItems),
             flingBehavior = flingBehavior
         ) {
-            items(Int.MAX_VALUE) { index ->
+
+            items(
+                count = Int.MAX_VALUE, key = key, contentType = contentType
+            ) { index ->
 
                 val animationData by remember {
                     derivedStateOf {
@@ -84,31 +113,16 @@ fun AspectRatioSelectionList(
                             itemWidth = itemWidth,
                             visibleItemCount = visibleItemCount,
                             totalItemCount = totalItemCount,
-                            lowerBound = inactiveScale,
+                            lowerBound = inactiveItemScale,
                             inactiveColor = unSelectedColor,
                             activeColor = selectedColor
                         )
 
-                        val itemIndex = animationData.itemIndex
                         selectedIndex = animationData.listIndex
-
-                        onSelectedItemChange(itemIndex)
                         animationData
                     }
                 }
-
-                val scale = animationData.scale
-                val color = animationData.color
-
-                ShapeSelection(modifier = Modifier
-                    .graphicsLayer {
-                        scaleY = scale
-                        alpha = scale
-                    }
-                    .width(itemWidthDp),
-                    color = color,
-                    shapeModel = aspectRatios[index % totalItemCount]
-                )
+                itemContent(animationData, index, itemWidthDp)
             }
         }
     }
@@ -165,8 +179,7 @@ private fun getAnimationData(
 
     // Absolute value of fraction of Offset of items based on length of LazyRow.
     // Item in center has 0f, this number grows bigger on both sides of center
-    val pageOffset =
-        ((itemOffset - selectorPosX) / centerOfList).absoluteValue.coerceIn(0f, 1f)
+    val pageOffset = ((itemOffset - selectorPosX) / centerOfList).absoluteValue.coerceIn(0f, 1f)
 
 
     // When offset of an element is in range of. For a list with 5 visible items
@@ -228,17 +241,6 @@ private fun getAnimationData(
     ) as Int
 
     return AnimationData(
-        scale = scale,
-        color = Color(color),
-        listIndex = newSelectorIndex,
-        itemIndex = itemIndex
+        scale = scale, color = Color(color), listIndex = newSelectorIndex, itemIndex = itemIndex
     )
 }
-
-@Immutable
-data class AnimationData(
-    val scale: Float,
-    val color: Color,
-    val listIndex: Int,
-    val itemIndex: Int
-)
