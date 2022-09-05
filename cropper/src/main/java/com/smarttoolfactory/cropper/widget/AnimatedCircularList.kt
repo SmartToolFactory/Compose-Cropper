@@ -56,7 +56,8 @@ fun <T> AnimatedCircularList(
     contentType: (index: Int) -> Any? = { null },
     itemContent: @Composable LazyItemScope.(AnimationData, Int, Dp) -> Unit,
 ) {
-    val lazyListState = rememberLazyListState(Int.MAX_VALUE / 2)
+    val initialFistVisibleIndex = Int.MAX_VALUE / 2
+    val lazyListState = rememberLazyListState(initialFistVisibleIndex)
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState
     )
@@ -102,6 +103,7 @@ fun <T> AnimatedCircularList(
                         val animationData = getAnimationData(
                             lazyListState = lazyListState,
                             argbEvaluator = argbEvaluator,
+                            initialFistVisibleIndex = initialFistVisibleIndex,
                             indexOfSelector = indexOfSelector,
                             globalIndex = globalIndex,
                             selectedIndex = selectedIndex,
@@ -109,7 +111,7 @@ fun <T> AnimatedCircularList(
                             spaceBetweenItems = spaceBetweenItemsPx,
                             visibleItemCount = visibleItemCount,
                             totalItemCount = totalItemCount,
-                            lowerBound = inactiveItemScale,
+                            inactiveScale = inactiveItemScale,
                             inactiveColor = unSelectedColor,
                             activeColor = selectedColor
                         )
@@ -140,13 +142,14 @@ fun <T> AnimatedCircularList(
  * @param itemWidth width of each item of [LazyRow]
  * @param visibleItemCount count of visible items on screen
  * @param totalItemCount count of items that are displayed in circular list
- * @param lowerBound lower scale that items can be scaled to. It should be less than 1f
+ * @param inactiveScale lower scale that items can be scaled to. It should be less than 1f
  * @param inactiveColor color of items when they are not selected
  * @param activeColor color of item that is selected
  */
 private fun getAnimationData(
     lazyListState: LazyListState,
     argbEvaluator: ArgbEvaluator,
+    initialFistVisibleIndex: Int,
     indexOfSelector: Int,
     globalIndex: Int,
     selectedIndex: Int,
@@ -154,59 +157,64 @@ private fun getAnimationData(
     spaceBetweenItems: Float,
     visibleItemCount: Int,
     totalItemCount: Int,
-    lowerBound: Float,
+    inactiveScale: Float,
     inactiveColor: Int,
     activeColor: Int,
 ): AnimationData {
 
-    // Half width of an item
-    val halfItemWidth = itemWidth / 2
+    val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
+    val currentItem: LazyListItemInfo? = visibleItems.firstOrNull { it.index == globalIndex }
 
     // Position of left of selector item
     // Selector is item that is considered as selected
     val selectorPosX = indexOfSelector * (itemWidth + spaceBetweenItems)
 
-    val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
-    val currentItem: LazyListItemInfo? = visibleItems.firstOrNull { it.index == globalIndex }
-
     // Convert global indexes to indexes in range of 0..visibleItemCount
     val localIndex = (globalIndex + visibleItemCount / 2) % visibleItemCount
 
-    // Get offset of each item relative to start of list x=0 position
-    val itemOffset =
-        currentItem?.offset
-            ?: (localIndex * itemWidth + localIndex * spaceBetweenItems).toInt()
-
-    // Check how far this item is to selector index.
-    val distanceToSelector = (selectorPosX - itemOffset).absoluteValue
-
-
-    val scaleRegionWidth = (itemWidth + spaceBetweenItems)
 
     // Current item is not close to center item or one half of left or right
     // item
-    var scale = calculateScale(
-        distanceToSelector,
-        scaleRegionWidth,
-        lowerBound
-    )
+    val scale =
+        // visible items are not initialized and it's selector index
+        if (selectedIndex == -1 && globalIndex == initialFistVisibleIndex + indexOfSelector) {
+            1f
+            // visible items are not initialized and any item other than selector
+        } else if (selectedIndex == -1) {
+            inactiveScale
+        } else {
 
+            // Get offset of each item relative to start of list x=0 position
+            val itemOffset =
+                currentItem?.offset
+                    ?: (localIndex * itemWidth + localIndex * spaceBetweenItems).toInt()
+
+            // Check how far this item is to selector index.
+            val distanceToSelector = (selectorPosX - itemOffset).absoluteValue
+            val scaleRegionWidth = (itemWidth + spaceBetweenItems)
+
+            calculateScale(
+                distanceToSelector,
+                scaleRegionWidth,
+                inactiveScale
+            )
+        }
 
     // This is the fraction between lower bound and 1f. If lower bound is .9f we have
     // range of .9f..1f for scale calculation
-    val lowerBoundToEndInterval = 1 - lowerBound
+    val lowerBoundToEndInterval = 1f - inactiveScale
 
     // Scale for color when scale is at lower bound color scale is zero
     // when scale reaches upper bound(1f) color scale is 1f which is target color
     // when argEvaluator evaluates color
-    var colorScale = (scale - lowerBound) / lowerBoundToEndInterval
+    val colorScale = (scale - inactiveScale) / lowerBoundToEndInterval
 
     var distance = Int.MAX_VALUE
 
     var globalSelectedIndex = selectedIndex
 
     visibleItems.forEach {
-        val x = (it.offset - selectorPosX - halfItemWidth).absoluteValue
+        val x = (it.offset - selectorPosX - itemWidth / 2).absoluteValue
         if (x < distance) {
             distance = x.toInt()
             globalSelectedIndex = it.index
@@ -221,13 +229,6 @@ private fun getAnimationData(
         indexOfSelector
     }
 
-    // Selector index -1 because visibleItems are returned asynchronously because of
-    // that they are not in Composition. So we set initial value for selected item to not
-    // jump unexpectedly from unselected to selected value
-    if (globalSelectedIndex == -1 && globalIndex == Int.MAX_VALUE / 2 + indexOfSelector) {
-        scale = 1f
-        colorScale = 1f
-    }
 
     val color: Int = argbEvaluator.evaluate(
         colorScale, inactiveColor, activeColor
