@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,7 +17,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
-import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 /**
@@ -51,6 +47,7 @@ fun <T> AnimatedCircularList(
     items: List<T>,
     visibleItemCount: Int = 5,
     spaceBetweenItems: Dp = 4.dp,
+    selectorIndex: Int = visibleItemCount / 2,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     activeColor: Color = Color.Cyan,
     inactiveColor: Color = Color.Gray,
@@ -59,7 +56,6 @@ fun <T> AnimatedCircularList(
     contentType: (index: Int) -> Any? = { null },
     itemContent: @Composable LazyItemScope.(AnimationData, Int, Dp) -> Unit,
 ) {
-
     val lazyListState = rememberLazyListState(Int.MAX_VALUE / 2)
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState
@@ -70,8 +66,8 @@ fun <T> AnimatedCircularList(
     val selectedColor = remember(activeColor) { activeColor.toArgb() }
     val unSelectedColor = remember(inactiveColor) { inactiveColor.toArgb() }
 
-    // Index of center  in circular list
-    val indexOfCenter = Int.MAX_VALUE / 2 + visibleItemCount / 2
+    // Index of selector(item that is selected)  in circular list
+    val indexOfSelector = selectorIndex.coerceIn(0, visibleItemCount - 1)
 
     // number of items
     val totalItemCount = items.size
@@ -81,9 +77,9 @@ fun <T> AnimatedCircularList(
         val rowWidth = constraints.maxWidth
 
         val density = LocalDensity.current
-        val spaceBetween = density.run { spaceBetweenItems.toPx() }
+        val spaceBetweenItemsPx = density.run { spaceBetweenItems.toPx() }
 
-        val itemWidth = (rowWidth - spaceBetween * (visibleItemCount - 1)) / visibleItemCount
+        val itemWidth = (rowWidth - spaceBetweenItemsPx * (visibleItemCount - 1)) / visibleItemCount
         val itemWidthDp = density.run { itemWidth.toDp() }
 
         var selectedIndex by remember {
@@ -99,18 +95,18 @@ fun <T> AnimatedCircularList(
 
             items(
                 count = Int.MAX_VALUE, key = key, contentType = contentType
-            ) { index ->
+            ) { globalIndex ->
 
                 val animationData by remember {
                     derivedStateOf {
                         val animationData = getAnimationData(
                             lazyListState = lazyListState,
                             argbEvaluator = argbEvaluator,
-                            indexOfCenter = indexOfCenter,
-                            index = index,
-                            selectorIndex = selectedIndex,
-                            listWidth = rowWidth,
+                            indexOfSelector = indexOfSelector,
+                            globalIndex = globalIndex,
+                            selectedIndex = selectedIndex,
                             itemWidth = itemWidth,
+                            spaceBetweenItems = spaceBetweenItemsPx,
                             visibleItemCount = visibleItemCount,
                             totalItemCount = totalItemCount,
                             lowerBound = inactiveItemScale,
@@ -122,7 +118,7 @@ fun <T> AnimatedCircularList(
                         animationData
                     }
                 }
-                itemContent(animationData, index, itemWidthDp)
+                itemContent(animationData, globalIndex, itemWidthDp)
             }
         }
     }
@@ -135,10 +131,12 @@ fun <T> AnimatedCircularList(
  * @param lazyListState A state object that can be hoisted to control and observe scrolling
  * @param argbEvaluator evaluator can be used to perform type interpolation between
  * integer values that represent ARGB colors
- * @param indexOfCenter global index of element at the center of infinite items
- * @param index index of current item that is being placed and calls this function
- * @param selectorIndex global index of selected item
- * @param listWidth width of the [LazyRow]
+ * @param indexOfSelector global index of element of selector of infinite items. Item with
+ * this index is selected item
+ * @param globalIndex index of current item. This index changes for every item in list
+ * that calls this function
+ * @param selectedIndex global index of currently selected item. This index changes only
+ * when selected item is changed due to scroll
  * @param itemWidth width of each item of [LazyRow]
  * @param visibleItemCount count of visible items on screen
  * @param totalItemCount count of items that are displayed in circular list
@@ -149,11 +147,11 @@ fun <T> AnimatedCircularList(
 private fun getAnimationData(
     lazyListState: LazyListState,
     argbEvaluator: ArgbEvaluator,
-    indexOfCenter: Int,
-    index: Int,
-    selectorIndex: Int,
-    listWidth: Int,
+    indexOfSelector: Int,
+    globalIndex: Int,
+    selectedIndex: Int,
     itemWidth: Float,
+    spaceBetweenItems: Float,
     visibleItemCount: Int,
     totalItemCount: Int,
     lowerBound: Float,
@@ -161,46 +159,42 @@ private fun getAnimationData(
     activeColor: Int,
 ): AnimationData {
 
-    val lowerBoundToEndInterval = 1 - lowerBound
+    // Half width of an item
+    val halfItemWidth = itemWidth / 2
 
-    val centerOfList = listWidth / 2
-    val selectorPosX = centerOfList - itemWidth / 2
+    // Position of left of selector item
+    // Selector is item that is considered as selected
+    val selectorPosX = indexOfSelector * (itemWidth + spaceBetweenItems)
 
     val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
+    val currentItem: LazyListItemInfo? = visibleItems.firstOrNull { it.index == globalIndex }
 
-    // Get offset this item relative to start of the LazyRow
-    // Sometime in scroll direction one item that is not visible yet
-    // is sub-composed because of that visible items might not match
-    // with current one and returns null.
-    // when last item is 8th, 9th item gets composed and we see index 9 here
-    // while visible last item is 8
-    val itemOffset = (visibleItems.firstOrNull { it.index == index }?.offset ?: 0)
+    // Convert global indexes to indexes in range of 0..visibleItemCount
+    val localIndex = (globalIndex + visibleItemCount / 2) % visibleItemCount
+
+    // Get offset of each item relative to start of list x=0 position
+    val itemOffset =
+        currentItem?.offset
+            ?: (localIndex * itemWidth + localIndex * spaceBetweenItems).toInt()
+
+    // Check how far this item is to selector index.
+    val distanceToSelector = (selectorPosX - itemOffset).absoluteValue
 
 
-    // Absolute value of fraction of Offset of items based on length of LazyRow.
-    // Item in center has 0f, this number grows bigger on both sides of center
-    val pageOffset = ((itemOffset - selectorPosX) / centerOfList).absoluteValue.coerceIn(0f, 1f)
-
-
-    // When offset of an element is in range of. For a list with 5 visible items
-    // it's 0.4f. Which means (half width) + center item width + (half width) is region
-    // for scaling and color change happens. When an item is in this region it's eligible
-    // for animation based on distance to selector position
-    val scaleRegion = 2f / visibleItemCount
+    val scaleRegionWidth = (itemWidth + spaceBetweenItems)
 
     // Current item is not close to center item or one half of left or right
     // item
-
-    var scale = if (pageOffset > scaleRegion) {
+    var scale = calculateScale(
+        distanceToSelector,
+        scaleRegionWidth,
         lowerBound
-    } else {
-        // Now item is in scale region. Check where exactly it is in this region for animation
-        val fraction = (scaleRegion - pageOffset) / scaleRegion
-        // scale based on lower bound and 1f.
-        // If lower bound .9f and fraction is 50% our scale is .9f + .1f*50/100 = .95f
-        lowerBound + fraction * lowerBoundToEndInterval
-    }.coerceIn(lowerBound, 1f)
+    )
 
+
+    // This is the fraction between lower bound and 1f. If lower bound is .9f we have
+    // range of .9f..1f for scale calculation
+    val lowerBoundToEndInterval = 1 - lowerBound
 
     // Scale for color when scale is at lower bound color scale is zero
     // when scale reaches upper bound(1f) color scale is 1f which is target color
@@ -209,29 +203,28 @@ private fun getAnimationData(
 
     var distance = Int.MAX_VALUE
 
-    var newSelectorIndex = selectorIndex
+    var globalSelectedIndex = selectedIndex
 
     visibleItems.forEach {
-        val x = abs(it.offset - selectorPosX)
+        val x = (it.offset - selectorPosX - halfItemWidth).absoluteValue
         if (x < distance) {
             distance = x.toInt()
-            newSelectorIndex = it.index
+            globalSelectedIndex = it.index
         }
     }
 
-
     // Index of item in list. If list has 7 item. initially we item index is 3
     // When selector changes we get what it(in infinite list) corresponds to in item list
-    val itemIndex = if (newSelectorIndex > 0) {
-        newSelectorIndex % totalItemCount
+    val itemIndex = if (globalSelectedIndex > 0) {
+        globalSelectedIndex % totalItemCount
     } else {
-        indexOfCenter % totalItemCount
+        indexOfSelector
     }
 
     // Selector index -1 because visibleItems are returned asynchronously because of
-    // that not available on Composition. So we set initial values for these values to not
-    // jump unexpectedly
-    if (newSelectorIndex == -1 && index == Int.MAX_VALUE / 2 + visibleItemCount / 2) {
+    // that they are not in Composition. So we set initial value for selected item to not
+    // jump unexpectedly from unselected to selected value
+    if (globalSelectedIndex == -1 && globalIndex == Int.MAX_VALUE / 2 + indexOfSelector) {
         scale = 1f
         colorScale = 1f
     }
@@ -241,6 +234,23 @@ private fun getAnimationData(
     ) as Int
 
     return AnimationData(
-        scale = scale, color = Color(color), listIndex = newSelectorIndex, itemIndex = itemIndex
+        scale = scale, color = Color(color), listIndex = globalSelectedIndex, itemIndex = itemIndex
     )
+}
+
+private fun calculateScale(
+    distanceToSelector: Float,
+    scaleRegionWidth: Float,
+    lowerBound: Float
+): Float {
+    return if (distanceToSelector < scaleRegionWidth) {
+        // Now item is in scale region. Check where exactly it is in this region for animation
+        val fraction = (scaleRegionWidth - distanceToSelector) / scaleRegionWidth
+        // scale based on lower bound and 1f.
+        // If lower bound .9f and fraction is 50% our scale is .9f + .1f*50/100 = .95f
+        lowerBound + fraction * (1 - lowerBound)
+    } else {
+        lowerBound
+
+    }.coerceIn(lowerBound, 1f)
 }
