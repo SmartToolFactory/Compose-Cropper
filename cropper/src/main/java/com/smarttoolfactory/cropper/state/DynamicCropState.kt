@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper
+package com.smarttoolfactory.cropper.state
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
+import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.util.getDistanceToEdgeFromTouch
 import com.smarttoolfactory.cropper.util.getTouchRegion

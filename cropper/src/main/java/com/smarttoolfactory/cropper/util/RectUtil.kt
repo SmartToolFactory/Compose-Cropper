@@ -8,9 +8,9 @@ import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.CropState
 import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
+import com.smarttoolfactory.cropper.state.CropState
 
 /**
  * Get rectangle of current transformation of [pan], [zoom] and current bounds of the Composable's

@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper
+package com.smarttoolfactory.cropper.state
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange

@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper
+package com.smarttoolfactory.cropper.state
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Stable

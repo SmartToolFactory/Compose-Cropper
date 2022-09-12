@@ -10,6 +10,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.debugInspectorInfo
 import com.smarttoolfactory.cropper.model.CropData
+import com.smarttoolfactory.cropper.state.CropState
+import com.smarttoolfactory.cropper.state.cropData
 import com.smarttoolfactory.cropper.util.ZoomLevel
 import com.smarttoolfactory.cropper.util.getNextZoomLevel
 import com.smarttoolfactory.cropper.util.update

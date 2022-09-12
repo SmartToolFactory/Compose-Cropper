@@ -1,7 +1,7 @@
 package com.smarttoolfactory.cropper.util
 
 import androidx.compose.ui.graphics.GraphicsLayerScope
-import com.smarttoolfactory.cropper.TransformState
+import com.smarttoolfactory.cropper.state.TransformState
 
 /**
  * Calculate zoom level and zoom value when user double taps
