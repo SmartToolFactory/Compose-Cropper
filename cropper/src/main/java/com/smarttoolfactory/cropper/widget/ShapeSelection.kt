@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.smarttoolfactory.cropper.model.AspectRatioModel
 import com.smarttoolfactory.cropper.model.ShapeModel
 
 
@@ -73,7 +74,7 @@ fun ShapeSelection(
 fun ShapeSelection(
     modifier: Modifier = Modifier,
     isSelected: Boolean,
-    shapeModel: ShapeModel
+    aspectRatioModel: AspectRatioModel
 ) {
     Box(
         modifier = modifier
@@ -91,7 +92,7 @@ fun ShapeSelection(
                 .aspectRatio(1f)
                 .drawWithContent {
 
-                    val outline = shapeModel.shape.createOutline(
+                    val outline = aspectRatioModel.shape.createOutline(
                         size = size,
                         layoutDirection = layoutDirection,
                         density = density
@@ -114,7 +115,7 @@ fun ShapeSelection(
                     }
                 }
             )
-            Text(text = shapeModel.title, color = color, fontSize = 14.sp)
+            Text(text = aspectRatioModel.title, color = color, fontSize = 14.sp)
         }
     }
 }

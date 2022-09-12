@@ -8,8 +8,7 @@ import androidx.compose.ui.graphics.Shape
  * for setting overlay in state and UI
  */
 @Immutable
-data class ShapeModel(
-    val title: String,
-    val shape: Shape,
-    val aspectRatio: AspectRatio = AspectRatio.Unspecified
+open class ShapeModel(
+    open val title: String,
+    open val shape: Shape,
 )
