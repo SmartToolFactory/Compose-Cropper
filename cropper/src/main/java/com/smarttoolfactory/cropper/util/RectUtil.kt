@@ -93,12 +93,12 @@ internal fun getOverlayFromAspectRatio(
 
     val aspectRatioValue = aspectRatio.value
 
-    var height = containerWidth * aspectRatioValue
     var width = containerWidth
+    var height = containerWidth / aspectRatioValue
 
     if (height > containerHeight) {
         height = containerHeight
-        width = height / aspectRatioValue
+        width = height * aspectRatioValue
     }
 
     val posX = ((containerWidth - width) / 2)
