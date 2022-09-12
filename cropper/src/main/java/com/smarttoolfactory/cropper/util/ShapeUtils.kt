@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.LayoutDirection
+import com.smarttoolfactory.cropper.model.AspectRatio
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -45,13 +46,16 @@ fun createPolygonPath(cx: Float, cy: Float, sides: Int, radius: Float): Path {
 /**
  * Creates a [Rect] shape with given aspect ratio.
  */
-fun createRectShape(aspectRatio: Float): GenericShape {
+fun createRectShape(aspectRatio: AspectRatio): GenericShape {
     return GenericShape { size: Size, _: LayoutDirection ->
+        val value = aspectRatio.value
 
         val width = size.width
         val height = size.height
-        val shapeSize = if (aspectRatio > 1) Size(width = width, height = width / aspectRatio)
-        else Size(width = height * aspectRatio, height = height)
+        val shapeSize =
+            if (aspectRatio == AspectRatio.Unspecified) Size(width, height)
+            else if (value > 1) Size(width = width, height = width / value)
+            else Size(width = height * value, height = height)
 
         addRect(Rect(offset = Offset.Zero, size = shapeSize))
     }
