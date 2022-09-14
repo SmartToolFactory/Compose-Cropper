@@ -21,7 +21,8 @@ internal fun DrawingOverlay(
     modifier: Modifier,
     rect: Rect,
     drawGrid: Boolean,
-    color: Color,
+    overlayColor: Color,
+    handleColor: Color,
     strokeWidth: Dp,
     drawHandles: Boolean,
     handleSize: Float
@@ -76,18 +77,18 @@ internal fun DrawingOverlay(
         drawRect(
             topLeft = rect.topLeft,
             size = rect.size,
-            color = color,
+            color = overlayColor,
             style = Stroke(width = strokeWidthPx)
         )
 
         if (drawGrid) {
-            drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = color)
+            drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = overlayColor)
         }
 
         if (drawHandles) {
             drawPath(
                 path = path,
-                color = color,
+                color = handleColor,
                 style = Stroke(strokeWidthPx * 2)
             )
         }

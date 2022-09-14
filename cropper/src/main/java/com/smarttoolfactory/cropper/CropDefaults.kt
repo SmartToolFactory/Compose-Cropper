@@ -84,5 +84,6 @@ data class CropStyle internal constructor(
     val drawOverlay: Boolean = true,
     val drawGrid: Boolean = true,
     val strokeWidth: Dp = 2.dp,
-    val overlayColor: Color = Color.White
+    val overlayColor: Color = Color.White,
+    val handleColor: Color = Color.White
 )
