@@ -3,6 +3,9 @@ package com.smarttoolfactory.cropper
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.model.AspectRatio
@@ -62,12 +65,14 @@ data class CropProperties internal constructor(
     val cropType: CropType = CropType.Dynamic,
     val handleSize: Dp = 30.dp,
     val minOverlaySize: Dp = 70.dp,
-    val maxZoom: Float = 10f,
     val aspectRatio: AspectRatio = AspectRatio.Unspecified,
+    val contentScale: ContentScale = ContentScale.Fit,
+    val shape: Shape = RectangleShape,
     val fling: Boolean = false,
-    val zoomable: Boolean = true,
     val pannable: Boolean = true,
-    val rotatable: Boolean = false
+    val rotatable: Boolean = false,
+    val zoomable: Boolean = true,
+    val maxZoom: Float = 10f,
 )
 
 /**
