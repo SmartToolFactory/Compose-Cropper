@@ -53,8 +53,14 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
 
+    // Colorful Customizable Sliders
+    implementation 'com.github.SmartToolFactory:Compose-Colorful-Sliders:1.1.0'
+    // Color picker
+    implementation 'com.github.SmartToolFactory:Compose-Color-Picker-Bundle:1.0.0'
+    // Gestures
     implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:2.0.0'
 
+    // Snapper for lazy lists
     implementation "dev.chrisbanes.snapper:snapper:0.3.0"
 
     implementation "androidx.compose.ui:ui:$compose_version"
