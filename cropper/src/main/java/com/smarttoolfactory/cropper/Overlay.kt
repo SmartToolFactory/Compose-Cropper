@@ -73,8 +73,15 @@ internal fun DrawingOverlay(
             restoreToCount(checkPoint)
         }
 
+        drawRect(
+            topLeft = rect.topLeft,
+            size = rect.size,
+            color = color,
+            style = Stroke(width = strokeWidthPx)
+        )
+
         if (drawGrid) {
-            drawGrid(rect = rect, strokeWidth = strokeWidth / 2, color = color)
+            drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = color)
         }
 
         if (drawHandles) {
