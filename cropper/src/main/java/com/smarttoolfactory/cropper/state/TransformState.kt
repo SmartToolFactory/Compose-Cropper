@@ -30,7 +30,7 @@ open class TransformState(
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
     minZoom: Float = 1f,
-    maxZoom: Float = 5f,
+    maxZoom: Float = 10f,
     internal val zoomable: Boolean = true,
     internal val pannable: Boolean = true,
     internal val rotatable: Boolean = true,

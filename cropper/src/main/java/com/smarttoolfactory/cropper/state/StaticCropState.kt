@@ -12,7 +12,6 @@ import kotlinx.coroutines.coroutineScope
  *
  * @param imageSize size of the **Bitmap**
  * @param containerSize size of the Composable that draws **Bitmap**
- * @param minZoom minimum zoom value
  * @param maxZoom maximum zoom value
  * @param fling when set to true dragging pointer builds up velocity. When last
  * pointer leaves Composable a movement invoked against friction till velocity drops below
@@ -27,7 +26,6 @@ class StaticCropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
     aspectRatio: AspectRatio,
-    minZoom: Float = 1f,
     maxZoom: Float = 5f,
     fling: Boolean = false,
     zoomable: Boolean = true,
@@ -38,7 +36,6 @@ class StaticCropState internal constructor(
     imageSize = imageSize,
     containerSize = containerSize,
     aspectRatio = aspectRatio,
-    minZoom = minZoom,
     maxZoom = maxZoom,
     fling = fling,
     moveToBounds = true,

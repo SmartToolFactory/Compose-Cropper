@@ -32,7 +32,6 @@ val CropState.cropData: CropData
  * rotation values and animations via [TransformState], fling and moving back to bounds animations.
  * @param imageSize size of the **Bitmap**
  * @param containerSize size of the Composable that draws **Bitmap**
- * @param minZoom minimum zoom value
  * @param maxZoom maximum zoom value
  * @param fling when set to true dragging pointer builds up velocity. When last
  * pointer leaves Composable a movement invoked against friction till velocity drops below
@@ -49,7 +48,6 @@ abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
     aspectRatio: AspectRatio,
-    minZoom: Float ,
     maxZoom: Float,
     val fling: Boolean = true,
     val moveToBounds: Boolean = true,
@@ -62,7 +60,6 @@ abstract class CropState internal constructor(
     containerSize = containerSize,
     initialZoom = 1f,
     initialRotation = 0f,
-    minZoom = minZoom,
     maxZoom = maxZoom,
     zoomable = zoomable,
     pannable = pannable,

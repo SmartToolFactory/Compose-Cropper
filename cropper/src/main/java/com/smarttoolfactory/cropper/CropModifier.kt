@@ -147,7 +147,7 @@ fun Modifier.crop(
 internal val CropState.DefaultOnDoubleTap: (ZoomLevel) -> Float
     get() = { zoomLevel: ZoomLevel ->
         when (zoomLevel) {
-            ZoomLevel.Min -> 1f.coerceAtMost(zoomMin)
+            ZoomLevel.Min -> 1f
             ZoomLevel.Mid -> 3f.coerceIn(zoomMin, zoomMax)
             ZoomLevel.Max -> 5f.coerceAtLeast(zoomMax)
         }
