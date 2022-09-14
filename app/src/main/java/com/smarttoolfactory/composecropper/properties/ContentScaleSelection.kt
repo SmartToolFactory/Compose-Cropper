@@ -1,4 +1,4 @@
-package com.smarttoolfactory.composecropper
+package com.smarttoolfactory.composecropper.properties
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +18,7 @@ val contentScaleOptions =
     listOf("None", "Fit", "Crop", "FillBounds", "FillWidth", "FillHeight", "Inside")
 
 @Composable
-fun ContentScaleSelectionMenu(
+fun ContentScaleSelection(
     contentScale: ContentScale,
     onContentScaleChanged: (ContentScale) -> Unit
 ) {
