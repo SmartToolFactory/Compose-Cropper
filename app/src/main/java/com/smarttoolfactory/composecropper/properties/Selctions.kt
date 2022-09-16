@@ -1,5 +1,6 @@
 package com.smarttoolfactory.composecropper.properties
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
@@ -29,7 +31,8 @@ internal fun SliderSelection(
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
     colors: MaterialSliderColors = MaterialSliderDefaults.materialColors(
-        activeTrackColor = SliderBrushColor(MaterialTheme.colorScheme.primary)
+        activeTrackColor = SliderBrushColor(MaterialTheme.colorScheme.primary),
+        inactiveTrackColor = SliderBrushColor(Color.Transparent)
     )
 ) {
     ColorfulSlider(
@@ -38,8 +41,9 @@ internal fun SliderSelection(
         onValueChange = onValueChange,
         valueRange = valueRange,
         colors = colors,
-        trackHeight = 8.dp,
-        thumbRadius = 14.dp
+        borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+        trackHeight = 14.dp,
+        thumbRadius = 12.dp
     )
 }
 
