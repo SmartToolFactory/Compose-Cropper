@@ -4,27 +4,27 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
-import com.smarttoolfactory.cropper.model.CropData
-import com.smarttoolfactory.cropper.util.getInitialCropRect
+import com.smarttoolfactory.cropper.state.rememberCropState
 
 @Composable
 fun ImageCropper(
     modifier: Modifier = Modifier,
     imageBitmap: ImageBitmap,
-    contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String?,
     cropStyle: CropStyle = CropDefaults.style(),
     cropProperties: CropProperties = CropDefaults.properties(),
@@ -34,8 +34,8 @@ fun ImageCropper(
 ) {
 
     ImageWithConstraints(
-        modifier = modifier,
-        contentScale = contentScale,
+        modifier = modifier.clipToBounds(),
+        contentScale = cropProperties.contentScale,
         contentDescription = contentDescription,
         filterQuality = filterQuality,
         imageBitmap = imageBitmap,
@@ -50,7 +50,7 @@ fun ImageCropper(
                 imageHeight = imageHeight,
                 rect = rect,
                 bitmap = imageBitmap,
-                contentScale = contentScale,
+                contentScale = cropProperties.contentScale,
             )
 
         // Bitmap Dimensions
@@ -67,6 +67,8 @@ fun ImageCropper(
         }
 
         val aspectRatio = cropProperties.aspectRatio
+        val cropType = cropProperties.cropType
+        val contentScale = cropProperties.contentScale
 
         // these keys are for resetting cropper when image width/height, contentScale or
         // overlay aspect ratio changes
@@ -75,9 +77,17 @@ fun ImageCropper(
             imageWidthInPx,
             imageHeightInPx,
             contentScale,
+            cropType,
             aspectRatio
         ) {
-            arrayOf(scaledImageBitmap, imageWidthInPx, imageHeightInPx, contentScale, aspectRatio)
+            arrayOf(
+                scaledImageBitmap,
+                imageWidthInPx,
+                imageHeightInPx,
+                contentScale,
+                cropType,
+                aspectRatio
+            )
         }
 
         val cropState = rememberCropState(
@@ -92,22 +102,7 @@ fun ImageCropper(
          * one that draws on screen. We might have 4000x3000 rect while we
          * draw 1000x750px Composable on screen
          */
-        var rectCrop by remember(
-            bitmapWidth,
-            bitmapHeight,
-            imageWidthInPx,
-            imageHeightInPx
-        ) {
-            mutableStateOf(
-                getInitialCropRect(
-                    bitmapWidth,
-                    bitmapHeight,
-                    imageWidthInPx.toInt(),
-                    imageHeightInPx.toInt(),
-                    cropState.overlayRect
-                )
-            )
-        }
+        val rectCrop = cropState.cropRect
 
         LaunchedEffect(crop) {
             if (crop) {
@@ -123,21 +118,11 @@ fun ImageCropper(
             }
         }
 
-
         val imageModifier = Modifier
             .size(imageWidth, imageHeight)
             .crop(
                 keys = resetKeys,
-                cropState = cropState,
-                onGestureStart = { cropData: CropData ->
-                    rectCrop = cropData.cropRect
-                },
-                onGesture = { cropData: CropData ->
-                    rectCrop = cropData.cropRect
-                },
-                onGestureEnd = { cropData: CropData ->
-                    rectCrop = cropData.cropRect
-                }
+                cropState = cropState
             )
 
         Box {
@@ -146,7 +131,7 @@ fun ImageCropper(
                 imageBitmap = scaledImageBitmap,
                 containerWidth = imageWidth,
                 containerHeight = imageHeight,
-                cropType = cropProperties.cropType,
+                cropType = cropType,
                 handleSize = cropProperties.handleSize,
                 cropStyle = cropStyle,
                 rectOverlay = cropState.overlayRect
@@ -183,23 +168,25 @@ private fun CropperImpl(
 
         val drawOverlay = cropStyle.drawOverlay
 
-        if (drawOverlay) {
-            val drawGrid = cropStyle.drawGrid
-            val color = cropStyle.overlayColor
-            val drawHandles = cropType == CropType.Dynamic
-            val strokeWidth = cropStyle.strokeWidth
+        val drawGrid = cropStyle.drawGrid
+        val overlayColor = cropStyle.overlayColor
+        val handleColor = cropStyle.handleColor
+        val drawHandles = cropType == CropType.Dynamic
+        val strokeWidth = cropStyle.strokeWidth
 
-            val handleSizeInPx = LocalDensity.current.run { handleSize.toPx() }
+        val handleSizeInPx = LocalDensity.current.run { handleSize.toPx() }
 
-            DrawingOverlay(
-                modifier = Modifier.size(containerWidth, containerHeight),
-                rect = rectOverlay,
-                drawGrid = drawGrid,
-                color = color,
-                strokeWidth = strokeWidth,
-                drawHandles = drawHandles,
-                handleSize = handleSizeInPx
-            )
-        }
+        DrawingOverlay(
+            modifier = Modifier.size(containerWidth, containerHeight),
+            drawOverlay = drawOverlay,
+            rect = rectOverlay,
+            drawGrid = drawGrid,
+            overlayColor = overlayColor,
+            handleColor = handleColor,
+            strokeWidth = strokeWidth,
+            drawHandles = drawHandles,
+            handleSize = handleSizeInPx
+        )
+
     }
 }
