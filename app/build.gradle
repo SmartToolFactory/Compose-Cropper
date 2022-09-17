@@ -59,6 +59,8 @@ dependencies {
     implementation 'com.github.SmartToolFactory:Compose-Color-Picker-Bundle:1.0.1'
     // Gestures
     implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:2.1.0'
+    // Animated List
+    implementation 'com.github.SmartToolFactory:Compose-AnimatedList:0.5.1'
 
     // Snapper for lazy lists
     implementation "dev.chrisbanes.snapper:snapper:0.3.0"
