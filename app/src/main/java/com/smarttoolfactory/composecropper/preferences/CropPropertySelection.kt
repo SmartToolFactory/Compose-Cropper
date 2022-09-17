@@ -2,7 +2,10 @@ package com.smarttoolfactory.composecropper.preferences
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.CropProperties
@@ -10,7 +13,6 @@ import com.smarttoolfactory.cropper.CropType
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.AspectRatioModel
 import com.smarttoolfactory.cropper.model.aspectRatios
-import com.smarttoolfactory.cropper.widget.AspectRatioSelectionList
 import kotlin.math.roundToInt
 
 
@@ -36,6 +38,13 @@ internal fun CropPropertySelectionMenu(
         }
     )
 
+    Title("Content Scale")
+    ContentScaleDialogSelection(contentScale) {
+        onCropPropertiesChange(
+            cropProperties.copy(contentScale = it)
+        )
+    }
+
     Title("Aspect Ratio")
     AspectRatioSelection(
         aspectRatio = aspectRatio,
@@ -46,15 +55,8 @@ internal fun CropPropertySelectionMenu(
         }
     )
 
-    Title("Content Scale")
-    ContentScaleDialogSelection(contentScale) {
-        onCropPropertiesChange(
-            cropProperties.copy(contentScale = it)
-        )
-    }
-
     // Handle size and overlay size applies only to Dynamic crop
-    if(cropType == CropType.Dynamic){
+    if (cropType == CropType.Dynamic) {
         Title("Handle Size")
         DpSliderSelection(
             value = handleSize,
@@ -134,15 +136,19 @@ internal fun AspectRatioSelection(
     aspectRatio: AspectRatio,
     onAspectRatioChange: (AspectRatioModel) -> Unit
 ) {
-    val aspectRatios = aspectRatios
-    val indexOf = aspectRatios.firstOrNull { it.aspectRatio.value == aspectRatio.value } ?: 0
 
+    val initialSelectedIndex = remember {
+        val aspectRatios = aspectRatios
+        val aspectRatioModel = aspectRatios.first { it.aspectRatio.value == aspectRatio.value }
+        aspectRatios.indexOf(aspectRatioModel)
+    }
 
-    AspectRatioSelectionList(
-        onSelectedItemChange = {
-            onAspectRatioChange(aspectRatios[it])
-        }
-    )
+    AnimatedAspectRatioSelection(
+        modifier = Modifier.fillMaxWidth(),
+        initialSelectedIndex = initialSelectedIndex
+    ) {
+        onAspectRatioChange(it)
+    }
 }
 
 @Composable

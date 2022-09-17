@@ -29,7 +29,6 @@ fun ShapeSelection(
 ) {
     Box(
         modifier = modifier
-            .shadow(1.dp, RoundedCornerShape(8.dp))
             .background(Color.White)
             .padding(4.dp)
     ) {
