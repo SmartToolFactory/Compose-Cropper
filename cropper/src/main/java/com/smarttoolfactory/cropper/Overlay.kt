@@ -19,6 +19,7 @@ import kotlin.math.roundToInt
 @Composable
 internal fun DrawingOverlay(
     modifier: Modifier,
+    drawOverlay:Boolean,
     rect: Rect,
     drawGrid: Boolean,
     overlayColor: Color,
@@ -28,7 +29,7 @@ internal fun DrawingOverlay(
     handleSize: Float
 ) {
 
-    val path = remember(rect) {
+    val path = remember(rect, handleSize) {
         Path().apply {
 
             if (rect != Rect.Zero) {
@@ -74,23 +75,25 @@ internal fun DrawingOverlay(
             restoreToCount(checkPoint)
         }
 
-        drawRect(
-            topLeft = rect.topLeft,
-            size = rect.size,
-            color = overlayColor,
-            style = Stroke(width = strokeWidthPx)
-        )
-
-        if (drawGrid) {
-            drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = overlayColor)
-        }
-
-        if (drawHandles) {
-            drawPath(
-                path = path,
-                color = handleColor,
-                style = Stroke(strokeWidthPx * 2)
+        if(drawOverlay){
+            drawRect(
+                topLeft = rect.topLeft,
+                size = rect.size,
+                color = overlayColor,
+                style = Stroke(width = strokeWidthPx)
             )
+
+            if (drawGrid) {
+                drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = overlayColor)
+            }
+
+            if (drawHandles) {
+                drawPath(
+                    path = path,
+                    color = handleColor,
+                    style = Stroke(strokeWidthPx * 2)
+                )
+            }
         }
     }
 }
