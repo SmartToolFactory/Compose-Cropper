@@ -1,4 +1,4 @@
-package com.smarttoolfactory.composecropper.properties
+package com.smarttoolfactory.composecropper.preferences
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -13,9 +13,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,6 +25,31 @@ import com.smarttoolfactory.slider.ColorfulSlider
 import com.smarttoolfactory.slider.MaterialSliderColors
 import com.smarttoolfactory.slider.MaterialSliderDefaults
 import com.smarttoolfactory.slider.SliderBrushColor
+
+@Composable
+internal fun DpSliderSelection(
+    value: Dp,
+    onValueChange: (Dp) -> Unit,
+    lowerBound: Dp,
+    upperBound: Dp
+) {
+
+    val density = LocalDensity.current
+    val strokeWidthPx = density.run { value.toPx() }
+    val lowerBoundPx = density.run { lowerBound.toPx() }
+    val upperBoundPx = density.run { upperBound.toPx() }
+
+    SliderSelection(
+        value = strokeWidthPx,
+        onValueChange = {
+            onValueChange(
+                density.run { it.toDp() }
+            )
+        },
+        valueRange = lowerBoundPx..upperBoundPx
+    )
+}
+
 
 @Composable
 internal fun SliderSelection(
@@ -41,9 +68,9 @@ internal fun SliderSelection(
         onValueChange = onValueChange,
         valueRange = valueRange,
         colors = colors,
-        borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-        trackHeight = 14.dp,
-        thumbRadius = 12.dp
+        borderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+        trackHeight = 11.dp,
+        thumbRadius = 14.dp
     )
 }
 
@@ -69,7 +96,7 @@ internal fun FullRowSwitch(
     onStateChange: (Boolean) -> Unit
 ) {
 
-    // Checkbox with text on right side
+    // Switch with text on right side
     Row(modifier = Modifier
         .fillMaxWidth()
         .clickable(
@@ -107,7 +134,6 @@ internal fun DialogWithMultipleSelection(
     }
 
     AlertDialog(
-        modifier = Modifier.padding(vertical = 8.dp),
         onDismissRequest = { onDismiss() },
         title = {
             Text(
@@ -131,7 +157,7 @@ internal fun DialogWithMultipleSelection(
                                 onClick = { onOptionSelected(index) },
                                 role = Role.RadioButton
                             )
-                            .padding(vertical = 8.dp),
+                            .padding(horizontal = 4.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
@@ -147,22 +173,29 @@ internal fun DialogWithMultipleSelection(
                 }
             }
         },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onConfirm(selectedOption)
-                }
+
+        buttons = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(text = "Confirm")
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = {
-                    onDismiss()
+                Button(
+                    onClick = {
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = "Dismiss")
                 }
-            ) {
-                Text(text = "Dismiss")
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        onConfirm(selectedOption)
+                    }
+                ) {
+                    Text(text = "Confirm")
+                }
             }
         }
     )

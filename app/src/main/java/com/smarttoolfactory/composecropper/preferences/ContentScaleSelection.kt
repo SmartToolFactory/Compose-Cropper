@@ -1,4 +1,4 @@
-package com.smarttoolfactory.composecropper.properties
+package com.smarttoolfactory.composecropper.preferences
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -52,7 +52,7 @@ internal fun ContentScaleDialogSelection(
             onDismiss = { showDialog = false },
             onConfirm = {
 
-                val scale = when (index) {
+                val scale = when (it) {
                     0 -> ContentScale.None
                     1 -> ContentScale.Fit
                     2 -> ContentScale.Crop

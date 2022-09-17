@@ -47,6 +47,11 @@ fun AspectRatioSelectionList(
     // Index of center  in circular list
     val indexOfCenter = Int.MAX_VALUE / 2 + visibleItemCount / 2
 
+
+    var currentIndex by remember {
+        mutableStateOf(indexOfCenter % aspectRatios.size)
+    }
+
     // number of items
     val totalItemCount = aspectRatios.size
 
@@ -92,7 +97,10 @@ fun AspectRatioSelectionList(
                         val itemIndex = animationData.itemIndex
                         selectedIndex = animationData.listIndex
 
-                        onSelectedItemChange(itemIndex)
+                        if (itemIndex != currentIndex) {
+                            onSelectedItemChange(itemIndex)
+                            currentIndex = itemIndex
+                        }
                         animationData
                     }
                 }
