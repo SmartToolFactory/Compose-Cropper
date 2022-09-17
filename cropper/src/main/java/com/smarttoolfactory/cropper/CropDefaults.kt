@@ -19,7 +19,6 @@ object CropDefaults {
     fun properties(
         cropType: CropType = CropType.Dynamic,
         handleSize: Dp = 30.dp,
-        minOverlaySize: Dp = 70.dp,
         maxZoom: Float = 5f,
         aspectRatio: AspectRatio = AspectRatio.Unspecified,
         fling: Boolean = false,
@@ -30,7 +29,6 @@ object CropDefaults {
         return CropProperties(
             cropType = cropType,
             handleSize = handleSize,
-            minOverlaySize = minOverlaySize,
             maxZoom = maxZoom,
             aspectRatio = aspectRatio,
             fling = fling,
@@ -57,14 +55,13 @@ object CropDefaults {
 
 /**
  * Data class for selecting cropper properties. Fields of this class control inner work
- * of [CropState] while some such as [cropType], [aspectRatio], [handleSize], and [minOverlaySize]
+ * of [CropState] while some such as [cropType], [aspectRatio], [handleSize]
  * is shared between ui and state.
  */
 @Immutable
 data class CropProperties internal constructor(
     val cropType: CropType = CropType.Dynamic,
     val handleSize: Dp = 30.dp,
-    val minOverlaySize: Dp = 70.dp,
     val aspectRatio: AspectRatio = AspectRatio.Unspecified,
     val contentScale: ContentScale = ContentScale.Fit,
     val shape: Shape = RectangleShape,
