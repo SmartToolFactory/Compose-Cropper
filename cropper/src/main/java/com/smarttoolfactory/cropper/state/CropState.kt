@@ -23,6 +23,7 @@ import com.smarttoolfactory.cropper.CropType
 fun rememberCropState(
     imageSize: IntSize,
     containerSize: IntSize,
+    drawAreaSize: IntSize,
     cropProperties: CropProperties,
     vararg keys: Any?
 ): CropState {

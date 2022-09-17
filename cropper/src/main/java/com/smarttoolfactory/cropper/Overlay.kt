@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.util.drawGrid
 import kotlin.math.roundToInt
@@ -104,7 +105,9 @@ internal fun DrawingOverlay(
 @Composable
 internal fun ImageOverlay(
     modifier: Modifier,
-    imageBitmap: ImageBitmap
+    imageBitmap: ImageBitmap,
+    imageWidth: Int,
+    imageHeight: Int
 ) {
     Canvas(modifier = modifier) {
 
@@ -114,7 +117,11 @@ internal fun ImageOverlay(
         drawImage(
             image = imageBitmap,
             srcSize = IntSize(imageBitmap.width, imageBitmap.height),
-            dstSize = IntSize(canvasWidth, canvasHeight)
+            dstSize = IntSize(imageWidth, imageHeight),
+            dstOffset = IntOffset(
+                x = (canvasWidth - imageWidth) / 2,
+                y = (canvasHeight - imageHeight) / 2
+            )
         )
     }
 }

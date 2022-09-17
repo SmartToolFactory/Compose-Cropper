@@ -53,17 +53,26 @@ fun ImageCropper(
                 contentScale = cropProperties.contentScale,
             )
 
+        // Container Dimensions
+        val containerWidthPx = constraints.maxWidth
+        val containerHeightPx = constraints.maxHeight
+
         // Bitmap Dimensions
         val bitmapWidth = scaledImageBitmap.width
         val bitmapHeight = scaledImageBitmap.height
 
         // Dimensions of Composable that displays Bitmap
-        val imageWidthInPx: Float
-        val imageHeightInPx: Float
+        val imageWidthPx: Int
+        val imageHeightPx: Int
+
+        val containerWidth: Dp
+        val containerHeight: Dp
 
         with(LocalDensity.current) {
-            imageWidthInPx = imageWidth.toPx()
-            imageHeightInPx = imageHeight.toPx()
+            imageWidthPx = imageWidth.roundToPx()
+            imageHeightPx = imageHeight.roundToPx()
+            containerWidth = containerWidthPx.toDp()
+            containerHeight = containerHeightPx.toDp()
         }
 
         val aspectRatio = cropProperties.aspectRatio
@@ -74,16 +83,16 @@ fun ImageCropper(
         // overlay aspect ratio changes
         val resetKeys = remember(
             scaledImageBitmap,
-            imageWidthInPx,
-            imageHeightInPx,
+            imageWidthPx,
+            imageHeightPx,
             contentScale,
             cropType,
             aspectRatio
         ) {
             arrayOf(
                 scaledImageBitmap,
-                imageWidthInPx,
-                imageHeightInPx,
+                imageWidthPx,
+                imageHeightPx,
                 contentScale,
                 cropType,
                 aspectRatio
@@ -92,7 +101,8 @@ fun ImageCropper(
 
         val cropState = rememberCropState(
             imageSize = IntSize(bitmapWidth, bitmapHeight),
-            containerSize = IntSize(imageWidthInPx.toInt(), imageHeightInPx.toInt()),
+            containerSize = IntSize(imageWidthPx, imageHeightPx),
+            drawAreaSize = IntSize(containerWidthPx, containerHeightPx),
             cropProperties = cropProperties,
             keys = resetKeys
         )
@@ -119,7 +129,7 @@ fun ImageCropper(
         }
 
         val imageModifier = Modifier
-            .size(imageWidth, imageHeight)
+            .size(containerWidth, containerHeight)
             .crop(
                 keys = resetKeys,
                 cropState = cropState
@@ -129,8 +139,10 @@ fun ImageCropper(
             CropperImpl(
                 modifier = imageModifier,
                 imageBitmap = scaledImageBitmap,
-                containerWidth = imageWidth,
-                containerHeight = imageHeight,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                imageWidthPx = imageWidthPx,
+                imageHeightPx = imageHeightPx,
                 cropType = cropType,
                 handleSize = cropProperties.handleSize,
                 cropStyle = cropStyle,
@@ -142,7 +154,7 @@ fun ImageCropper(
                 modifier = Modifier.align(Alignment.BottomStart),
                 color = Color.White,
                 fontSize = 10.sp,
-                text = "imageWidthInPx: $imageWidthInPx, imageHeightInPx: $imageHeightInPx\n" +
+                text = "imageWidthInPx: $imageWidthPx, imageHeightInPx: $imageHeightPx\n" +
                         "bitmapWidth: $bitmapWidth, bitmapHeight: $bitmapHeight\n" +
                         "cropRect: $rectCrop, size: ${rectCrop.size}\n" +
                         "drawRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}"
@@ -157,14 +169,23 @@ private fun CropperImpl(
     imageBitmap: ImageBitmap,
     containerWidth: Dp,
     containerHeight: Dp,
+    imageWidthPx: Int,
+    imageHeightPx: Int,
     cropType: CropType,
     handleSize: Dp,
     cropStyle: CropStyle,
     rectOverlay: Rect
 ) {
 
-    Box {
-        ImageOverlay(modifier = modifier, imageBitmap = imageBitmap)
+    Box(contentAlignment = Alignment.Center) {
+
+        // Draw Image
+        ImageOverlay(
+            modifier = modifier,
+            imageBitmap = imageBitmap,
+            imageWidth = imageWidthPx,
+            imageHeight = imageHeightPx
+        )
 
         val drawOverlay = cropStyle.drawOverlay
 
