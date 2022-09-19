@@ -66,7 +66,7 @@ internal fun CropPropertySelectionMenu(
                 )
             },
             lowerBound = 10.dp,
-            upperBound = 60.dp
+            upperBound = 50.dp
         )
     }
 }

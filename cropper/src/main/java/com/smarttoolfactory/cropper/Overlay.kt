@@ -91,7 +91,11 @@ internal fun DrawingOverlay(
                 drawPath(
                     path = path,
                     color = handleColor,
-                    style = Stroke(strokeWidthPx * 2)
+                    style = Stroke(
+                        width=strokeWidthPx * 2,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
                 )
             }
         }
