@@ -72,9 +72,9 @@ fun Modifier.crop(
                     coroutineScope.launch {
                         cropState.onGesture(
                             centroid = centroid,
-                            pan = pan,
-                            zoom = zoom,
-                            rotation = rotate,
+                            panChange = pan,
+                            zoomChange = zoom,
+                            rotationChange = rotate,
                             mainPointer = mainPointer,
                             changes = pointerList
                         )

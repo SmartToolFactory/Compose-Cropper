@@ -53,6 +53,7 @@ fun rememberCropState(
                 StaticCropState(
                     imageSize = imageSize,
                     containerSize = containerSize,
+                    drawAreaSize = drawAreaSize,
                     aspectRatio = aspectRatio,
                     maxZoom = maxZoom,
                     fling = fling,
@@ -67,6 +68,7 @@ fun rememberCropState(
                 DynamicCropState(
                     imageSize = imageSize,
                     containerSize = containerSize,
+                    drawAreaSize = drawAreaSize,
                     aspectRatio = aspectRatio,
                     maxZoom = maxZoom,
                     handleSize = handleSizeInPx,
