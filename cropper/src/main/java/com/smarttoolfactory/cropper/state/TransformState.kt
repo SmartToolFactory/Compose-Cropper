@@ -3,6 +3,8 @@ package com.smarttoolfactory.cropper.state
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -11,7 +13,6 @@ import kotlinx.coroutines.launch
  * State of the pan, zoom and rotation. Allows to change zoom, pan via [Animatable]
  * objects' [Animatable.animateTo], [Animatable.snapTo].
  * @param imageSize size of the **Bitmap**
- * @param containerSize size of the Composable that draws **Bitmap**
  * @param initialZoom initial zoom level
  * @param initialRotation initial angle in degrees
  * @param minZoom minimum zoom
@@ -26,7 +27,8 @@ import kotlinx.coroutines.launch
 @Stable
 open class TransformState(
     internal val imageSize: IntSize,
-    internal val containerSize: IntSize,
+    val containerSize: IntSize,
+    val drawAreaSize: IntSize,
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
     minZoom: Float = 1f,
@@ -37,6 +39,14 @@ open class TransformState(
     internal val limitPan: Boolean = false
 ) {
 
+    var drawAreaRect: Rect = Rect(
+        offset = Offset(
+            x = ((containerSize.width - drawAreaSize.width) / 2).toFloat(),
+            y = ((containerSize.height - drawAreaSize.height) / 2).toFloat()
+        ),
+        size = Size(drawAreaSize.width.toFloat(), drawAreaSize.height.toFloat())
+    )
+
     internal val zoomMin = minZoom.coerceAtLeast(.5f)
     internal val zoomMax = maxZoom.coerceAtLeast(1f)
     private val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
@@ -46,7 +56,6 @@ open class TransformState(
     internal val animatablePanY = Animatable(0f)
     internal val animatableZoom = Animatable(zoomInitial)
     internal val animatableRotation = Animatable(rotationInitial)
-
 
     init {
         animatableZoom.updateBounds(zoomMin, zoomMax)
@@ -79,22 +88,6 @@ open class TransformState(
         animatablePanY.updateBounds(lowerBound?.y, upperBound?.y)
     }
 
-    /**
-     * Get bounds of Composables that can be panned based on zoom level
-     * @param size is size of Composable that this modifier is applied to.
-     */
-    internal open fun getBounds(size: IntSize): Offset {
-        val maxX = (size.width * (zoom - 1) / 2f).coerceAtLeast(0f)
-        val maxY = (size.height * (zoom - 1) / 2f).coerceAtLeast(0f)
-        return Offset(maxX, maxY)
-    }
-
-    /**
-     * Get bounds of Composables that can be panned based on zoom level using [containerSize]
-     */
-    internal open fun getBounds(): Offset {
-        return getBounds(containerSize)
-    }
 
     /**
      * Update centroid, pan, zoom and rotation of this state when transform gestures are
@@ -118,15 +111,40 @@ open class TransformState(
 
         if (pannable) {
             val newPan = this.pan + panChange.times(this.zoom)
-            val boundPan = limitPan && !rotatable
-
-            if (boundPan) {
-                val bound = getBounds(containerSize)
-                updateBounds(bound.times(-1f), bound)
-            }
             snapPanXto(newPan.x)
             snapPanYto(newPan.y)
         }
+
+        updateImageDrawAreaRect()
+    }
+
+    /**
+     * Update rectangle for area that image is drawn. This rect changes when zoom and
+     * pan changes and position of image changes on screen as result of transformation
+     */
+    private fun updateImageDrawAreaRect(){
+        val containerWidth = containerSize.width
+        val containerHeight = containerSize.height
+
+        val originalDrawWidth = drawAreaSize.width
+        val originalDrawHeight = drawAreaSize.height
+
+        val panX = pan.x
+        val panY = pan.y
+
+        val left = (containerWidth - originalDrawWidth) / 2
+        val top = (containerHeight - originalDrawHeight) / 2
+
+        val newWidth = originalDrawWidth * zoom
+        val newHeight = originalDrawHeight * zoom
+
+        drawAreaRect = Rect(
+            offset = Offset(
+                left - (newWidth - originalDrawWidth) / 2 + panX,
+                top - (newHeight - originalDrawHeight) / 2 + panY,
+            ),
+            size = Size(newWidth, newHeight)
+        )
     }
 
     /**
