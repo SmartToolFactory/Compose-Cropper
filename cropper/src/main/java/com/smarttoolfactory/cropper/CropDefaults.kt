@@ -18,9 +18,11 @@ object CropDefaults {
 
     fun properties(
         cropType: CropType = CropType.Dynamic,
-        handleSize: Dp = 30.dp,
-        maxZoom: Float = 5f,
+        handleSize: Dp = 20.dp,
+        maxZoom: Float = 10f,
         aspectRatio: AspectRatio = AspectRatio.Unspecified,
+        contentScale: ContentScale = ContentScale.Fit,
+        shape: Shape = RectangleShape,
         fling: Boolean = false,
         zoomable: Boolean = true,
         pannable: Boolean = true,
@@ -29,6 +31,8 @@ object CropDefaults {
         return CropProperties(
             cropType = cropType,
             handleSize = handleSize,
+            contentScale = contentScale,
+            shape = shape,
             maxZoom = maxZoom,
             aspectRatio = aspectRatio,
             fling = fling,
@@ -41,14 +45,16 @@ object CropDefaults {
     fun style(
         drawOverlay: Boolean = true,
         drawGrid: Boolean = true,
-        strokeWidth: Dp = 2.dp,
-        overlayColor: Color = Color.White
+        strokeWidth: Dp = 1.dp,
+        overlayColor: Color = Color.DarkGray,
+        handleColor: Color = Color.White
     ): CropStyle {
         return CropStyle(
             drawOverlay = drawOverlay,
             drawGrid = drawGrid,
             strokeWidth = strokeWidth,
-            overlayColor = overlayColor
+            overlayColor = overlayColor,
+            handleColor = handleColor
         )
     }
 }
@@ -60,16 +66,16 @@ object CropDefaults {
  */
 @Immutable
 data class CropProperties internal constructor(
-    val cropType: CropType = CropType.Dynamic,
-    val handleSize: Dp = 30.dp,
-    val aspectRatio: AspectRatio = AspectRatio.Unspecified,
-    val contentScale: ContentScale = ContentScale.Fit,
-    val shape: Shape = RectangleShape,
-    val fling: Boolean = false,
-    val pannable: Boolean = true,
-    val rotatable: Boolean = false,
-    val zoomable: Boolean = true,
-    val maxZoom: Float = 10f,
+    val cropType: CropType,
+    val handleSize: Dp,
+    val aspectRatio: AspectRatio,
+    val contentScale: ContentScale,
+    val shape: Shape,
+    val fling: Boolean,
+    val pannable: Boolean,
+    val rotatable: Boolean,
+    val zoomable: Boolean,
+    val maxZoom: Float,
 )
 
 /**
@@ -78,9 +84,9 @@ data class CropProperties internal constructor(
  */
 @Immutable
 data class CropStyle internal constructor(
-    val drawOverlay: Boolean = true,
-    val drawGrid: Boolean = true,
-    val strokeWidth: Dp = 2.dp,
-    val overlayColor: Color = Color.White,
-    val handleColor: Color = Color.White
+    val drawOverlay: Boolean,
+    val drawGrid: Boolean,
+    val strokeWidth: Dp,
+    val overlayColor: Color,
+    val handleColor: Color
 )

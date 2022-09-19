@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -57,8 +57,8 @@ internal fun CropStyleSelectionMenu(
                             cropStyle.copy(strokeWidth = it)
                         )
                     },
-                    lowerBound = 1.dp,
-                    upperBound = 4.dp
+                    lowerBound = .5.dp,
+                    upperBound = 3.dp
                 )
 
                 ColorSelection(
@@ -113,12 +113,12 @@ internal fun ColorSelection(
         Spacer(modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(25))
-                .size(50.dp)
+                .clip(CircleShape)
+                .size(40.dp)
                 .border(
                     1.dp,
                     MaterialTheme.colorScheme.primary,
-                    RoundedCornerShape(25)
+                    CircleShape
                 )
                 .background(color = color)
                 .clickable {
