@@ -5,16 +5,14 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
-import com.smarttoolfactory.cropper.util.calculateRectBounds
-import com.smarttoolfactory.cropper.util.coerceIn
-import com.smarttoolfactory.cropper.util.getInitialCropRect
-import com.smarttoolfactory.cropper.util.getOverlayFromAspectRatio
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -31,7 +29,10 @@ val CropState.cropData: CropData
  * Base class for crop operations. Any class that extends this class gets access to pan, zoom,
  * rotation values and animations via [TransformState], fling and moving back to bounds animations.
  * @param imageSize size of the **Bitmap**
- * @param containerSize size of the Composable that draws **Bitmap**
+ * @param containerSize size of the Composable that draws **Bitmap**. This is full size
+ * of the Composable. [drawAreaSize] can be smaller than [containerSize] initially based
+ * on content scale of Image composable
+ * @param drawAreaSize size of the area that **Bitmap** is drawn
  * @param maxZoom maximum zoom value
  * @param fling when set to true dragging pointer builds up velocity. When last
  * pointer leaves Composable a movement invoked against friction till velocity drops below
@@ -47,6 +48,7 @@ val CropState.cropData: CropData
 abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
+    drawAreaSize: IntSize,
     aspectRatio: AspectRatio,
     maxZoom: Float,
     val fling: Boolean = true,
@@ -58,6 +60,7 @@ abstract class CropState internal constructor(
 ) : TransformState(
     imageSize = imageSize,
     containerSize = containerSize,
+    drawAreaSize = drawAreaSize,
     initialZoom = 1f,
     initialRotation = 0f,
     maxZoom = maxZoom,
@@ -71,6 +74,8 @@ abstract class CropState internal constructor(
         getOverlayFromAspectRatio(
             containerSize.width.toFloat(),
             containerSize.height.toFloat(),
+            drawAreaRect.size.width,
+            drawAreaRect.size.height,
             aspectRatio
         ),
         Rect.VectorConverter
@@ -79,14 +84,13 @@ abstract class CropState internal constructor(
     val overlayRect: Rect
         get() = animatableRectOverlay.value
 
-    var cropRect: IntRect = getInitialCropRect(
-        imageSize.width,
-        imageSize.height,
-        containerSize.width,
-        containerSize.height,
-        overlayRect
-    )
-        get() = calculateRectBounds()
+    var cropRect: IntRect = IntRect.Zero
+        get() = getCropRectangle(
+            imageSize.width,
+            imageSize.height,
+            drawAreaRect,
+            overlayRect
+        )
         private set
 
     private val velocityTracker = VelocityTracker()
@@ -119,9 +123,9 @@ abstract class CropState internal constructor(
      */
     abstract suspend fun onGesture(
         centroid: Offset,
-        pan: Offset,
-        zoom: Float,
-        rotation: Float,
+        panChange: Offset,
+        zoomChange: Float,
+        rotationChange: Float,
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     )
@@ -143,11 +147,49 @@ abstract class CropState internal constructor(
      * Resets to bounds with animation and resets tracking for fling animation
      */
     internal suspend fun resetToValidBounds() {
+
         val zoom = zoom.coerceAtLeast(1f)
-        val bounds = getBounds()
-        val pan = pan.coerceIn(-bounds.x..bounds.x, -bounds.y..bounds.y)
-        resetWithAnimation(pan = pan, zoom = zoom)
+
+        val newRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)
+
+        val leftChange = newRect.left - drawAreaRect.left
+        val topChange = newRect.top - drawAreaRect.top
+
+        val newPanX = pan.x + leftChange
+        val newPanY = pan.y + topChange
+
+        resetWithAnimation(pan = Offset(newPanX, newPanY), zoom = zoom)
         resetTracking()
+    }
+
+    /**
+     * Calculate valid position for image draw rectangle when pointer is up. Overlay rectangle
+     * should fit inside draw image rectangle to have valid bounds when calculation is completed.
+     *
+     * @param rectOverlay rectangle of overlay that is used for cropping
+     * @param rectImage rectangle of image that is being drawn
+     */
+    private fun calculateValidImageDrawRect(rectOverlay: Rect, rectImage: Rect): Rect {
+
+        var rectImageArea = rectImage.copy()
+
+        if (rectImageArea.left > rectOverlay.left) {
+            rectImageArea = rectImageArea.translate(rectOverlay.left - rectImageArea.left, 0f)
+        }
+
+        if (rectImageArea.right < rectOverlay.right) {
+            rectImageArea = rectImageArea.translate(rectOverlay.right - rectImageArea.right, 0f)
+        }
+
+        if (rectImageArea.top > rectOverlay.top) {
+            rectImageArea = rectImageArea.translate(0f, rectOverlay.top - rectImageArea.top)
+        }
+
+        if (rectImageArea.bottom < rectOverlay.bottom) {
+            rectImageArea = rectImageArea.translate(0f, rectOverlay.bottom - rectImageArea.bottom)
+        }
+
+        return rectImageArea
     }
 
     /*
@@ -200,5 +242,80 @@ abstract class CropState internal constructor(
 
     internal fun resetTracking() {
         velocityTracker.resetTracking()
+    }
+
+    /**
+     * Create [Rect] to draw overlay based on selected aspect ratio
+     */
+    private fun getOverlayFromAspectRatio(
+        containerWidth: Float,
+        containerHeight: Float,
+        drawAreaWidth: Float,
+        drawAreaHeight: Float,
+        aspectRatio: AspectRatio
+    ): Rect {
+
+        val offset = Offset(
+            x = (containerWidth - drawAreaWidth) / 2,
+            y = (containerHeight - drawAreaHeight) / 2
+        )
+
+        if (aspectRatio == AspectRatio.Unspecified) return Rect(
+            offset = offset,
+            size = Size(drawAreaWidth, drawAreaHeight)
+        )
+
+        val aspectRatioValue = aspectRatio.value
+
+        var width = drawAreaWidth
+        var height = drawAreaWidth / aspectRatioValue
+
+        if (height > drawAreaHeight) {
+            height = drawAreaHeight
+            width = height * aspectRatioValue
+        }
+
+        val posX = offset.x + ((drawAreaWidth - width) / 2)
+        val posY = offset.y + ((drawAreaHeight - height) / 2)
+
+        return Rect(offset = Offset(posX, posY), size = Size(width, height))
+    }
+
+
+    /**
+     * Get crop rectangle
+     */
+    private fun getCropRectangle(
+        bitmapWidth: Int,
+        bitmapHeight: Int,
+        drawAreaRect: Rect,
+        overlayRect: Rect
+    ): IntRect {
+
+        val overlayWidth = overlayRect.width
+        val overlayHeight = overlayRect.height
+
+        val drawAreaWidth = drawAreaRect.width
+        val drawAreaHeight = drawAreaRect.height
+
+        val widthRatio = overlayWidth / drawAreaWidth
+        val heightRatio = overlayHeight / drawAreaHeight
+
+        val diffLeft = overlayRect.left - drawAreaRect.left
+        val diffTop = overlayRect.top - drawAreaRect.top
+
+        val croppedBitmapLeft = (diffLeft * (bitmapWidth / drawAreaWidth)).toInt()
+        val croppedBitmapTop = (diffTop * (bitmapHeight / drawAreaHeight)).toInt()
+
+        val croppedBitmapWidth = (bitmapWidth * widthRatio).toInt()
+                .coerceAtMost(bitmapWidth - croppedBitmapLeft)
+        val croppedBitmapHeight =
+            (bitmapHeight * heightRatio).toInt()
+                .coerceAtMost(bitmapHeight - croppedBitmapTop)
+
+        return IntRect(
+            offset = IntOffset(croppedBitmapLeft, croppedBitmapTop),
+            size = IntSize(croppedBitmapWidth, croppedBitmapHeight)
+        )
     }
 }

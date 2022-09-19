@@ -25,6 +25,7 @@ import kotlinx.coroutines.coroutineScope
 class StaticCropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
+    drawAreaSize: IntSize,
     aspectRatio: AspectRatio,
     maxZoom: Float = 5f,
     fling: Boolean = false,
@@ -35,6 +36,7 @@ class StaticCropState internal constructor(
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
+    drawAreaSize = drawAreaSize,
     aspectRatio = aspectRatio,
     maxZoom = maxZoom,
     fling = fling,
@@ -56,9 +58,9 @@ class StaticCropState internal constructor(
     */
     override suspend fun onGesture(
         centroid: Offset,
-        pan: Offset,
-        zoom: Float,
-        rotation: Float,
+        panChange: Offset,
+        zoomChange: Float,
+        rotationChange: Float,
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     ) = coroutineScope {
@@ -66,9 +68,9 @@ class StaticCropState internal constructor(
 
         updateTransformState(
             centroid = centroid,
-            zoomChange = zoom,
-            panChange = pan,
-            rotationChange = rotation
+            zoomChange = zoomChange,
+            panChange = panChange,
+            rotationChange = rotationChange
         )
 
         // Fling Gesture
