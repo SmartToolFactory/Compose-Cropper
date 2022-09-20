@@ -2,19 +2,15 @@ package com.smarttoolfactory.cropper.state
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 val CropState.cropData: CropData
     get() = CropData(
@@ -93,7 +89,6 @@ abstract class CropState internal constructor(
         )
         private set
 
-    private val velocityTracker = VelocityTracker()
 
     /**
      * Animate overlay rectangle to target value
@@ -142,18 +137,54 @@ abstract class CropState internal constructor(
         onAnimationEnd: () -> Unit
     )
 
+    /**
+     * Update rectangle for area that image is drawn. This rect changes when zoom and
+     * pan changes and position of image changes on screen as result of transformation
+     */
+    internal fun updateImageDrawAreaRect() {
+        val containerWidth = containerSize.width
+        val containerHeight = containerSize.height
+
+        val originalDrawWidth = drawAreaSize.width
+        val originalDrawHeight = drawAreaSize.height
+
+        val panX = animatablePanX.targetValue
+        val panY = animatablePanY.targetValue
+
+        val left = (containerWidth - originalDrawWidth) / 2
+        val top = (containerHeight - originalDrawHeight) / 2
+
+        val zoom = animatableZoom.targetValue
+
+        val newWidth = originalDrawWidth * zoom
+        val newHeight = originalDrawHeight * zoom
+
+        drawAreaRect = Rect(
+            offset = Offset(
+                left - (newWidth - originalDrawWidth) / 2 + panX,
+                top - (newHeight - originalDrawHeight) / 2 + panY,
+            ),
+            size = Size(newWidth, newHeight)
+        )
+    }
+
     // TODO Add resetting back to bounds for rotated state as well
     /**
-     * Resets to bounds with animation and resets tracking for fling animation
+     * Resets to bounds with animation and resets tracking for fling animation.
+     * Changes pan, zoom and rotation to valid bounds based on [drawAreaRect] and [overlayRect]
      */
-    internal suspend fun resetToValidBounds() {
+    internal suspend fun animateToValidBounds() {
 
         val zoom = zoom.coerceAtLeast(1f)
 
+        // Calculate new pan based on overlay
         val newRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)
 
         val leftChange = newRect.left - drawAreaRect.left
         val topChange = newRect.top - drawAreaRect.top
+
+        // Update draw area based on new pan and zoom values
+        drawAreaRect = newRect
 
         val newPanX = pan.x + leftChange
         val newPanY = pan.y + topChange
@@ -192,58 +223,6 @@ abstract class CropState internal constructor(
         return rectImageArea
     }
 
-    /*
-        Fling gesture
-     */
-    internal fun addPosition(timeMillis: Long, position: Offset) {
-        velocityTracker.addPosition(
-            timeMillis = timeMillis,
-            position = position
-        )
-    }
-
-    /**
-     * Create a fling gesture when user removes finger from scree to have continuous movement
-     * until [velocityTracker] speed reached to lower bound
-     */
-    internal suspend fun fling(onFlingStart: () -> Unit) = coroutineScope {
-        val velocityTracker = velocityTracker.calculateVelocity()
-        val velocity = Offset(velocityTracker.x, velocityTracker.y)
-        var flingStarted = false
-
-        launch {
-            animatablePanX.animateDecay(
-                velocity.x,
-                exponentialDecay(absVelocityThreshold = 20f),
-                block = {
-                    // This callback returns target value of fling gesture initially
-                    if (!flingStarted) {
-                        onFlingStart()
-                        flingStarted = true
-                    }
-                }
-            )
-        }
-
-        launch {
-            animatablePanY.animateDecay(
-                velocity.y,
-                exponentialDecay(absVelocityThreshold = 20f),
-                block = {
-                    // This callback returns target value of fling gesture initially
-                    if (!flingStarted) {
-                        onFlingStart()
-                        flingStarted = true
-                    }
-                }
-            )
-        }
-    }
-
-    internal fun resetTracking() {
-        velocityTracker.resetTracking()
-    }
-
     /**
      * Create [Rect] to draw overlay based on selected aspect ratio
      */
@@ -280,7 +259,6 @@ abstract class CropState internal constructor(
 
         return Rect(offset = Offset(posX, posY), size = Size(width, height))
     }
-
 
     /**
      * Get crop rectangle
