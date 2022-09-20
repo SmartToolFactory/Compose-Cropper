@@ -9,9 +9,9 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.CropProperties
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
+import com.smarttoolfactory.cropper.settings.CropProperties
 
 val CropState.cropData: CropData
     get() = CropData(
@@ -96,25 +96,24 @@ abstract class CropState internal constructor(
         pannable = cropProperties.pannable
         zoomable = cropProperties.zoomable
         rotatable = cropProperties.rotatable
-        zoomMax = cropProperties.maxZoom
 
-        val newZoom = zoom.coerceAtMost(zoomMax)
-        animatableZoom.updateBounds(zoomMin, newZoom)
-
-        resetWithAnimation(zoom = newZoom)
+        // TODO Fix zoom reset
+//        zoomMax = cropProperties.maxZoom
 
         // Update overlay rectangle
         val aspectRatio = cropProperties.aspectRatio
-        animateOverlayRectTo( getOverlayFromAspectRatio(
-            containerSize.width.toFloat(),
-            containerSize.height.toFloat(),
-            drawAreaRect.size.width,
-            drawAreaRect.size.height,
-            aspectRatio
-        ))
+        animateOverlayRectTo(
+            getOverlayFromAspectRatio(
+                containerSize.width.toFloat(),
+                containerSize.height.toFloat(),
+                drawAreaRect.size.width,
+                drawAreaRect.size.height,
+                aspectRatio
+            )
+        )
 
         // Update image draw area
-        updateImageDrawAreaRectFromTransformation()
+        updateImageDrawRectFromTransformation()
     }
 
     /**
@@ -166,9 +165,21 @@ abstract class CropState internal constructor(
 
     /**
      * Update rectangle for area that image is drawn. This rect changes when zoom and
-     * pan changes and position of image changes on screen as result of transformation
+     * pan changes and position of image changes on screen as result of transformation.
+     *
+     * This function is called
+     *
+     * * when [onGesture] is called to update rect when zoom or pan changes
+     *  and if [fling] is true just after **fling** gesture starts with target
+     *  value in  [StaticCropState].
+     *
+     *  * when [updateProperties] is called in [CropState]
+     *
+     *  * when [onUp] is called in [DynamicCropState] to match [overlayRect] that could be
+     *  changed and animated if it's out of [containerSize] bounds or its grow
+     *  bigger than previous size
      */
-    internal fun updateImageDrawAreaRectFromTransformation() {
+    internal fun updateImageDrawRectFromTransformation() {
         val containerWidth = containerSize.width
         val containerHeight = containerSize.height
 
@@ -200,24 +211,47 @@ abstract class CropState internal constructor(
      * Resets to bounds with animation and resets tracking for fling animation.
      * Changes pan, zoom and rotation to valid bounds based on [drawAreaRect] and [overlayRect]
      */
-    internal suspend fun animateToValidBounds() {
+    internal suspend fun animateTransformationToOverlayBounds() {
 
         val zoom = zoom.coerceAtLeast(1f)
 
         // Calculate new pan based on overlay
-        val newRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)
+        val newDrawAreaRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)
 
-        val leftChange = newRect.left - drawAreaRect.left
-        val topChange = newRect.top - drawAreaRect.top
+        val newZoom =
+            calculateNewZoom(oldRect = drawAreaRect, newRect = newDrawAreaRect, zoom = zoom)
+
+        val leftChange = newDrawAreaRect.left - drawAreaRect.left
+        val topChange = newDrawAreaRect.top - drawAreaRect.top
+
+        val widthChange = newDrawAreaRect.width - drawAreaRect.width
+        val heightChange = newDrawAreaRect.height - drawAreaRect.height
+
+        val panXChange = leftChange + widthChange / 2
+        val panYChange = topChange + heightChange / 2
+
+        val newPanX = pan.x + panXChange
+        val newPanY = pan.y + panYChange
 
         // Update draw area based on new pan and zoom values
-        drawAreaRect = newRect
+        drawAreaRect = newDrawAreaRect
 
-        val newPanX = pan.x + leftChange
-        val newPanY = pan.y + topChange
-
-        resetWithAnimation(pan = Offset(newPanX, newPanY), zoom = zoom)
+        resetWithAnimation(pan = Offset(newPanX, newPanY), zoom = newZoom)
         resetTracking()
+    }
+
+    /**
+     * If new overlay is bigger, when crop type is dynamic, we need to increase zoom at least
+     * size of bigger dimension for image draw area([drawAreaRect]) to cover overlay([overlayRect])
+     */
+    private fun calculateNewZoom(oldRect: Rect, newRect: Rect, zoom: Float): Float {
+
+        val widthChange = (newRect.width / oldRect.width)
+            .coerceAtLeast(1f)
+        val heightChange = (newRect.height / oldRect.height)
+            .coerceAtLeast(1f)
+
+        return widthChange.coerceAtLeast(heightChange) * zoom
     }
 
     /**
@@ -229,7 +263,18 @@ abstract class CropState internal constructor(
      */
     private fun calculateValidImageDrawRect(rectOverlay: Rect, rectImage: Rect): Rect {
 
-        var rectImageArea = rectImage.copy()
+        var width = rectImage.width
+        var height = rectImage.height
+
+        if (width < rectOverlay.width) {
+            width = rectOverlay.width
+        }
+
+        if (height < rectOverlay.height) {
+            height = rectOverlay.height
+        }
+
+        var rectImageArea = Rect(offset = rectImage.topLeft, size = Size(width, height))
 
         if (rectImageArea.left > rectOverlay.left) {
             rectImageArea = rectImageArea.translate(rectOverlay.left - rectImageArea.left, 0f)

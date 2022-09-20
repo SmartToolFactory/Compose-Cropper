@@ -73,7 +73,7 @@ class StaticCropState internal constructor(
         )
 
         // Update image draw rectangle based on pan, zoom or rotation change
-        updateImageDrawAreaRectFromTransformation()
+        updateImageDrawRectFromTransformation()
 
         // Fling Gesture
         if (fling) {
@@ -95,14 +95,14 @@ class StaticCropState internal constructor(
                 fling {
                     // We get target value on start instead of updating bounds after
                     // gesture has finished
-                    updateImageDrawAreaRectFromTransformation()
+                    updateImageDrawRectFromTransformation()
                     onBoundsCalculated()
                 }
             } else {
                 onBoundsCalculated()
             }
 
-            animateToValidBounds()
+            animateTransformationToOverlayBounds()
         }
     }
 
