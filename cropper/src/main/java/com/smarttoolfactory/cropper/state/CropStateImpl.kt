@@ -9,6 +9,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
+import com.smarttoolfactory.cropper.CropProperties
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
 
@@ -33,8 +34,6 @@ val CropState.cropData: CropData
  * @param fling when set to true dragging pointer builds up velocity. When last
  * pointer leaves Composable a movement invoked against friction till velocity drops below
  * to threshold
- * @param moveToBounds when set to true if image zoom is lower than initial zoom or
- * panned out of image boundaries moves back to bounds with animation.
  * @param zoomable when set to true zoom is enabled
  * @param pannable when set to true pan is enabled
  * @param rotatable when set to true rotation is enabled
@@ -47,8 +46,7 @@ abstract class CropState internal constructor(
     drawAreaSize: IntSize,
     aspectRatio: AspectRatio,
     maxZoom: Float,
-    val fling: Boolean = true,
-    val moveToBounds: Boolean = true,
+    var fling: Boolean = true,
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
@@ -89,6 +87,35 @@ abstract class CropState internal constructor(
         )
         private set
 
+
+    /**
+     * Update properties of [CropState] and animate to valid intervals if required
+     */
+    suspend fun updateProperties(cropProperties: CropProperties) {
+        fling = cropProperties.fling
+        pannable = cropProperties.pannable
+        zoomable = cropProperties.zoomable
+        rotatable = cropProperties.rotatable
+        zoomMax = cropProperties.maxZoom
+
+        val newZoom = zoom.coerceAtMost(zoomMax)
+        animatableZoom.updateBounds(zoomMin, newZoom)
+
+        resetWithAnimation(zoom = newZoom)
+
+        // Update overlay rectangle
+        val aspectRatio = cropProperties.aspectRatio
+        animateOverlayRectTo( getOverlayFromAspectRatio(
+            containerSize.width.toFloat(),
+            containerSize.height.toFloat(),
+            drawAreaRect.size.width,
+            drawAreaRect.size.height,
+            aspectRatio
+        ))
+
+        // Update image draw area
+        updateImageDrawAreaRectFromTransformation()
+    }
 
     /**
      * Animate overlay rectangle to target value
@@ -141,7 +168,7 @@ abstract class CropState internal constructor(
      * Update rectangle for area that image is drawn. This rect changes when zoom and
      * pan changes and position of image changes on screen as result of transformation
      */
-    internal fun updateImageDrawAreaRect() {
+    internal fun updateImageDrawAreaRectFromTransformation() {
         val containerWidth = containerSize.width
         val containerHeight = containerSize.height
 
@@ -270,23 +297,27 @@ abstract class CropState internal constructor(
         overlayRect: Rect
     ): IntRect {
 
+        // Calculate latest image draw area based on overlay position
+        // This is valid rectangle that contains crop area inside overlay
+        val newRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)
+
         val overlayWidth = overlayRect.width
         val overlayHeight = overlayRect.height
 
-        val drawAreaWidth = drawAreaRect.width
-        val drawAreaHeight = drawAreaRect.height
+        val drawAreaWidth = newRect.width
+        val drawAreaHeight = newRect.height
 
         val widthRatio = overlayWidth / drawAreaWidth
         val heightRatio = overlayHeight / drawAreaHeight
 
-        val diffLeft = overlayRect.left - drawAreaRect.left
-        val diffTop = overlayRect.top - drawAreaRect.top
+        val diffLeft = overlayRect.left - newRect.left
+        val diffTop = overlayRect.top - newRect.top
 
         val croppedBitmapLeft = (diffLeft * (bitmapWidth / drawAreaWidth)).toInt()
         val croppedBitmapTop = (diffTop * (bitmapHeight / drawAreaHeight)).toInt()
 
         val croppedBitmapWidth = (bitmapWidth * widthRatio).toInt()
-                .coerceAtMost(bitmapWidth - croppedBitmapLeft)
+            .coerceAtMost(bitmapWidth - croppedBitmapLeft)
         val croppedBitmapHeight =
             (bitmapHeight * heightRatio).toInt()
                 .coerceAtMost(bitmapHeight - croppedBitmapTop)

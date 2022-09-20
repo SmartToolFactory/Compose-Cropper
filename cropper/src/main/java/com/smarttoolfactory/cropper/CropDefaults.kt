@@ -17,13 +17,13 @@ import com.smarttoolfactory.cropper.state.CropState
 object CropDefaults {
 
     fun properties(
-        cropType: CropType = CropType.Dynamic,
+        cropType: CropType = CropType.Static,
         handleSize: Dp = 20.dp,
         maxZoom: Float = 10f,
         aspectRatio: AspectRatio = AspectRatio.Unspecified,
         contentScale: ContentScale = ContentScale.Fit,
         shape: Shape = RectangleShape,
-        fling: Boolean = false,
+        fling: Boolean = true,
         zoomable: Boolean = true,
         pannable: Boolean = true,
         rotatable: Boolean = false

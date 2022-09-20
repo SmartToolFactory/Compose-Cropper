@@ -37,10 +37,10 @@ open class TransformState(
     initialRotation: Float = 0f,
     minZoom: Float = 1f,
     maxZoom: Float = 10f,
-    internal val zoomable: Boolean = true,
-    internal val pannable: Boolean = true,
-    internal val rotatable: Boolean = true,
-    internal val limitPan: Boolean = false
+    internal var zoomable: Boolean = true,
+    internal var pannable: Boolean = true,
+    internal var rotatable: Boolean = true,
+    internal var limitPan: Boolean = false
 ) {
 
     var drawAreaRect: Rect by mutableStateOf(
@@ -53,8 +53,8 @@ open class TransformState(
         )
     )
 
-    internal val zoomMin = minZoom.coerceAtLeast(.5f)
-    internal val zoomMax = maxZoom.coerceAtLeast(1f)
+    internal val zoomMin = minZoom.coerceAtLeast(1f)
+    internal var zoomMax = maxZoom.coerceAtLeast(1f)
     private val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
     private val rotationInitial = initialRotation % 360
 

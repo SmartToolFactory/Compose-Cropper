@@ -75,7 +75,6 @@ fun ImageCropper(
             containerHeight = containerHeightPx.toDp()
         }
 
-        val aspectRatio = cropProperties.aspectRatio
         val cropType = cropProperties.cropType
         val contentScale = cropProperties.contentScale
 
@@ -86,26 +85,28 @@ fun ImageCropper(
             imageWidthPx,
             imageHeightPx,
             contentScale,
-            cropType,
-            aspectRatio
+            cropType
         ) {
             arrayOf(
                 scaledImageBitmap,
                 imageWidthPx,
                 imageHeightPx,
                 contentScale,
-                cropType,
-                aspectRatio
+                cropType
             )
         }
 
         val cropState = rememberCropState(
             imageSize = IntSize(bitmapWidth, bitmapHeight),
-            containerSize = IntSize(imageWidthPx, imageHeightPx),
-            drawAreaSize = IntSize(containerWidthPx, containerHeightPx),
+            containerSize = IntSize(containerWidthPx, containerHeightPx),
+            drawAreaSize = IntSize(imageWidthPx, imageHeightPx),
             cropProperties = cropProperties,
             keys = resetKeys
         )
+
+        LaunchedEffect(key1 = cropProperties) {
+            cropState.updateProperties(cropProperties)
+        }
 
         /**
          * Rectangle that is used for cropping image, this rectangle is not the
@@ -113,6 +114,11 @@ fun ImageCropper(
          * draw 1000x750px Composable on screen
          */
         val rectCrop = cropState.cropRect
+
+        val drawAreaRect = cropState.drawAreaRect
+
+        val pan = cropState.pan
+        val zoom = cropState.zoom
 
         LaunchedEffect(crop) {
             if (crop) {
@@ -156,8 +162,10 @@ fun ImageCropper(
                 fontSize = 10.sp,
                 text = "imageWidthInPx: $imageWidthPx, imageHeightInPx: $imageHeightPx\n" +
                         "bitmapWidth: $bitmapWidth, bitmapHeight: $bitmapHeight\n" +
-                        "cropRect: $rectCrop, size: ${rectCrop.size}\n" +
-                        "drawRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}"
+                        "zoom: $zoom, pan: $pan\n" +
+                        "drawAreaRect: $drawAreaRect, size: ${drawAreaRect.size}\n" +
+                        "overlayRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}\n" +
+                        "cropRect: $rectCrop, size: ${rectCrop.size}"
             )
         }
     }
