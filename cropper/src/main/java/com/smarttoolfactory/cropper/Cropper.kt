@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
+import com.smarttoolfactory.cropper.settings.CropDefaults
+import com.smarttoolfactory.cropper.settings.CropProperties
+import com.smarttoolfactory.cropper.settings.CropStyle
+import com.smarttoolfactory.cropper.settings.CropType
 import com.smarttoolfactory.cropper.state.rememberCropState
 
 @Composable

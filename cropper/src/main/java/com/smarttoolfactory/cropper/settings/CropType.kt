@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper
+package com.smarttoolfactory.cropper.settings
 
 /**
  * Type of cropping operation

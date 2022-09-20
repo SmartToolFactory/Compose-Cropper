@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
-import com.smarttoolfactory.cropper.CropProperties
-import com.smarttoolfactory.cropper.CropType
+import com.smarttoolfactory.cropper.settings.CropProperties
+import com.smarttoolfactory.cropper.settings.CropType
 
 
 /**

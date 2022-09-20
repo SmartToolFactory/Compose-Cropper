@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper
+package com.smarttoolfactory.cropper.settings
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -8,6 +8,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.smarttoolfactory.cropper.ImageCropper
+import com.smarttoolfactory.cropper.crop
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.state.CropState
 
@@ -17,7 +19,7 @@ import com.smarttoolfactory.cropper.state.CropState
 object CropDefaults {
 
     fun properties(
-        cropType: CropType = CropType.Static,
+        cropType: CropType = CropType.Dynamic,
         handleSize: Dp = 20.dp,
         maxZoom: Float = 10f,
         aspectRatio: AspectRatio = AspectRatio.Unspecified,
