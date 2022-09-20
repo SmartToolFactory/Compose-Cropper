@@ -40,7 +40,6 @@ class StaticCropState internal constructor(
     aspectRatio = aspectRatio,
     maxZoom = maxZoom,
     fling = fling,
-    moveToBounds = true,
     zoomable = zoomable,
     pannable = pannable,
     rotatable = rotatable,
@@ -73,6 +72,9 @@ class StaticCropState internal constructor(
             rotationChange = rotationChange
         )
 
+        // Update image draw rectangle based on pan, zoom or rotation change
+        updateImageDrawAreaRectFromTransformation()
+
         // Fling Gesture
         if (fling) {
             if (changes.size == 1) {
@@ -93,15 +95,14 @@ class StaticCropState internal constructor(
                 fling {
                     // We get target value on start instead of updating bounds after
                     // gesture has finished
+                    updateImageDrawAreaRectFromTransformation()
                     onBoundsCalculated()
                 }
             } else {
                 onBoundsCalculated()
             }
 
-            if (moveToBounds) {
-                resetToValidBounds()
-            }
+            animateToValidBounds()
         }
     }
 
