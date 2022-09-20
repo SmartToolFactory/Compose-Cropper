@@ -8,11 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.cropper.CropProperties
-import com.smarttoolfactory.cropper.CropType
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.AspectRatioModel
 import com.smarttoolfactory.cropper.model.aspectRatios
+import com.smarttoolfactory.cropper.settings.CropProperties
+import com.smarttoolfactory.cropper.settings.CropType
 import kotlin.math.roundToInt
 
 

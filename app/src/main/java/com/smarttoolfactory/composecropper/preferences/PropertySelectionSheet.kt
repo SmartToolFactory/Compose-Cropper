@@ -1,7 +1,7 @@
 package com.smarttoolfactory.composecropper.preferences
 
 import androidx.compose.runtime.Composable
-import com.smarttoolfactory.cropper.CropProperties
+import com.smarttoolfactory.cropper.settings.CropProperties
 
 @Composable
 internal fun PropertySelectionSheet(

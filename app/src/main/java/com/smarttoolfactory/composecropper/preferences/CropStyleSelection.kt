@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.colorpicker.dialog.ColorPickerRingDiamondHSLDialog
-import com.smarttoolfactory.cropper.CropStyle
+import com.smarttoolfactory.cropper.settings.CropStyle
 
 /**
  * Crop style selection menu
