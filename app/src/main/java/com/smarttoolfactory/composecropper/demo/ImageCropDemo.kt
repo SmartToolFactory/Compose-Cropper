@@ -31,10 +31,11 @@ import com.smarttoolfactory.composecropper.ImageSelectionButton
 import com.smarttoolfactory.composecropper.R
 import com.smarttoolfactory.composecropper.preferences.CropStyleSelectionMenu
 import com.smarttoolfactory.composecropper.preferences.PropertySelectionSheet
-import com.smarttoolfactory.cropper.CropDefaults
-import com.smarttoolfactory.cropper.CropProperties
-import com.smarttoolfactory.cropper.CropStyle
+
 import com.smarttoolfactory.cropper.ImageCropper
+import com.smarttoolfactory.cropper.settings.CropDefaults
+import com.smarttoolfactory.cropper.settings.CropProperties
+import com.smarttoolfactory.cropper.settings.CropStyle
 import kotlinx.coroutines.launch
 
 internal enum class SelectionPage {
