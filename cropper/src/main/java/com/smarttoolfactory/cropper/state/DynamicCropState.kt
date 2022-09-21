@@ -113,13 +113,13 @@ class DynamicCropState internal constructor(
         )
 
         snapOverlayRectTo(newRect)
+//        moveOverlayToBounds(change = change, newRect = newRect)
     }
 
     override suspend fun onUp(change: PointerInputChange) = coroutineScope {
-
         if (touchRegion != TouchRegion.None) {
             // Update overlay if it's out of Container bounds
-            rectTemp = moveOverlayRectToBounds(rectBounds, overlayRect)
+            rectTemp = calculateOverlayRectInBounds(rectBounds, overlayRect)
             animateOverlayRectTo(rectTemp)
 
             // Update and animate pan, zoom and image draw area after overlay position is updated
@@ -127,10 +127,8 @@ class DynamicCropState internal constructor(
 
             // Update image draw area after animating pan, zoom or rotation is completed
             updateImageDrawRectFromTransformation()
-
             touchRegion = TouchRegion.None
         }
-
     }
 
     override suspend fun onGesture(
@@ -166,45 +164,53 @@ class DynamicCropState internal constructor(
     override suspend fun onGestureStart() = Unit
 
     override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {
-        // Gesture end might be called after second tap and we don't want to fling
-        // or animate back to valid bounds when doubled tapped
-        if (!doubleTapped) {
 
-            if (fling && zoom > 1) {
-                fling {
-                    // We get target value on start instead of updating bounds after
-                    // gesture has finished
-                    updateImageDrawRectFromTransformation()
+        if (touchRegion == TouchRegion.None) {
+
+            // Gesture end might be called after second tap and we don't want to fling
+            // or animate back to valid bounds when doubled tapped
+            if (!doubleTapped) {
+
+                if (fling && zoom > 1) {
+                    fling {
+                        // We get target value on start instead of updating bounds after
+                        // gesture has finished
+                        updateImageDrawRectFromTransformation()
+                        onBoundsCalculated()
+                    }
+                } else {
                     onBoundsCalculated()
                 }
-            } else {
-                onBoundsCalculated()
-            }
 
-            animateTransformationToOverlayBounds()
+                animateTransformationToOverlayBounds()
+            }
         }
     }
 
-    // TODO Write double tap for dynamic crop state
     override suspend fun onDoubleTap(
         pan: Offset,
         zoom: Float,
         rotation: Float,
         onAnimationEnd: () -> Unit
     ) {
-//        doubleTapped = true
-//
-//        if (fling) {
-//            resetTracking()
-//        }
-//        resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
-//        onAnimationEnd()
+        doubleTapped = true
+
+        if (fling) {
+            resetTracking()
+        }
+        resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
+
+        animateOverlayRectTo(
+            calculateOverlayRectInBounds(rectBounds, overlayRect)
+        )
+        onAnimationEnd()
     }
 
 
     // TODO Change pan when zoom is bigger than 1f and touchRegion is inside overlay rect
-//    private suspend fun moveOverlayToBounds(change: PointerInputChange, newRect:Rect) {
-//        val bounds = getBounds()
+//    private suspend fun moveOverlayToBounds(change: PointerInputChange, newRect: Rect) {
+//        val bounds = drawAreaRect
+//
 //        val positionChange = change.positionChangeIgnoreConsumed()
 //
 //        // When zoom is bigger than 100% and dynamic overlay is not at any edge of
@@ -213,27 +219,28 @@ class DynamicCropState internal constructor(
 //        val isPanRequired = touchRegion == TouchRegion.Inside && zoom > 1f
 //
 //        // Overlay moving right
-//        if (isPanRequired && -pan.x < bounds.x && newRect.right >= containerSize.width) {
+//        if (isPanRequired && newRect.right < bounds.right) {
+//            println("Moving right newRect $newRect, bounds: $bounds")
 //            snapOverlayRectTo(newRect.translate(-positionChange.x, 0f))
 //            snapPanXto(pan.x - positionChange.x * zoom)
 //            // Overlay moving left
-//        } else if (isPanRequired && pan.x < bounds.x && newRect.left <= 0f) {
-//            snapOverlayRectTo(newRect.translate(-positionChange.x, 0f))
-//            snapPanXto(pan.x - positionChange.x * zoom)
-//        } else if (isPanRequired && pan.y < bounds.y && newRect.top <= 0f) {
+//        } else if (isPanRequired && pan.x < bounds.left && newRect.left <= 0f) {
+////            snapOverlayRectTo(newRect.translate(-positionChange.x, 0f))
+////            snapPanXto(pan.x - positionChange.x * zoom)
+//        } else if (isPanRequired && pan.y < bounds.top && newRect.top <= 0f) {
 //            // Overlay moving top
-//            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
-//            snapPanYto(pan.y - positionChange.y * zoom)
-//        } else if (isPanRequired && -pan.y < bounds.y && newRect.bottom >= containerSize.height) {
+////            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
+////            snapPanYto(pan.y - positionChange.y * zoom)
+//        } else if (isPanRequired && -pan.y < bounds.bottom && newRect.bottom >= containerSize.height) {
 //            // Overlay moving bottom
-//            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
-//            snapPanYto(pan.y - positionChange.y * zoom)
+////            snapOverlayRectTo(newRect.translate(0f, -positionChange.y))
+////            snapPanYto(pan.y - positionChange.y * zoom)
 //        } else {
 //            snapOverlayRectTo(newRect)
 //        }
-//        if (touchRegion != TouchRegion.None) {
-//            change.consume()
-//        }
+////        if (touchRegion != TouchRegion.None) {
+////            change.consume()
+////        }
 //    }
 
     /**
@@ -243,7 +250,7 @@ class DynamicCropState internal constructor(
      * [overlayRect] might be shrunk or moved up/down/left/right to container bounds when
      * it's out of Composable region
      */
-    private fun moveOverlayRectToBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
+    private fun calculateOverlayRectInBounds(rectBounds: Rect, rectCurrent: Rect): Rect {
 
         var width = rectCurrent.width
         var height = rectCurrent.height

@@ -2,6 +2,7 @@ package com.smarttoolfactory.cropper.state
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -44,7 +45,7 @@ abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
     drawAreaSize: IntSize,
-    aspectRatio: AspectRatio,
+   private var aspectRatio: AspectRatio,
     maxZoom: Float,
     var fling: Boolean = true,
     zoomable: Boolean = true,
@@ -98,19 +99,30 @@ abstract class CropState internal constructor(
         rotatable = cropProperties.rotatable
 
         // TODO Fix zoom reset
-//        zoomMax = cropProperties.maxZoom
+        val maxZoom = cropProperties.maxZoom
 
         // Update overlay rectangle
         val aspectRatio = cropProperties.aspectRatio
-        animateOverlayRectTo(
-            getOverlayFromAspectRatio(
-                containerSize.width.toFloat(),
-                containerSize.height.toFloat(),
-                drawAreaRect.size.width,
-                drawAreaRect.size.height,
-                aspectRatio
+
+        if(this.aspectRatio.value != aspectRatio.value || maxZoom != zoomMax) {
+
+            zoomMax = maxZoom
+            animatableZoom.updateBounds(zoomMin, zoomMax)
+
+            val currentZoom = if(zoom>zoomMax) zoomMax else zoom
+
+            resetWithAnimation(zoom = currentZoom)
+
+            animateOverlayRectTo(
+                getOverlayFromAspectRatio(
+                    containerSize.width.toFloat(),
+                    containerSize.height.toFloat(),
+                    drawAreaSize.width.toFloat(),
+                    drawAreaSize.height.toFloat(),
+                    aspectRatio
+                )
             )
-        )
+        }
 
         // Update image draw area
         updateImageDrawRectFromTransformation()
@@ -120,7 +132,10 @@ abstract class CropState internal constructor(
      * Animate overlay rectangle to target value
      */
     suspend fun animateOverlayRectTo(rect: Rect) {
-        animatableRectOverlay.animateTo(rect)
+        animatableRectOverlay.animateTo(
+            targetValue = rect,
+            animationSpec = tween(500)
+        )
     }
 
     /**
