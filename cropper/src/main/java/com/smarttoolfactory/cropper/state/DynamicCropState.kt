@@ -116,20 +116,23 @@ class DynamicCropState internal constructor(
     }
 
     override suspend fun onUp(change: PointerInputChange) = coroutineScope {
-        touchRegion = TouchRegion.None
 
-        // Update overlay if it's out of Container bounds
-        rectTemp = moveOverlayRectToBounds(rectBounds, overlayRect)
-        animateOverlayRectTo(rectTemp)
+        if (touchRegion != TouchRegion.None) {
+            // Update overlay if it's out of Container bounds
+            rectTemp = moveOverlayRectToBounds(rectBounds, overlayRect)
+            animateOverlayRectTo(rectTemp)
 
-        // Update and animate pan, zoom and image draw area after overlay position is updated
-        animateTransformationToOverlayBounds()
+            // Update and animate pan, zoom and image draw area after overlay position is updated
+            animateTransformationToOverlayBounds()
 
-        // Update image draw area after animating pan, zoom or rotation is completed
-        updateImageDrawRectFromTransformation()
+            // Update image draw area after animating pan, zoom or rotation is completed
+            updateImageDrawRectFromTransformation()
+
+            touchRegion = TouchRegion.None
+        }
+
     }
 
-    // TODO Write gestures for dynamic crop state
     override suspend fun onGesture(
         centroid: Offset,
         panChange: Offset,
@@ -138,19 +141,70 @@ class DynamicCropState internal constructor(
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     ) {
-//        if (touchRegion == TouchRegion.None) {
-//            updateTransformState(
-//                centroid = centroid,
-//                zoomChange = zoomChange,
-//                panChange = panChange,
-//                rotationChange = 0f
-//            )
-//        }
+        if (touchRegion == TouchRegion.None) {
+            doubleTapped = false
+
+            updateTransformState(
+                centroid = centroid,
+                zoomChange = zoomChange,
+                panChange = panChange,
+                rotationChange = rotationChange
+            )
+
+            // Update image draw rectangle based on pan, zoom or rotation change
+            updateImageDrawRectFromTransformation()
+
+            // Fling Gesture
+            if (fling) {
+                if (changes.size == 1) {
+                    addPosition(mainPointer.uptimeMillis, mainPointer.position)
+                }
+            }
+        }
     }
 
-    // TODO This function changes translation of image are when zoom is bigger than 1f
-//    private fun moveOverlayToBounds() {
-//                val bounds = getBounds()
+    override suspend fun onGestureStart() = Unit
+
+    override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {
+        // Gesture end might be called after second tap and we don't want to fling
+        // or animate back to valid bounds when doubled tapped
+        if (!doubleTapped) {
+
+            if (fling && zoom > 1) {
+                fling {
+                    // We get target value on start instead of updating bounds after
+                    // gesture has finished
+                    updateImageDrawRectFromTransformation()
+                    onBoundsCalculated()
+                }
+            } else {
+                onBoundsCalculated()
+            }
+
+            animateTransformationToOverlayBounds()
+        }
+    }
+
+    // TODO Write double tap for dynamic crop state
+    override suspend fun onDoubleTap(
+        pan: Offset,
+        zoom: Float,
+        rotation: Float,
+        onAnimationEnd: () -> Unit
+    ) {
+//        doubleTapped = true
+//
+//        if (fling) {
+//            resetTracking()
+//        }
+//        resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
+//        onAnimationEnd()
+    }
+
+
+    // TODO Change pan when zoom is bigger than 1f and touchRegion is inside overlay rect
+//    private suspend fun moveOverlayToBounds(change: PointerInputChange, newRect:Rect) {
+//        val bounds = getBounds()
 //        val positionChange = change.positionChangeIgnoreConsumed()
 //
 //        // When zoom is bigger than 100% and dynamic overlay is not at any edge of
@@ -181,25 +235,6 @@ class DynamicCropState internal constructor(
 //            change.consume()
 //        }
 //    }
-
-    override suspend fun onGestureStart() = Unit
-    override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) = Unit
-
-    // TODO Write double tap for dynamic crop state
-    override suspend fun onDoubleTap(
-        pan: Offset,
-        zoom: Float,
-        rotation: Float,
-        onAnimationEnd: () -> Unit
-    ) {
-//        doubleTapped = true
-//
-//        if (fling) {
-//            resetTracking()
-//        }
-//        resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
-//        onAnimationEnd()
-    }
 
     /**
      * When pointer is up calculate valid position and size overlay can be updated to inside
@@ -334,7 +369,7 @@ class DynamicCropState internal constructor(
     }
 
     /**
-     * get touch region inside this rectangle based on touch position.
+     * get [TouchRegion] based on touch position on screen relative to [overlayRect].
      */
     private fun getTouchRegion(
         position: Offset,
@@ -342,19 +377,20 @@ class DynamicCropState internal constructor(
         threshold: Float
     ): TouchRegion {
 
+        val closedTouchRange = -threshold / 2..threshold
+
         return when {
+            position.x - rect.left in closedTouchRange &&
+                    position.y - rect.top in closedTouchRange -> TouchRegion.TopLeft
 
-            position.x - rect.left in 0.0f..threshold &&
-                    position.y - rect.top in 0.0f..threshold -> TouchRegion.TopLeft
+            rect.right - position.x in closedTouchRange &&
+                    position.y - rect.top in closedTouchRange -> TouchRegion.TopRight
 
-            rect.right - position.x in 0f..threshold &&
-                    position.y - rect.top in 0.0f..threshold -> TouchRegion.TopRight
+            rect.right - position.x in closedTouchRange &&
+                    rect.bottom - position.y in closedTouchRange -> TouchRegion.BottomRight
 
-            rect.right - position.x in 0f..threshold &&
-                    rect.bottom - position.y in 0.0f..threshold -> TouchRegion.BottomRight
-
-            position.x - rect.left in 0.0f..threshold &&
-                    rect.bottom - position.y in 0.0f..threshold -> TouchRegion.BottomLeft
+            position.x - rect.left in closedTouchRange &&
+                    rect.bottom - position.y in closedTouchRange -> TouchRegion.BottomLeft
 
 
             rect.contains(offset = position) -> TouchRegion.Inside
