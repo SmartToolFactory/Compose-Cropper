@@ -47,7 +47,7 @@ class StaticCropState internal constructor(
 ) {
 
     override suspend fun onDown(change: PointerInputChange) = Unit
-    override suspend fun onMove(change: PointerInputChange) = Unit
+    override suspend fun onMove(changes: List<PointerInputChange>) = Unit
     override suspend fun onUp(change: PointerInputChange) = Unit
 
     private var doubleTapped = false
@@ -73,10 +73,10 @@ class StaticCropState internal constructor(
         )
 
         // Update image draw rectangle based on pan, zoom or rotation change
-        updateImageDrawRectFromTransformation()
+        drawAreaRect = updateImageDrawRectFromTransformation()
 
         // Fling Gesture
-        if (fling) {
+        if (pannable && fling) {
             if (changes.size == 1) {
                 addPosition(mainPointer.uptimeMillis, mainPointer.position)
             }
@@ -91,11 +91,11 @@ class StaticCropState internal constructor(
         // or animate back to valid bounds when doubled tapped
         if (!doubleTapped) {
 
-            if (fling && zoom > 1) {
+            if (pannable && fling && zoom > 1) {
                 fling {
                     // We get target value on start instead of updating bounds after
                     // gesture has finished
-                    updateImageDrawRectFromTransformation()
+                    drawAreaRect = updateImageDrawRectFromTransformation()
                     onBoundsCalculated()
                 }
             } else {

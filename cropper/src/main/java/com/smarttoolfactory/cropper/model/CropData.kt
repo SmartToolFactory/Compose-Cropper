@@ -3,7 +3,6 @@ package com.smarttoolfactory.cropper.model
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.unit.IntRect
 
 
 /**
@@ -18,5 +17,5 @@ data class CropData(
     val pan: Offset = Offset.Zero,
     val rotation: Float = 0f,
     val overlayRect: Rect,
-    val cropRect: IntRect
+    val cropRect: Rect
 )

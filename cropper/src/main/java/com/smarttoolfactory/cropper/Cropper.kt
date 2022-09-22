@@ -128,10 +128,10 @@ fun ImageCropper(
             if (crop) {
                 val croppedBitmap = Bitmap.createBitmap(
                     scaledImageBitmap.asAndroidBitmap(),
-                    rectCrop.left,
-                    rectCrop.top,
-                    rectCrop.width,
-                    rectCrop.height
+                    rectCrop.left.toInt(),
+                    rectCrop.top.toInt(),
+                    rectCrop.width.toInt(),
+                    rectCrop.height.toInt()
                 ).asImageBitmap()
 
                 onCropSuccess(croppedBitmap)

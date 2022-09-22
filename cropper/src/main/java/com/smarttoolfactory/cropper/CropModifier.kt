@@ -15,7 +15,7 @@ import com.smarttoolfactory.cropper.state.cropData
 import com.smarttoolfactory.cropper.util.ZoomLevel
 import com.smarttoolfactory.cropper.util.getNextZoomLevel
 import com.smarttoolfactory.cropper.util.update
-import com.smarttoolfactory.gesture.detectMotionEvents
+import com.smarttoolfactory.gesture.detectMotionEventsAsList
 import com.smarttoolfactory.gesture.detectTransformGestures
 import kotlinx.coroutines.launch
 
@@ -100,7 +100,7 @@ fun Modifier.crop(
         }
 
         val touchModifier = Modifier.pointerInput(*keys) {
-            detectMotionEvents(
+            detectMotionEventsAsList(
                 onDown = {
                     coroutineScope.launch {
                         cropState.onDown(it)

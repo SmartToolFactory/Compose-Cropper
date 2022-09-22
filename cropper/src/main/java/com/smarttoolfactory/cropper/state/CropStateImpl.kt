@@ -7,8 +7,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
@@ -79,12 +77,12 @@ abstract class CropState internal constructor(
     val overlayRect: Rect
         get() = animatableRectOverlay.value
 
-    var cropRect: IntRect = IntRect.Zero
+    var cropRect: Rect = Rect.Zero
         get() = getCropRectangle(
             imageSize.width,
             imageSize.height,
             drawAreaRect,
-            overlayRect
+            animatableRectOverlay.targetValue
         )
         private set
 
@@ -92,13 +90,12 @@ abstract class CropState internal constructor(
     /**
      * Update properties of [CropState] and animate to valid intervals if required
      */
-    suspend fun updateProperties(cropProperties: CropProperties) {
+    internal open suspend fun updateProperties(cropProperties: CropProperties) {
         fling = cropProperties.fling
         pannable = cropProperties.pannable
         zoomable = cropProperties.zoomable
         rotatable = cropProperties.rotatable
 
-        // TODO Fix zoom reset
         val maxZoom = cropProperties.maxZoom
 
         // Update overlay rectangle
@@ -125,16 +122,16 @@ abstract class CropState internal constructor(
         }
 
         // Update image draw area
-        updateImageDrawRectFromTransformation()
+        drawAreaRect = updateImageDrawRectFromTransformation()
     }
 
     /**
      * Animate overlay rectangle to target value
      */
-    suspend fun animateOverlayRectTo(rect: Rect) {
+    internal suspend fun animateOverlayRectTo(rect: Rect) {
         animatableRectOverlay.animateTo(
             targetValue = rect,
-            animationSpec = tween(500)
+            animationSpec = tween(400)
         )
     }
 
@@ -148,16 +145,16 @@ abstract class CropState internal constructor(
     /*
         Touch gestures
      */
-    abstract suspend fun onDown(change: PointerInputChange)
+    internal abstract suspend fun onDown(change: PointerInputChange)
 
-    abstract suspend fun onMove(change: PointerInputChange)
+    internal abstract suspend fun onMove(changes: List<PointerInputChange>)
 
-    abstract suspend fun onUp(change: PointerInputChange)
+    internal abstract suspend fun onUp(change: PointerInputChange)
 
     /*
         Transform gestures
      */
-    abstract suspend fun onGesture(
+    internal abstract suspend fun onGesture(
         centroid: Offset,
         panChange: Offset,
         zoomChange: Float,
@@ -166,12 +163,12 @@ abstract class CropState internal constructor(
         changes: List<PointerInputChange>
     )
 
-    abstract suspend fun onGestureStart()
+    internal abstract suspend fun onGestureStart()
 
-    abstract suspend fun onGestureEnd(onBoundsCalculated: () -> Unit)
+    internal abstract suspend fun onGestureEnd(onBoundsCalculated: () -> Unit)
 
     // Double Tap
-    abstract suspend fun onDoubleTap(
+    internal abstract suspend fun onDoubleTap(
         pan: Offset = Offset.Zero,
         zoom: Float = 1f,
         rotation: Float = 0f,
@@ -194,7 +191,7 @@ abstract class CropState internal constructor(
      *  changed and animated if it's out of [containerSize] bounds or its grow
      *  bigger than previous size
      */
-    internal fun updateImageDrawRectFromTransformation() {
+    internal fun updateImageDrawRectFromTransformation(): Rect {
         val containerWidth = containerSize.width
         val containerHeight = containerSize.height
 
@@ -212,7 +209,7 @@ abstract class CropState internal constructor(
         val newWidth = originalDrawWidth * zoom
         val newHeight = originalDrawHeight * zoom
 
-        drawAreaRect = Rect(
+        return Rect(
             offset = Offset(
                 left - (newWidth - originalDrawWidth) / 2 + panX,
                 top - (newHeight - originalDrawHeight) / 2 + panY,
@@ -355,7 +352,7 @@ abstract class CropState internal constructor(
         bitmapHeight: Int,
         drawAreaRect: Rect,
         overlayRect: Rect
-    ): IntRect {
+    ): Rect {
 
         // Calculate latest image draw area based on overlay position
         // This is valid rectangle that contains crop area inside overlay
@@ -373,18 +370,15 @@ abstract class CropState internal constructor(
         val diffLeft = overlayRect.left - newRect.left
         val diffTop = overlayRect.top - newRect.top
 
-        val croppedBitmapLeft = (diffLeft * (bitmapWidth / drawAreaWidth)).toInt()
-        val croppedBitmapTop = (diffTop * (bitmapHeight / drawAreaHeight)).toInt()
+        val croppedBitmapLeft = (diffLeft * (bitmapWidth / drawAreaWidth))
+        val croppedBitmapTop = (diffTop * (bitmapHeight / drawAreaHeight))
 
-        val croppedBitmapWidth = (bitmapWidth * widthRatio).toInt()
-            .coerceAtMost(bitmapWidth - croppedBitmapLeft)
-        val croppedBitmapHeight =
-            (bitmapHeight * heightRatio).toInt()
-                .coerceAtMost(bitmapHeight - croppedBitmapTop)
+        val croppedBitmapWidth = bitmapWidth * widthRatio
+        val croppedBitmapHeight = bitmapHeight * heightRatio
 
-        return IntRect(
-            offset = IntOffset(croppedBitmapLeft, croppedBitmapTop),
-            size = IntSize(croppedBitmapWidth, croppedBitmapHeight)
+        return Rect(
+            offset = Offset(croppedBitmapLeft, croppedBitmapTop),
+            size = Size(croppedBitmapWidth, croppedBitmapHeight)
         )
     }
 }

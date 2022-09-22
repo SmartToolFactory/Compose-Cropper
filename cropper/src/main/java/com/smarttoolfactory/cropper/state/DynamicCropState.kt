@@ -55,7 +55,10 @@ class DynamicCropState internal constructor(
     limitPan = limitPan
 ) {
 
-    // Rectangle that covers Image composable
+    /**
+     * Rectangle that covers Image composable
+      */
+
     private val rectBounds = Rect(
         offset = Offset.Zero,
         size = Size(containerSize.width.toFloat(), containerSize.height.toFloat())
@@ -76,9 +79,14 @@ class DynamicCropState internal constructor(
 
     private var doubleTapped = false
 
+    // Check if transform gesture has been invoked
+    // inside overlay but with multiple pointers to zoom
+    private var gestureInvoked = false
+
     override suspend fun onDown(change: PointerInputChange) {
 
         rectTemp = overlayRect.copy()
+
         val position = change.position
         val touchPositionScreenX = position.x
         val touchPositionScreenY = position.y
@@ -99,21 +107,35 @@ class DynamicCropState internal constructor(
             getDistanceToEdgeFromTouch(touchRegion, rectTemp, touchPositionOnScreen)
     }
 
-    override suspend fun onMove(change: PointerInputChange) {
+    override suspend fun onMove(changes: List<PointerInputChange>) {
 
-        // update overlay rectangle based on where its touched and touch position to corners
-        // This function moves and/or scales overlay rectangle
-        val newRect = updateOverlayRect(
-            distanceToEdgeFromTouch = distanceToEdgeFromTouch,
-            touchRegion = touchRegion,
-            minDimension = minOverlaySize,
-            rectTemp = rectTemp,
-            overlayRect = overlayRect,
-            change = change
-        )
+        if (changes.isEmpty()) {
+            touchRegion = TouchRegion.None
+            return
+        }
 
-        snapOverlayRectTo(newRect)
+        gestureInvoked = changes.size > 1 && (touchRegion == TouchRegion.Inside)
+
+        // If overlay is touched and pointer size is one update
+        // or pointer size is bigger than one but touched any handles update
+        if (changes.size == 1 && !gestureInvoked) {
+
+            val change = changes.first()
+
+            // update overlay rectangle based on where its touched and touch position to corners
+            // This function moves and/or scales overlay rectangle
+            val newRect = updateOverlayRect(
+                distanceToEdgeFromTouch = distanceToEdgeFromTouch,
+                touchRegion = touchRegion,
+                minDimension = minOverlaySize,
+                rectTemp = rectTemp,
+                overlayRect = overlayRect,
+                change = change
+            )
+
+            snapOverlayRectTo(newRect)
 //        moveOverlayToBounds(change = change, newRect = newRect)
+        }
     }
 
     override suspend fun onUp(change: PointerInputChange) = coroutineScope {
@@ -126,9 +148,11 @@ class DynamicCropState internal constructor(
             animateTransformationToOverlayBounds()
 
             // Update image draw area after animating pan, zoom or rotation is completed
-            updateImageDrawRectFromTransformation()
+            drawAreaRect = updateImageDrawRectFromTransformation()
             touchRegion = TouchRegion.None
         }
+
+        gestureInvoked = false
     }
 
     override suspend fun onGesture(
@@ -139,21 +163,24 @@ class DynamicCropState internal constructor(
         mainPointer: PointerInputChange,
         changes: List<PointerInputChange>
     ) {
-        if (touchRegion == TouchRegion.None) {
+
+        if (touchRegion == TouchRegion.None || gestureInvoked) {
             doubleTapped = false
+
+            val newPan = if (gestureInvoked) Offset.Zero else panChange
 
             updateTransformState(
                 centroid = centroid,
                 zoomChange = zoomChange,
-                panChange = panChange,
+                panChange = newPan,
                 rotationChange = rotationChange
             )
 
             // Update image draw rectangle based on pan, zoom or rotation change
-            updateImageDrawRectFromTransformation()
+            drawAreaRect = updateImageDrawRectFromTransformation()
 
             // Fling Gesture
-            if (fling) {
+            if (pannable && fling) {
                 if (changes.size == 1) {
                     addPosition(mainPointer.uptimeMillis, mainPointer.position)
                 }
@@ -165,17 +192,17 @@ class DynamicCropState internal constructor(
 
     override suspend fun onGestureEnd(onBoundsCalculated: () -> Unit) {
 
-        if (touchRegion == TouchRegion.None) {
+        if (touchRegion == TouchRegion.None || gestureInvoked) {
 
             // Gesture end might be called after second tap and we don't want to fling
             // or animate back to valid bounds when doubled tapped
             if (!doubleTapped) {
 
-                if (fling && zoom > 1) {
+                if (pannable && fling && !gestureInvoked && zoom > 1) {
                     fling {
                         // We get target value on start instead of updating bounds after
                         // gesture has finished
-                        updateImageDrawRectFromTransformation()
+                        drawAreaRect = updateImageDrawRectFromTransformation()
                         onBoundsCalculated()
                     }
                 } else {
@@ -203,6 +230,7 @@ class DynamicCropState internal constructor(
         animateOverlayRectTo(
             calculateOverlayRectInBounds(rectBounds, overlayRect)
         )
+        animateTransformationToOverlayBounds()
         onAnimationEnd()
     }
 
