@@ -8,11 +8,11 @@ import androidx.compose.ui.graphics.Shape
  * for setting overlay in state and UI
  */
 @Immutable
-data class AspectRatioModel(
+data class CropAspectRatio(
     override val title: String,
     override val shape: Shape,
     val aspectRatio: AspectRatio = AspectRatio.Unspecified
-):ShapeModel(title, shape)
+):CropShape(title, shape)
 
 /**
  * Value class for containing aspect ratio
