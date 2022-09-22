@@ -4,10 +4,11 @@ package com.smarttoolfactory.composecropper.demo
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brush
@@ -31,7 +32,6 @@ import com.smarttoolfactory.composecropper.ImageSelectionButton
 import com.smarttoolfactory.composecropper.R
 import com.smarttoolfactory.composecropper.preferences.CropStyleSelectionMenu
 import com.smarttoolfactory.composecropper.preferences.PropertySelectionSheet
-
 import com.smarttoolfactory.cropper.ImageCropper
 import com.smarttoolfactory.cropper.settings.CropDefaults
 import com.smarttoolfactory.cropper.settings.CropProperties
@@ -122,31 +122,32 @@ private fun MainContent(
     var imageBitmap by remember { mutableStateOf(imageBitmapLarge) }
     var croppedImage by remember { mutableStateOf<ImageBitmap?>(null) }
 
-    val modifier = Modifier
-        .background(Color.LightGray)
-        .fillMaxWidth()
-        .aspectRatio(3 / 4f)
 
     var crop by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
+    var isCropping by remember { mutableStateOf(false) }
 
-
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.DarkGray),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
             ImageCropper(
-                modifier = modifier,
+                modifier = Modifier.fillMaxWidth().weight(1f),
                 imageBitmap = imageBitmap,
                 contentDescription = "Image Cropper",
                 cropStyle = cropStyle,
                 cropProperties = cropProperties,
                 crop = crop,
+                onCropStart = {
+                    isCropping = true
+                }
             ) {
                 croppedImage = it
+                isCropping = false
                 crop = false
                 showDialog = true
             }
@@ -190,6 +191,10 @@ private fun MainContent(
                 )
             }
         )
+
+        if (isCropping) {
+            CircularProgressIndicator()
+        }
     }
 
     if (showDialog) {
