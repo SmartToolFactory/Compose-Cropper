@@ -24,14 +24,19 @@ free of bugs, optimized and will include free-hand crop
 This library uses
 
 [Colorful Sliders](https://github.com/SmartToolFactory/Compose-Colorful-Sliders)
+
 Colorful Sliders written with Jetpack Compose that enliven default sliders with track and thumb
 dimensions, and gradient colors, borders, labels on top or at the bottom move with thumb and
 ColorfulIconSlider that can display emoji or any Composable as thumb
+
 [Color Picker Bundle](https://github.com/SmartToolFactory/Compose-Color-Picker-Bundle)
+
 Collection of Color Pickers written with Jetpack Compose with solid Color or Gradient with type,
 tile mode, and color stops in HSL/HSV/RGB models with Colorful Sliders, displays, and many
 customization options.
+
 [Extended Gestures](https://github.com/SmartToolFactory/Compose-Extended-Gestures)
+
 Jetpack Compose gesture library that expands available gesture functions with onTouchEvent
 counterpart of event, transform and touch delegate gestures.
 
