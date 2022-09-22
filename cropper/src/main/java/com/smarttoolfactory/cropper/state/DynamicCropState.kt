@@ -118,7 +118,7 @@ class DynamicCropState internal constructor(
 
         // If overlay is touched and pointer size is one update
         // or pointer size is bigger than one but touched any handles update
-        if (changes.size == 1 && !gestureInvoked) {
+        if (touchRegion != TouchRegion.None && changes.size == 1 && !gestureInvoked) {
 
             val change = changes.first()
 
@@ -134,7 +134,6 @@ class DynamicCropState internal constructor(
             )
 
             snapOverlayRectTo(newRect)
-//        moveOverlayToBounds(change = change, newRect = newRect)
         }
     }
 

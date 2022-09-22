@@ -271,12 +271,12 @@ abstract class CropState internal constructor(
      * should fit inside draw image rectangle to have valid bounds when calculation is completed.
      *
      * @param rectOverlay rectangle of overlay that is used for cropping
-     * @param rectImage rectangle of image that is being drawn
+     * @param rectDrawArea rectangle of image that is being drawn
      */
-    private fun calculateValidImageDrawRect(rectOverlay: Rect, rectImage: Rect): Rect {
+    private fun calculateValidImageDrawRect(rectOverlay: Rect, rectDrawArea: Rect): Rect {
 
-        var width = rectImage.width
-        var height = rectImage.height
+        var width = rectDrawArea.width
+        var height = rectDrawArea.height
 
         if (width < rectOverlay.width) {
             width = rectOverlay.width
@@ -286,7 +286,7 @@ abstract class CropState internal constructor(
             height = rectOverlay.height
         }
 
-        var rectImageArea = Rect(offset = rectImage.topLeft, size = Size(width, height))
+        var rectImageArea = Rect(offset = rectDrawArea.topLeft, size = Size(width, height))
 
         if (rectImageArea.left > rectOverlay.left) {
             rectImageArea = rectImageArea.translate(rectOverlay.left - rectImageArea.left, 0f)
