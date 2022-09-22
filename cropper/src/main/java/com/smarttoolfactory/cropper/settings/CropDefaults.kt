@@ -3,14 +3,15 @@ package com.smarttoolfactory.cropper.settings
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.ImageCropper
 import com.smarttoolfactory.cropper.crop
 import com.smarttoolfactory.cropper.model.AspectRatio
+import com.smarttoolfactory.cropper.model.CropShape
+import com.smarttoolfactory.cropper.model.aspectRatios
+import com.smarttoolfactory.cropper.model.shapes
 import com.smarttoolfactory.cropper.state.CropState
 
 /**
@@ -22,24 +23,24 @@ object CropDefaults {
         cropType: CropType = CropType.Dynamic,
         handleSize: Dp = 20.dp,
         maxZoom: Float = 10f,
-        aspectRatio: AspectRatio = AspectRatio.Unspecified,
+        aspectRatio: AspectRatio = aspectRatios[2].aspectRatio,
         contentScale: ContentScale = ContentScale.Fit,
-        shape: Shape = RectangleShape,
-        fling: Boolean = true,
-        zoomable: Boolean = true,
+        shape: CropShape = shapes[0],
         pannable: Boolean = true,
+        fling: Boolean = false,
+        zoomable: Boolean = true,
         rotatable: Boolean = false
     ): CropProperties {
         return CropProperties(
             cropType = cropType,
             handleSize = handleSize,
             contentScale = contentScale,
-            shape = shape,
+            cropShape = shape,
             maxZoom = maxZoom,
             aspectRatio = aspectRatio,
+            pannable = pannable,
             fling = fling,
             zoomable = zoomable,
-            pannable = pannable,
             rotatable = rotatable
         )
     }
@@ -72,9 +73,9 @@ data class CropProperties internal constructor(
     val handleSize: Dp,
     val aspectRatio: AspectRatio,
     val contentScale: ContentScale,
-    val shape: Shape,
-    val fling: Boolean,
+    val cropShape: CropShape,
     val pannable: Boolean,
+    val fling: Boolean,
     val rotatable: Boolean,
     val zoomable: Boolean,
     val maxZoom: Float,

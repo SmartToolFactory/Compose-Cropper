@@ -15,17 +15,18 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.cropper.model.AspectRatioModel
-import com.smarttoolfactory.cropper.model.ShapeModel
+import com.smarttoolfactory.cropper.model.CropShape
 
 
 @Composable
-fun ShapeSelection(
+fun ShapeSelectionCard(
     modifier: Modifier = Modifier,
     color: Color,
-    shapeModel: ShapeModel
+    fontSize:TextUnit = 12.sp,
+    cropShape: CropShape
 ) {
     Box(
         modifier = modifier
@@ -41,7 +42,7 @@ fun ShapeSelection(
                 .aspectRatio(1f)
                 .drawWithContent {
 
-                    val outline = shapeModel.shape.createOutline(
+                    val outline = cropShape.shape.createOutline(
                         size = size,
                         layoutDirection = layoutDirection,
                         density = density
@@ -64,16 +65,21 @@ fun ShapeSelection(
                     }
                 }
             )
-            Text(text = shapeModel.title, color = color, fontSize = 14.sp)
+           if(cropShape.title.isNotEmpty()){
+               Text(text = cropShape.title, color = color, fontSize = fontSize)
+           }
         }
     }
 }
 
 @Composable
-fun ShapeSelection(
+fun ShapeSelectionCard(
     modifier: Modifier = Modifier,
     isSelected: Boolean,
-    aspectRatioModel: AspectRatioModel
+    activeColor: Color = Color.Red,
+    inactiveColor: Color = Color.LightGray,
+    fontSize:TextUnit = 14.sp,
+    cropShape: CropShape
 ) {
     Box(
         modifier = modifier
@@ -84,14 +90,14 @@ fun ShapeSelection(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             val density = LocalDensity.current
             val layoutDirection = LocalLayoutDirection.current
-            val color = if (isSelected) Color.Cyan else Color.LightGray
+            val color = if (isSelected) activeColor else inactiveColor
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp)
                 .aspectRatio(1f)
                 .drawWithContent {
 
-                    val outline = aspectRatioModel.shape.createOutline(
+                    val outline = cropShape.shape.createOutline(
                         size = size,
                         layoutDirection = layoutDirection,
                         density = density
@@ -114,7 +120,8 @@ fun ShapeSelection(
                     }
                 }
             )
-            Text(text = aspectRatioModel.title, color = color, fontSize = 14.sp)
-        }
+            if(cropShape.title.isNotEmpty()){
+                Text(text = cropShape.title, color = color, fontSize = fontSize)
+            }        }
     }
 }

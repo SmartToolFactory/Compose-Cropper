@@ -8,9 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.cropper.model.AspectRatio
-import com.smarttoolfactory.cropper.model.AspectRatioModel
-import com.smarttoolfactory.cropper.model.aspectRatios
+import com.smarttoolfactory.cropper.model.*
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropType
 import kotlin.math.roundToInt
@@ -26,7 +24,7 @@ internal fun CropPropertySelectionMenu(
     val aspectRatio = cropProperties.aspectRatio
     val handleSize = cropProperties.handleSize
     val contentScale = cropProperties.contentScale
-    val shape = cropProperties.shape
+    val cropShape = cropProperties.cropShape
 
     Title("Crop Type")
     CropTypeDialogSelection(
@@ -51,6 +49,16 @@ internal fun CropPropertySelectionMenu(
         onAspectRatioChange = {
             onCropPropertiesChange(
                 cropProperties.copy(aspectRatio = it.aspectRatio)
+            )
+        }
+    )
+
+    Title("Shape")
+    ShapeSelection(
+        cropShape = cropShape,
+        onCropShapeChange = {
+            onCropPropertiesChange(
+                cropProperties.copy(cropShape = it)
             )
         }
     )
@@ -134,7 +142,7 @@ internal fun CropGestureSelectionMenu(
 @Composable
 internal fun AspectRatioSelection(
     aspectRatio: AspectRatio,
-    onAspectRatioChange: (AspectRatioModel) -> Unit
+    onAspectRatioChange: (CropAspectRatio) -> Unit
 ) {
 
     val initialSelectedIndex = remember {
@@ -148,6 +156,26 @@ internal fun AspectRatioSelection(
         initialSelectedIndex = initialSelectedIndex
     ) {
         onAspectRatioChange(it)
+    }
+}
+
+@Composable
+internal fun ShapeSelection(
+    cropShape: CropShape,
+    onCropShapeChange: (CropShape) -> Unit
+) {
+
+    val initialSelectedIndex = remember {
+        val shapes = shapes
+        val currentModel = shapes.first { it == cropShape }
+        shapes.indexOf(currentModel)
+    }
+
+    AnimatedShapeSelection(
+        modifier = Modifier.fillMaxWidth(),
+        initialSelectedIndex = initialSelectedIndex
+    ) {
+        onCropShapeChange(it)
     }
 }
 

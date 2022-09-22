@@ -8,7 +8,13 @@ import androidx.compose.ui.graphics.Shape
  * for setting overlay in state and UI
  */
 @Immutable
-open class ShapeModel(
+open class CropShape(
     open val title: String,
     open val shape: Shape,
+    val editable:Boolean = false,
+    val shapeType: ShapeType = ShapeType.Rect
 )
+
+enum class ShapeType {
+    Rect, RoundedRect, CutCorner, Oval, Polygon, Custom
+}
