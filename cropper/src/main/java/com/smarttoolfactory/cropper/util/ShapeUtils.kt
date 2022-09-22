@@ -1,10 +1,12 @@
 package com.smarttoolfactory.cropper.util
 
+import android.graphics.Matrix
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.AspectRatio
 import kotlin.math.cos
@@ -26,6 +28,7 @@ import kotlin.math.sin
  * ```
  */
 fun createPolygonPath(cx: Float, cy: Float, sides: Int, radius: Float): Path {
+
     val angle = 2.0 * Math.PI / sides
 
     return Path().apply {
@@ -40,6 +43,28 @@ fun createPolygonPath(cx: Float, cy: Float, sides: Int, radius: Float): Path {
             )
         }
         close()
+    }
+}
+
+
+/**
+ * Create a polygon shape
+ */
+fun createPolygonShape(sides: Int, degrees: Float = 0f): GenericShape {
+    return GenericShape { size: Size, _: LayoutDirection ->
+
+        val radius = size.width.coerceAtMost(size.height) / 2
+        addPath(
+            createPolygonPath(
+                cx = size.width / 2,
+                cy = size.height / 2,
+                sides = sides,
+                radius = radius
+            )
+        )
+        val matrix = Matrix()
+        matrix.postRotate(degrees, size.width / 2, size.height / 2)
+        this.asAndroidPath().transform(matrix)
     }
 }
 
