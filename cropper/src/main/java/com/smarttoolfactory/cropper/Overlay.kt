@@ -7,9 +7,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.util.drawGrid
 import kotlin.math.roundToInt
 
@@ -20,8 +24,9 @@ import kotlin.math.roundToInt
 @Composable
 internal fun DrawingOverlay(
     modifier: Modifier,
-    drawOverlay:Boolean,
+    drawOverlay: Boolean,
     rect: Rect,
+    shape: Shape,
     drawGrid: Boolean,
     overlayColor: Color,
     handleColor: Color,
@@ -29,36 +34,21 @@ internal fun DrawingOverlay(
     drawHandles: Boolean,
     handleSize: Float
 ) {
+    val density = LocalDensity.current
+    val layoutDirection: LayoutDirection = LocalLayoutDirection.current
 
-    val path = remember(rect, handleSize) {
-        Path().apply {
+    val pathHandles = remember {
+        Path()
+    }
 
-            if (rect != Rect.Zero) {
-                // Top left lines
-                moveTo(rect.topLeft.x, rect.topLeft.y + handleSize)
-                lineTo(rect.topLeft.x, rect.topLeft.y)
-                lineTo(rect.topLeft.x + handleSize, rect.topLeft.y)
-
-                // Top right lines
-                moveTo(rect.topRight.x - handleSize, rect.topRight.y)
-                lineTo(rect.topRight.x, rect.topRight.y)
-                lineTo(rect.topRight.x, rect.topRight.y + handleSize)
-
-                // Bottom right lines
-                moveTo(rect.bottomRight.x, rect.bottomRight.y - handleSize)
-                lineTo(rect.bottomRight.x, rect.bottomRight.y)
-                lineTo(rect.bottomRight.x - handleSize, rect.bottomRight.y)
-
-                // Bottom left lines
-                moveTo(rect.bottomLeft.x + handleSize, rect.bottomLeft.y)
-                lineTo(rect.bottomLeft.x, rect.bottomLeft.y)
-                lineTo(rect.bottomLeft.x, rect.bottomLeft.y - handleSize)
-            }
-        }
+    // TODO Update with a way that doesn't create new object on recomposition
+    val outline = remember(rect, shape) {
+        shape.createOutline(rect.size, layoutDirection, density)
     }
 
     Canvas(modifier = modifier) {
         val strokeWidthPx = strokeWidth.toPx()
+
 
         with(drawContext.canvas.nativeCanvas) {
             val checkPoint = saveLayer(null, null)
@@ -67,16 +57,26 @@ internal fun DrawingOverlay(
             drawRect(Color(0x77000000))
 
             // Source
-            drawRect(
-                topLeft = rect.topLeft,
-                size = rect.size,
-                color = Color.Transparent,
-                blendMode = BlendMode.Clear
-            )
+            translate(left = rect.left, top = rect.top) {
+                drawOutline(
+                    outline = outline,
+                    color = Color.Transparent,
+                    blendMode = BlendMode.SrcOut
+                )
+            }
+
+            if (drawGrid) {
+                drawGrid(
+                    rect = rect,
+                    strokeWidth = strokeWidthPx,
+                    color = overlayColor
+                )
+            }
+
             restoreToCount(checkPoint)
         }
 
-        if(drawOverlay){
+        if (drawOverlay) {
             drawRect(
                 topLeft = rect.topLeft,
                 size = rect.size,
@@ -84,16 +84,38 @@ internal fun DrawingOverlay(
                 style = Stroke(width = strokeWidthPx)
             )
 
-            if (drawGrid) {
-                drawGrid(rect = rect, strokeWidth = strokeWidthPx / 2, color = overlayColor)
-            }
-
             if (drawHandles) {
+                pathHandles.apply {
+                    reset()
+
+                    if (rect != Rect.Zero) {
+                        // Top left lines
+                        moveTo(rect.topLeft.x, rect.topLeft.y + handleSize)
+                        lineTo(rect.topLeft.x, rect.topLeft.y)
+                        lineTo(rect.topLeft.x + handleSize, rect.topLeft.y)
+
+                        // Top right lines
+                        moveTo(rect.topRight.x - handleSize, rect.topRight.y)
+                        lineTo(rect.topRight.x, rect.topRight.y)
+                        lineTo(rect.topRight.x, rect.topRight.y + handleSize)
+
+                        // Bottom right lines
+                        moveTo(rect.bottomRight.x, rect.bottomRight.y - handleSize)
+                        lineTo(rect.bottomRight.x, rect.bottomRight.y)
+                        lineTo(rect.bottomRight.x - handleSize, rect.bottomRight.y)
+
+                        // Bottom left lines
+                        moveTo(rect.bottomLeft.x + handleSize, rect.bottomLeft.y)
+                        lineTo(rect.bottomLeft.x, rect.bottomLeft.y)
+                        lineTo(rect.bottomLeft.x, rect.bottomLeft.y - handleSize)
+                    }
+                }
+
                 drawPath(
-                    path = path,
+                    path = pathHandles,
                     color = handleColor,
                     style = Stroke(
-                        width=strokeWidthPx * 2,
+                        width = strokeWidthPx * 2,
                         cap = StrokeCap.Round,
                         join = StrokeJoin.Round
                     )
@@ -129,4 +151,3 @@ internal fun ImageOverlay(
         )
     }
 }
-
