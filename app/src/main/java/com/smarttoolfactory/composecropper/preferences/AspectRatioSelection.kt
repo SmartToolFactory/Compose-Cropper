@@ -40,7 +40,7 @@ internal fun AnimatedAspectRatioSelection(
             }
             .width(width),
             color = color,
-            cropShape = item
+            cropAspectRatio = item
         )
 
         if (currentIndex != selectedLocalIndex) {

@@ -9,10 +9,11 @@ import androidx.compose.ui.graphics.Shape
  */
 @Immutable
 data class CropAspectRatio(
-    override val title: String,
-    override val shape: Shape,
-    val aspectRatio: AspectRatio = AspectRatio.Unspecified
-):CropShape(title, shape)
+    val title: String,
+    val shape: Shape,
+    val aspectRatio: AspectRatio = AspectRatio.Unspecified,
+    val icons: List<Int> = listOf()
+)
 
 /**
  * Value class for containing aspect ratio
