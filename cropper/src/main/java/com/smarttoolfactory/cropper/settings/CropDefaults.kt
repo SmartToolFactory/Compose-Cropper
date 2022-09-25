@@ -9,9 +9,9 @@ import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.ImageCropper
 import com.smarttoolfactory.cropper.crop
 import com.smarttoolfactory.cropper.model.AspectRatio
-import com.smarttoolfactory.cropper.model.CropShape
+import com.smarttoolfactory.cropper.model.CropOutline
+import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.model.aspectRatios
-import com.smarttoolfactory.cropper.model.shapes
 import com.smarttoolfactory.cropper.state.CropState
 
 /**
@@ -25,7 +25,7 @@ object CropDefaults {
         maxZoom: Float = 10f,
         aspectRatio: AspectRatio = aspectRatios[2].aspectRatio,
         contentScale: ContentScale = ContentScale.Fit,
-        shape: CropShape = shapes[0],
+        cropOutlineProperty: CropOutlineProperty,
         pannable: Boolean = true,
         fling: Boolean = false,
         zoomable: Boolean = true,
@@ -35,7 +35,7 @@ object CropDefaults {
             cropType = cropType,
             handleSize = handleSize,
             contentScale = contentScale,
-            cropShape = shape,
+            cropOutlineProperty = cropOutlineProperty,
             maxZoom = maxZoom,
             aspectRatio = aspectRatio,
             pannable = pannable,
@@ -73,7 +73,7 @@ data class CropProperties internal constructor(
     val handleSize: Dp,
     val aspectRatio: AspectRatio,
     val contentScale: ContentScale,
-    val cropShape: CropShape,
+    val cropOutlineProperty: CropOutlineProperty,
     val pannable: Boolean,
     val fling: Boolean,
     val rotatable: Boolean,
@@ -92,4 +92,13 @@ data class CropStyle internal constructor(
     val strokeWidth: Dp,
     val overlayColor: Color,
     val handleColor: Color
+)
+
+/**
+ * Property for passing [CropOutline] between settings UI to [ImageCropper]
+ */
+@Immutable
+data class CropOutlineProperty(
+    val outlineType: OutlineType,
+    val cropOutline: CropOutline
 )
