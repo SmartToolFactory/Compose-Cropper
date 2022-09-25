@@ -41,21 +41,30 @@ fun GridImageLayout(
             divider = divider,
             itemCount = thumbnails.size
         ) {
-            thumbnails.forEach {
-                Image(
-                    modifier = Modifier.layoutId("Icon"),
-                    painter = painterResource(id = it),
-                    contentDescription = "Icon",
-                    contentScale = ContentScale.Crop,
-                )
-            }
 
-            if (thumbnails.size > 4) {
-                val carry = thumbnails.size - 3
+            val size = thumbnails.size
+            if (size < 5) {
+                thumbnails.forEach {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "Icon",
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+            } else {
+                thumbnails.take(3).forEach { it ->
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "Icon",
+                        contentScale = ContentScale.Crop,
+                    )
+
+                }
+
                 Box(
-                    modifier = Modifier.layoutId("Text"),
                     contentAlignment = Alignment.Center
                 ) {
+                    val carry = size - 3
                     Text(text = "+$carry", fontSize = 20.sp)
                 }
             }
@@ -88,23 +97,17 @@ private fun ImageDrawLayout(
                 )
             }
 
-            val gridMeasurables = if (itemCount < 5) {
-                measurables
-            } else {
-                measurables.take(3) + measurables.first { it.layoutId == "Text" }
-            }
-
             val placeables: List<Placeable> = if (measurables.size != 3) {
-                gridMeasurables.map { measurable: Measurable ->
+                measurables.map { measurable: Measurable ->
                     measurable.measure(constraints = newConstraints)
                 }
             } else {
-                gridMeasurables
+                measurables
                     .take(2)
                     .map { measurable: Measurable ->
                         measurable.measure(constraints = newConstraints)
                     } +
-                        gridMeasurables
+                        measurables
                             .last()
                             .measure(
                                 constraints = Constraints.fixed(
