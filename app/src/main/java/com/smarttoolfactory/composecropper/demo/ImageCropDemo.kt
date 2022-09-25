@@ -33,9 +33,9 @@ import com.smarttoolfactory.composecropper.R
 import com.smarttoolfactory.composecropper.preferences.CropStyleSelectionMenu
 import com.smarttoolfactory.composecropper.preferences.PropertySelectionSheet
 import com.smarttoolfactory.cropper.ImageCropper
-import com.smarttoolfactory.cropper.settings.CropDefaults
-import com.smarttoolfactory.cropper.settings.CropProperties
-import com.smarttoolfactory.cropper.settings.CropStyle
+import com.smarttoolfactory.cropper.model.OutlineType
+import com.smarttoolfactory.cropper.model.RectCropShape
+import com.smarttoolfactory.cropper.settings.*
 import kotlinx.coroutines.launch
 
 internal enum class SelectionPage {
@@ -51,7 +51,18 @@ fun ImageCropDemo() {
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
 
-    var cropProperties by remember { mutableStateOf(CropDefaults.properties()) }
+    val cropFrameFactory = remember { CropFrameFactory() }
+
+    var cropProperties by remember {
+        mutableStateOf(
+            CropDefaults.properties(
+                cropOutlineProperty = CropOutlineProperty(
+                    OutlineType.Rect,
+                    RectCropShape(0, "")
+                )
+            )
+        )
+    }
     var cropStyle by remember { mutableStateOf(CropDefaults.style()) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -72,6 +83,7 @@ fun ImageCropDemo() {
 
             if (selectionPage == SelectionPage.Properties) {
                 PropertySelectionSheet(
+                    cropFrameFactory = cropFrameFactory,
                     cropProperties = cropProperties,
                     onCropPropertiesChange = {
                         cropProperties = it
