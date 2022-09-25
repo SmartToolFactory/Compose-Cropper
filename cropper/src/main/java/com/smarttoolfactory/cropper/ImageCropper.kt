@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.crop.CropAgent
 import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
+import com.smarttoolfactory.cropper.model.CropShape
 import com.smarttoolfactory.cropper.settings.CropDefaults
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropStyle
@@ -38,7 +39,7 @@ fun ImageCropper(
     imageBitmap: ImageBitmap,
     contentDescription: String?,
     cropStyle: CropStyle = CropDefaults.style(),
-    cropProperties: CropProperties = CropDefaults.properties(),
+    cropProperties: CropProperties,
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
     crop: Boolean = false,
     onCropStart: () -> Unit,
@@ -93,7 +94,7 @@ fun ImageCropper(
 
         val cropType = cropProperties.cropType
         val contentScale = cropProperties.contentScale
-        val shape = cropProperties.cropShape.shape
+        val shape = (cropProperties.cropOutlineProperty.cropOutline as CropShape).shape
 
         // these keys are for resetting cropper when image width/height, contentScale or
         // overlay aspect ratio changes
