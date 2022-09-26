@@ -54,10 +54,12 @@ dependencies {
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.runtime:runtime:$compose_version"
 
-    // Material Design 3 for Compose
-    implementation "androidx.compose.material3:material3:1.0.0-beta02"
+    // Material design icons
+    implementation "androidx.compose.material:material-icons-core:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
 
-    implementation "dev.chrisbanes.snapper:snapper:0.3.0"
+    // Material Design 3 for Compose
+    implementation "androidx.compose.material3:material3:1.0.0-beta03"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
