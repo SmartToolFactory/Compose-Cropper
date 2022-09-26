@@ -36,7 +36,7 @@ interface CropPath : CropOutline {
  * Crop outline that contains a [ImageBitmap]  to draw frame for cropping. And blend modes
  * to draw
  */
-interface CropImageBitmap : CropOutline {
+interface CropImageMask : CropOutline {
     val image: ImageBitmap
 }
 
@@ -60,15 +60,14 @@ data class RectCropShape(
 data class RoundedCornerCropShape(
     override val id: Int,
     override val title: String,
-    val cornerRadius: CornerRadiusProperties = CornerRadiusProperties()
-) : CropShape {
-    override val shape = RoundedCornerShape(
+    val cornerRadius: CornerRadiusProperties = CornerRadiusProperties(),
+    override val shape: RoundedCornerShape = RoundedCornerShape(
         topStartPercent = cornerRadius.topStartPercent,
         topEndPercent = cornerRadius.topEndPercent,
         bottomEndPercent = cornerRadius.bottomEndPercent,
         bottomStartPercent = cornerRadius.bottomStartPercent
     )
-}
+) : CropShape
 
 /**
  * Wrapper class that implements [CropOutline] and is a shape
@@ -79,14 +78,13 @@ data class CutCornerCropShape(
     override val id: Int,
     override val title: String,
     val cornerRadius: CornerRadiusProperties = CornerRadiusProperties(),
-) : CropShape {
-    override val shape = CutCornerShape(
+    override val shape: CutCornerShape = CutCornerShape(
         topStartPercent = cornerRadius.topStartPercent,
         topEndPercent = cornerRadius.topEndPercent,
         bottomEndPercent = cornerRadius.bottomEndPercent,
         bottomStartPercent = cornerRadius.bottomStartPercent
     )
-}
+) : CropShape
 
 /**
  * Wrapper class that implements [CropOutline] and is a shape
@@ -133,4 +131,4 @@ data class ImageMaskOutline(
     override val id: Int,
     override val title: String,
     override val image: ImageBitmap,
-) : CropImageBitmap
+) : CropImageMask

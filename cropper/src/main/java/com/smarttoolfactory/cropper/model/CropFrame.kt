@@ -7,7 +7,6 @@ import androidx.compose.runtime.Immutable
  */
 @Immutable
 data class CropFrame(
-    val title: String,
     val outlineType: OutlineType,
     val editable: Boolean = false,
     val cropOutlineContainer: CropOutlineContainer<out CropOutline>
