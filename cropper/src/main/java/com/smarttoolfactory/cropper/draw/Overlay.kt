@@ -68,7 +68,17 @@ internal fun DrawingOverlay(
             )
         }
         is CropPath -> {
-            val path = cropOutline.path
+            val path = remember(rect, cropOutline) {
+                val path = cropOutline.path
+                val pathSize = path.getBounds().size
+                val rectSize = rect.size
+
+                val matrix = android.graphics.Matrix()
+                matrix.postScale(rectSize.width / pathSize.width, rect.height / pathSize.height)
+                path.asAndroidPath().transform(matrix)
+                path
+            }
+
 
             DrawingOverlayImpl(
                 modifier = modifier,
@@ -161,7 +171,7 @@ private fun DrawingOverlayImpl(
             handleSize,
             pathHandles
         ) {
-            drawCropPath(rect, path)
+            drawCropPath(path)
         }
     }
 }
@@ -277,15 +287,20 @@ private fun DrawScope.drawCropOutline(outline: Outline) {
     )
 }
 
-private fun DrawScope.drawCropPath(
-    rect: Rect,
-    path: Path
-) {
-    drawPath(
-        path = path,
-        color = Color.Transparent,
-        blendMode = BlendMode.SrcOut
-    )
+private fun DrawScope.drawCropPath(path: Path) {
+
+    val left = path.getBounds().left
+    val top = path.getBounds().top
+
+    // This translation is required to offset space before path position from
+    // vector drawable
+    translate(left = -left, top = -top) {
+        drawPath(
+            path = path,
+            color = Color.Transparent,
+            blendMode = BlendMode.SrcOut
+        )
+    }
 }
 
 private fun Path.updateHandlePath(
