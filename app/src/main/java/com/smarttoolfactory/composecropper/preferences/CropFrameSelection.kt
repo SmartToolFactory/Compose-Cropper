@@ -13,6 +13,7 @@ import com.smarttoolfactory.cropper.model.CropFrame
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropOutlineProperty
+import com.smarttoolfactory.cropper.settings.frames.CropFrameEditDialog
 import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
 
 /**
@@ -22,7 +23,7 @@ import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
 fun CropFrameSelection(
     cropFrameFactory: CropFrameFactory,
     cropOutlineProperty: CropOutlineProperty,
-    onCropShapeChange: (CropOutlineProperty) -> Unit
+    conCropOutlinePropertyChange: (CropOutlineProperty) -> Unit
 ) {
 
     var showEditDialog by remember { mutableStateOf(false) }
@@ -39,6 +40,14 @@ fun CropFrameSelection(
             onConfirm = {
                 cropFrame = it
                 cropFrameFactory.editCropFrame(cropFrame)
+
+                conCropOutlinePropertyChange(
+                    CropOutlineProperty(
+                        it.outlineType,
+                        it.cropOutlineContainer.selectedItem
+                    )
+                )
+
                 showEditDialog = false
             },
             onDismiss = {
@@ -62,7 +71,7 @@ fun CropFrameSelection(
             showEditDialog = true
         },
         onCropFrameChange = {
-            onCropShapeChange(
+            conCropOutlinePropertyChange(
                 CropOutlineProperty(
                     it.outlineType,
                     it.cropOutlineContainer.selectedItem

@@ -45,8 +45,6 @@ class CropAgent {
             .copy(Bitmap.Config.ARGB_8888, true)!!
             .asImageBitmap()
 
-        croppedBitmap.recycle()
-
         drawCroppedImage(cropOutline, cropRect, layoutDirection, density, imageToCrop)
 
         return imageToCrop
