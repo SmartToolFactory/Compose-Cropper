@@ -1,7 +1,6 @@
 package com.smarttoolfactory.cropper.settings
 
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Path
 import com.smarttoolfactory.cropper.model.*
 
 class CropFrameFactory(private val defaultImage: ImageBitmap) {
@@ -122,7 +121,8 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
             OutlineType.Custom -> {
                 CustomOutlineContainer(
                     outlines = listOf(
-                        CustomPathOutline(id = 0, title = "Custom", path = createDefaultPath())
+                        CustomPathOutline(id = 0, title = "Custom", path = Paths.Favorite),
+                        CustomPathOutline(id = 0, title = "Star", path = Paths.Star),
                     )
                 )
             }
@@ -140,23 +140,4 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
     fun editCropFrame(cropFrame: CropFrame) {
         cropFrameMap[cropFrame.outlineType] = cropFrame
     }
-
-    private fun createDefaultPath(): Path {
-        return PathFavorite
-    }
 }
-
-
-val PathFavorite
-    get() = Path().apply {
-        moveTo(12.0f, 21.35f)
-        relativeLineTo(-1.45f, -1.32f)
-        cubicTo(5.4f, 15.36f, 2.0f, 12.28f, 2.0f, 8.5f)
-        cubicTo(2.0f, 5.42f, 4.42f, 3.0f, 7.5f, 3.0f)
-        relativeCubicTo(1.74f, 0.0f, 3.41f, 0.81f, 4.5f, 2.09f)
-        cubicTo(13.09f, 3.81f, 14.76f, 3.0f, 16.5f, 3.0f)
-        cubicTo(19.58f, 3.0f, 22.0f, 5.42f, 22.0f, 8.5f)
-        relativeCubicTo(0.0f, 3.78f, -3.4f, 6.86f, -8.55f, 11.54f)
-        lineTo(12.0f, 21.35f)
-        close()
-    }
