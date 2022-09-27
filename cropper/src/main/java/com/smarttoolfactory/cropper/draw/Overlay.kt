@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -74,8 +75,17 @@ internal fun DrawingOverlay(
                 val rectSize = rect.size
 
                 val matrix = android.graphics.Matrix()
-                matrix.postScale(rectSize.width / pathSize.width, rect.height / pathSize.height)
+                matrix.postScale(
+                    rectSize.width / pathSize.width,
+                    rect.height / pathSize.height
+                )
+
                 path.asAndroidPath().transform(matrix)
+
+                val left = path.getBounds().left
+                val top = path.getBounds().top
+
+                path.translate(Offset(-left, -top))
                 path
             }
 
@@ -288,19 +298,11 @@ private fun DrawScope.drawCropOutline(outline: Outline) {
 }
 
 private fun DrawScope.drawCropPath(path: Path) {
-
-    val left = path.getBounds().left
-    val top = path.getBounds().top
-
-    // This translation is required to offset space before path position from
-    // vector drawable
-    translate(left = -left, top = -top) {
         drawPath(
             path = path,
             color = Color.Transparent,
             blendMode = BlendMode.SrcOut
         )
-    }
 }
 
 private fun Path.updateHandlePath(
