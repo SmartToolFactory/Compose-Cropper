@@ -92,7 +92,7 @@ fun Modifier.drawWithLayer(block: DrawScope.() -> Unit) = this.then(
 fun DrawScope.drawCropImage(
     rect: Rect,
     imageBitmap: ImageBitmap,
-    blendMode: BlendMode = BlendMode.SrcOut
+    blendMode: BlendMode = BlendMode.DstOut
 ) {
     drawImage(
         image = imageBitmap,
