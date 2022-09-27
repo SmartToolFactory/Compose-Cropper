@@ -23,26 +23,6 @@ class CropAgent {
 
     private val paint = Paint()
 
-    fun crop(
-        imageBitmap: ImageBitmap,
-        cropRect: Rect,
-        cropOutline: CropOutline,
-        layoutDirection: LayoutDirection,
-        density: Density,
-        onCropSuccess: (ImageBitmap) -> Unit
-    ) {
-
-        val croppedBitmap = Bitmap.createBitmap(
-            imageBitmap.asAndroidBitmap(),
-            cropRect.left.toInt(),
-            cropRect.top.toInt(),
-            cropRect.width.toInt(),
-            cropRect.height.toInt()
-        ).asImageBitmap()
-
-        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, croppedBitmap)
-        onCropSuccess(croppedBitmap)
-    }
 
     fun crop(
         imageBitmap: ImageBitmap,
@@ -52,16 +32,24 @@ class CropAgent {
         density: Density,
     ): ImageBitmap {
 
-        val croppedBitmap = Bitmap.createBitmap(
+        // TODO pass mutable bitmap
+        val croppedBitmap: Bitmap = Bitmap.createBitmap(
             imageBitmap.asAndroidBitmap(),
             cropRect.left.toInt(),
             cropRect.top.toInt(),
             cropRect.width.toInt(),
             cropRect.height.toInt(),
-        ).asImageBitmap()
+        )
 
-        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, croppedBitmap)
-        return croppedBitmap
+        val imageToCrop = croppedBitmap
+            .copy(Bitmap.Config.ARGB_8888, true)!!
+            .asImageBitmap()
+
+        croppedBitmap.recycle()
+
+        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, imageToCrop)
+
+        return imageToCrop
     }
 
     private fun drawCroppedImage(
@@ -69,16 +57,12 @@ class CropAgent {
         cropRect: Rect,
         layoutDirection: LayoutDirection,
         density: Density,
-        croppedBitmap: ImageBitmap,
+        imageToCrop: ImageBitmap,
     ) {
-
-        val imageToCrop = croppedBitmap
-            .asAndroidBitmap()
-            .copy(Bitmap.Config.ARGB_8888, true)!!
-            .asImageBitmap()
 
         when (cropOutline) {
             is CropShape -> {
+
                 val path = Path().apply {
                     val outline =
                         cropOutline.shape.createOutline(cropRect.size, layoutDirection, density)
@@ -89,7 +73,7 @@ class CropAgent {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
 
                     // Destination
-                    drawPath(path, imagePaint)
+                    drawPath(path, paint)
 
                     // Source
                     drawImage(
@@ -101,7 +85,22 @@ class CropAgent {
                 }
             }
             is CropPath -> {
-                val path = cropOutline.path
+
+                val path = Path().apply {
+
+                    addPath(cropOutline.path)
+
+                    val pathSize = getBounds().size
+                    val rectSize = cropRect.size
+
+                    val matrix = android.graphics.Matrix()
+                    matrix.postScale(
+                        rectSize.width / pathSize.width,
+                        cropRect.height / pathSize.height
+                    )
+                    this.asAndroidPath().transform(matrix)
+                }
+
                 Canvas(image = imageToCrop).run {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
 
@@ -115,16 +114,21 @@ class CropAgent {
             }
             is CropImageMask -> {
 
-                val image = cropOutline.image
+                val imageMask = Bitmap.createScaledBitmap(
+                    cropOutline.image.asAndroidBitmap(),
+                    cropRect.width.toInt(),
+                    cropRect.height.toInt(),
+                    true
+                ).asImageBitmap()
 
                 Canvas(image = imageToCrop).run {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
 
                     // Destination
-                    drawImage(image, topLeftOffset = cropRect.topLeft, imagePaint)
+                    drawImage(imageMask, topLeftOffset = Offset.Zero, paint)
 
                     // Source
-                    drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, paint)
+                    drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, imagePaint)
 
                     restore()
                 }
