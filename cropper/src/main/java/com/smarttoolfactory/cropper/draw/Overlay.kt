@@ -13,13 +13,12 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.CropImageMask
 import com.smarttoolfactory.cropper.model.CropOutline
 import com.smarttoolfactory.cropper.model.CropPath
 import com.smarttoolfactory.cropper.model.CropShape
-import com.smarttoolfactory.cropper.util.drawGrid
+import com.smarttoolfactory.cropper.util.*
 
 /**
  * Draw overlay composed of 9 rectangles. When [drawHandles]
@@ -229,8 +228,7 @@ private fun DrawScope.drawOverlay(
     pathHandles: Path,
     drawBlock: DrawScope.() -> Unit
 ) {
-    with(drawContext.canvas.nativeCanvas) {
-        val checkPoint = saveLayer(null, null)
+   drawWithLayer {
 
         // Destination
         drawRect(Color(0x88000000))
@@ -247,8 +245,6 @@ private fun DrawScope.drawOverlay(
                 color = overlayColor
             )
         }
-
-        restoreToCount(checkPoint)
     }
 
     if (drawOverlay) {
@@ -276,33 +272,6 @@ private fun DrawScope.drawOverlay(
             )
         }
     }
-}
-
-private fun DrawScope.drawCropImage(
-    rect: Rect,
-    imageBitmap: ImageBitmap
-) {
-    drawImage(
-        image = imageBitmap,
-        dstSize = IntSize(rect.size.width.toInt(), rect.size.height.toInt()),
-        blendMode = BlendMode.DstOut
-    )
-}
-
-private fun DrawScope.drawCropOutline(outline: Outline) {
-    drawOutline(
-        outline = outline,
-        color = Color.Transparent,
-        blendMode = BlendMode.SrcOut
-    )
-}
-
-private fun DrawScope.drawCropPath(path: Path) {
-        drawPath(
-            path = path,
-            color = Color.Transparent,
-            blendMode = BlendMode.SrcOut
-        )
 }
 
 private fun Path.updateHandlePath(

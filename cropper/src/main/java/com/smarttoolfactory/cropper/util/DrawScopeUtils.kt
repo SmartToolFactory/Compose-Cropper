@@ -1,13 +1,18 @@
 package com.smarttoolfactory.cropper.util
 
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
-
+/**
+ * Draw grid that is divided by 2 vertical and 2 horizontal lines for overlay
+ */
 fun DrawScope.drawGrid(rect: Rect, strokeWidth: Float, color: Color) {
 
     val width = rect.width
@@ -36,13 +41,15 @@ fun DrawScope.drawGrid(rect: Rect, strokeWidth: Float, color: Color) {
     }
 }
 
-
+/**
+ * Draw checker background
+ */
 fun DrawScope.drawChecker() {
+
     val width = this.size.width
     val height = this.size.height
 
     val checkerWidth = 10.dp.toPx()
-
     val checkerHeight = 10.dp.toPx()
 
     val horizontalSteps = (width / checkerWidth).toInt()
@@ -57,5 +64,83 @@ fun DrawScope.drawChecker() {
                 size = Size(checkerWidth, checkerHeight)
             )
         }
+    }
+}
+
+/**
+ * Draw with layer to use [BlendMode]s
+ */
+fun DrawScope.drawWithLayer(block: DrawScope.() -> Unit) {
+    with(drawContext.canvas.nativeCanvas) {
+        val checkPoint = saveLayer(null, null)
+        block()
+        restoreToCount(checkPoint)
+    }
+}
+
+/**
+ * Modifier that calls [Modifier.drawWithContent] with [DrawScope.drawWithLayer]
+ */
+fun Modifier.drawWithLayer(block: DrawScope.() -> Unit) = this.then(
+    Modifier.drawWithContent {
+        drawWithLayer {
+            block()
+        }
+    }
+)
+
+fun DrawScope.drawCropImage(
+    rect: Rect,
+    imageBitmap: ImageBitmap,
+    blendMode: BlendMode = BlendMode.SrcOut
+) {
+    drawImage(
+        image = imageBitmap,
+        dstSize = IntSize(rect.size.width.toInt(), rect.size.height.toInt()),
+        blendMode = blendMode
+    )
+}
+
+fun DrawScope.drawCropOutline(
+    outline: Outline,
+    blendMode: BlendMode = BlendMode.SrcOut
+) {
+    drawOutline(
+        outline = outline,
+        color = Color.Transparent,
+        blendMode = blendMode
+    )
+}
+
+fun DrawScope.drawCropPath(
+    path: Path,
+    blendMode: BlendMode = BlendMode.SrcOut
+) {
+    drawPath(
+        path = path,
+        color = Color.Transparent,
+        blendMode = blendMode
+    )
+}
+
+fun DrawScope.drawBlockWithCheckerAndLayer(
+    dstBitmap: ImageBitmap,
+    block: DrawScope.() -> Unit,
+) {
+    drawChecker()
+    drawWithLayer {
+
+        val canvasWidth = size.width.toInt()
+        val canvasHeight = size.height.toInt()
+
+        // Destination
+        block()
+
+        // Source
+        drawImage(
+            image = dstBitmap,
+            dstSize = IntSize(canvasWidth, canvasHeight),
+            blendMode = BlendMode.SrcIn
+        )
     }
 }
