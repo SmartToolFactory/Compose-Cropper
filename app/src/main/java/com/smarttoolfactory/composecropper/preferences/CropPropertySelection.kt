@@ -61,7 +61,7 @@ internal fun CropPropertySelectionMenu(
     CropFrameSelection(
         cropFrameFactory = cropFrameFactory,
         cropOutlineProperty = cropOutlineProperty,
-        onCropShapeChange = {
+        conCropOutlinePropertyChange = {
             onCropPropertiesChange(
                 cropProperties.copy(cropOutlineProperty = it)
             )
