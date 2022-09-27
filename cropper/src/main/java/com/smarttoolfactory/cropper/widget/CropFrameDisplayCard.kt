@@ -93,7 +93,7 @@ fun CropFrameDisplayCard(
                             }
                             .clip(CircleShape)
                             .background(editButtonBackgroundColor)
-                            .fillMaxSize(.4f)
+                            .fillMaxSize(.35f)
 
                             .clickable {
                                 onClick()
