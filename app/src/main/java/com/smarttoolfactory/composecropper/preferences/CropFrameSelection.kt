@@ -9,11 +9,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.animatedlist.AnimatedInfiniteLazyRow
 import com.smarttoolfactory.animatedlist.model.AnimationProgress
+import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropFrame
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropOutlineProperty
-import com.smarttoolfactory.cropper.settings.frames.CropFrameEditDialog
+import com.smarttoolfactory.cropper.settings.frames.edit.CropShapeEditDialog
 import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
 
 /**
@@ -21,6 +22,7 @@ import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
  */
 @Composable
 fun CropFrameSelection(
+    aspectRatio: AspectRatio,
     cropFrameFactory: CropFrameFactory,
     cropOutlineProperty: CropOutlineProperty,
     conCropOutlinePropertyChange: (CropOutlineProperty) -> Unit
@@ -35,7 +37,8 @@ fun CropFrameSelection(
     }
 
     if (showEditDialog) {
-        CropFrameEditDialog(
+        CropShapeEditDialog(
+            aspectRatio = aspectRatio,
             cropFrame = cropFrame,
             onConfirm = {
                 cropFrame = it

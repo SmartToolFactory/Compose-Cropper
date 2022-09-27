@@ -59,6 +59,7 @@ internal fun CropPropertySelectionMenu(
 
     Title("Frame")
     CropFrameSelection(
+        aspectRatio = aspectRatio,
         cropFrameFactory = cropFrameFactory,
         cropOutlineProperty = cropOutlineProperty,
         conCropOutlinePropertyChange = {
