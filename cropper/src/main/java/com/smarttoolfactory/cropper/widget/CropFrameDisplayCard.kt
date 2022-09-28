@@ -193,7 +193,7 @@ private fun CropFrameDisplay(
                     modifier = Modifier.matchParentSize(),
                     imageVector = Icons.Outlined.Image,
                     tint = color,
-                    contentDescription = "Crop with Path"
+                    contentDescription = "Crop with Image Mask"
                 )
 
                 content()
