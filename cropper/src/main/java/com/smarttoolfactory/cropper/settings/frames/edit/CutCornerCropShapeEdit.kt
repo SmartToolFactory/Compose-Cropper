@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CornerRadiusProperties
 import com.smarttoolfactory.cropper.model.CutCornerCropShape
+import com.smarttoolfactory.cropper.util.drawOutlineWithBlendModeAndChecker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,7 +90,7 @@ internal fun CutCornerCropShapeEdit(
                 .fillMaxWidth()
                 .aspectRatio(4 / 3f)
                 .clipToBounds()
-                .drawOutlineWithCache(
+                .drawOutlineWithBlendModeAndChecker(
                     aspectRatio,
                     shape,
                     density,

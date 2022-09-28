@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.PolygonCropShape
 import com.smarttoolfactory.cropper.util.createPolygonShape
+import com.smarttoolfactory.cropper.util.drawOutlineWithBlendModeAndChecker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +70,7 @@ internal fun PolygonCropShapeEdit(
                 .fillMaxWidth()
                 .aspectRatio(4 / 3f)
                 .clipToBounds()
-                .drawOutlineWithCache(
+                .drawOutlineWithBlendModeAndChecker(
                     aspectRatio,
                     shape,
                     density,

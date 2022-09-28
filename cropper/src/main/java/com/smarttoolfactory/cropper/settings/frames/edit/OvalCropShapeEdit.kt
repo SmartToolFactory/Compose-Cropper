@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.OvalCropShape
+import com.smarttoolfactory.cropper.util.drawOutlineWithBlendModeAndChecker
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,7 +101,7 @@ internal fun OvalCropShapeEdit(
                 .fillMaxWidth()
                 .aspectRatio(4 / 3f)
                 .clipToBounds()
-                .drawOutlineWithCache(
+                .drawOutlineWithBlendModeAndChecker(
                     aspectRatio,
                     shape,
                     density,
