@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -13,12 +12,15 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.CropImageMask
 import com.smarttoolfactory.cropper.model.CropOutline
 import com.smarttoolfactory.cropper.model.CropPath
 import com.smarttoolfactory.cropper.model.CropShape
-import com.smarttoolfactory.cropper.util.*
+import com.smarttoolfactory.cropper.util.drawGrid
+import com.smarttoolfactory.cropper.util.drawWithLayer
+import com.smarttoolfactory.cropper.util.scaleAndTranslatePath
 
 /**
  * Draw overlay composed of 9 rectangles. When [drawHandles]
@@ -69,23 +71,10 @@ internal fun DrawingOverlay(
         }
         is CropPath -> {
             val path = remember(rect, cropOutline) {
-                val path = cropOutline.path
-                val pathSize = path.getBounds().size
-                val rectSize = rect.size
-
-                val matrix = android.graphics.Matrix()
-                matrix.postScale(
-                    rectSize.width / pathSize.width,
-                    rect.height / pathSize.height
-                )
-
-                path.asAndroidPath().transform(matrix)
-
-                val left = path.getBounds().left
-                val top = path.getBounds().top
-
-                path.translate(Offset(-left, -top))
-                path
+                Path().apply {
+                    addPath(cropOutline.path)
+                    scaleAndTranslatePath(rect.width, rect.height)
+                }
             }
 
 
@@ -272,6 +261,40 @@ private fun DrawScope.drawOverlay(
             )
         }
     }
+}
+
+private fun DrawScope.drawCropImage(
+    rect: Rect,
+    imageBitmap: ImageBitmap,
+    blendMode: BlendMode = BlendMode.DstOut
+) {
+    drawImage(
+        image = imageBitmap,
+        dstSize = IntSize(rect.size.width.toInt(), rect.size.height.toInt()),
+        blendMode = blendMode
+    )
+}
+
+private fun DrawScope.drawCropOutline(
+    outline: Outline,
+    blendMode: BlendMode = BlendMode.SrcOut
+) {
+    drawOutline(
+        outline = outline,
+        color = Color.Transparent,
+        blendMode = blendMode
+    )
+}
+
+private fun DrawScope.drawCropPath(
+    path: Path,
+    blendMode: BlendMode = BlendMode.SrcOut
+) {
+    drawPath(
+        path = path,
+        color = Color.Transparent,
+        blendMode = blendMode
+    )
 }
 
 private fun Path.updateHandlePath(

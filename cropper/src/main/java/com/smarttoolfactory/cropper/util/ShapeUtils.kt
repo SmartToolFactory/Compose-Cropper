@@ -5,8 +5,11 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.AspectRatio
 import kotlin.math.cos
@@ -84,4 +87,68 @@ fun createRectShape(aspectRatio: AspectRatio): GenericShape {
 
         addRect(Rect(offset = Offset.Zero, size = shapeSize))
     }
+}
+
+/**
+ * Scales this path to [width] and [height] from [Path.getBounds] and translates
+ * as difference between scaled path and original path
+ */
+fun Path.scaleAndTranslatePath(
+    width: Float,
+    height: Float,
+) {
+    val pathSize = getBounds().size
+
+    val matrix = Matrix()
+    matrix.postScale(
+        width / pathSize.width,
+        height / pathSize.height
+    )
+
+    this.asAndroidPath().transform(matrix)
+
+    val left = getBounds().left
+    val top = getBounds().top
+
+    translate(Offset(-left, -top))
+}
+
+/**
+ * Build an outline from a shape using aspect ratio, shape and coefficient to scale
+ *
+ * @return [Triple] that contains left, top offset and [Outline]
+ */
+fun buildOutline(
+    aspectRatio: AspectRatio,
+    coefficient: Float,
+    shape: Shape,
+    size: Size,
+    layoutDirection: LayoutDirection,
+    density: Density
+): Triple<Float, Float, Outline> {
+    val width = size.width
+    val height = size.height
+
+    val value = aspectRatio.value
+
+    val shapeSize = if (aspectRatio == AspectRatio.Unspecified) {
+        Size(width * coefficient, height * coefficient)
+    } else if (value > 1) {
+        Size(
+            width = coefficient * width,
+            height = coefficient * width / value
+        )
+    } else {
+        Size(width = coefficient * height * value, height = coefficient * height)
+    }
+
+    val left = (width - shapeSize.width) / 2
+    val top = (height - shapeSize.height) / 2
+
+    val outline = shape.createOutline(
+        size = shapeSize,
+        layoutDirection = layoutDirection,
+        density = density
+    )
+    return Triple(left, top, outline)
 }
