@@ -107,7 +107,7 @@ fun Modifier.drawOutlineWithBlendModeAndChecker(
 ) = this.then(
     Modifier.drawWithCache {
 
-        val (left, top, outline) = buildOutline(
+        val (offset, outline) = buildOutline(
             aspectRatio,
             coefficient,
             shape,
@@ -118,7 +118,7 @@ fun Modifier.drawOutlineWithBlendModeAndChecker(
 
         onDrawWithContent {
             drawBlockWithCheckerAndLayer(dstBitmap) {
-                translate(left = left, top = top) {
+                translate(left = offset.x, top = offset.y) {
                     drawOutline(
                         outline = outline,
                         color = color,
