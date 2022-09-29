@@ -81,6 +81,22 @@ fun CropFrameEditDialog(
                         outline = it
                     }
                 }
+                OutlineType.ImageMask -> {
+                    val imageMaskOutline = outline as ImageMaskOutline
+                    ImageMaskEdit(imageMaskOutline) {
+                        outline = it
+                    }
+                }
+                OutlineType.Custom -> {
+                    val customPathOutline = outline as CustomPathOutline
+                    CustomPathEdit(
+                        aspectRatio = aspectRatio,
+                        dstBitmap = dstBitmap,
+                        customPathOutline = customPathOutline,
+                    ) {
+                        outline = it
+                    }
+                }
                 else -> Unit
             }
         },

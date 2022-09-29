@@ -24,7 +24,7 @@ data class CropFrame(
         get() = cropOutlineContainer.size
 
     fun addOutline(outline: CropOutline): CropFrame {
-
+        outlines.toMutableList().add(outline)
        return this
     }
 }
@@ -64,9 +64,9 @@ fun getOutlineContainer(
         }
 
         OutlineType.Custom -> {
-            PolygonOutlineContainer(
+            CustomOutlineContainer(
                 selectedIndex = index,
-                outlines = outlines as List<PolygonCropShape>
+                outlines = outlines as List<CustomPathOutline>
             )
         }
 
