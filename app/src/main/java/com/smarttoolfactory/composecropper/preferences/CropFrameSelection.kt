@@ -40,7 +40,7 @@ fun CropFrameSelection(
         CropFrameListDialog(
             aspectRatio = aspectRatio,
             cropFrame = cropFrame,
-            onDismiss = {
+            onConfirm = {
                 cropFrame = it
                 cropFrameFactory.editCropFrame(cropFrame)
 
@@ -50,6 +50,9 @@ fun CropFrameSelection(
                         it.cropOutlineContainer.selectedItem
                     )
                 )
+                showEditDialog = false
+            },
+            onDismiss = {
                 showEditDialog = false
             }
         )

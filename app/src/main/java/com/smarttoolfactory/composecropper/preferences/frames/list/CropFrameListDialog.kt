@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.*
@@ -33,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.modernstorage.photopicker.PhotoPicker
 import com.smarttoolfactory.composecropper.preferences.frames.edit.CropFrameEditDialog
-import com.smarttoolfactory.cropper.model.*
 import com.smarttoolfactory.composecropper.preferences.frames.edit.CropShapeAddDialog
+import com.smarttoolfactory.cropper.model.*
 import com.smarttoolfactory.cropper.util.buildOutline
 import com.smarttoolfactory.cropper.util.scaleAndTranslatePath
 
@@ -45,7 +47,8 @@ import com.smarttoolfactory.cropper.util.scaleAndTranslatePath
 fun CropFrameListDialog(
     aspectRatio: AspectRatio,
     cropFrame: CropFrame,
-    onDismiss: (CropFrame) -> Unit
+    onDismiss: () -> Unit,
+    onConfirm: (CropFrame) -> Unit
 ) {
     var updatedCropFrame by remember {
         mutableStateOf(cropFrame)
@@ -115,27 +118,93 @@ fun CropFrameListDialog(
                         outlines = newOutlines
                     )
                 )
+
+                selectedIndex = updatedCropFrame.selectedIndex
             }
         }
     }
 
     AlertDialog(
-        onDismissRequest = { onDismiss(updatedCropFrame) },
+        onDismissRequest = {
+            onDismiss()
+        },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Frames",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                val enabled = selectedIndex != 0
+
+                Icon(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(
+                            if (enabled) MaterialTheme.colorScheme.error
+                            else Color.LightGray
+                        )
+                        .size(28.dp)
+                        .clickable(
+                            enabled = enabled,
+                            onClick = {
+                                val outlines = updatedCropFrame.outlines
+                                    .toMutableList()
+                                    .apply {
+                                        removeAt(selectedIndex)
+                                    }
+                                updatedCropFrame = updatedCropFrame.copy(
+                                    cropOutlineContainer = getOutlineContainer(
+                                        updatedCropFrame.outlineType,
+                                        outlines.size - 1,
+                                        outlines
+                                    )
+                                )
+
+                                selectedIndex = outlines.size - 1
+                            }
+                        )
+                        .padding(6.dp),
+
+                    imageVector = Icons.Default.Delete,
+                    tint = if (enabled) Color.White else Color.Gray,
+                    contentDescription = "Delete"
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .size(28.dp)
+                        .clickable {
+                            showEditDialog = true
+                        }
+                        .padding(6.dp),
+                    imageVector = Icons.Default.Edit,
+                    tint = Color.White,
+                    contentDescription = "Edit"
+                )
+            }
+        },
         text = {
             CropOutlineGridList(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 280.dp),
+                    .heightIn(min = 240.dp),
                 selectedIndex = selectedIndex,
                 outlineType = updatedCropFrame.outlineType,
                 outlines = updatedCropFrame.outlines,
                 aspectRatio = aspectRatio,
                 onItemClick = {
-
                     selectedIndex = it
                     updatedCropFrame.selectedIndex = selectedIndex
-
-                    println("Update cropFrame with index: $it, crop index: ${updatedCropFrame.selectedIndex}")
                 },
                 onAddItemClick = {
                     showAddDialog = true
@@ -143,51 +212,23 @@ fun CropFrameListDialog(
             )
         },
         dismissButton = {
-            FilledTonalButton(
-                enabled = selectedIndex != 0,
+            TextButton(
                 onClick = {
-                    val outlines = updatedCropFrame.outlines
-                        .toMutableList()
-                        .apply {
-                            removeAt(selectedIndex)
-                        }
-                    updatedCropFrame = updatedCropFrame.copy(
-                        cropOutlineContainer = getOutlineContainer(
-                            updatedCropFrame.outlineType,
-                            outlines.size - 1,
-                            outlines
-                        )
-                    )
-
-                    selectedIndex = outlines.size - 1
-                },
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                )
-
+                    onDismiss()
+                }
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete"
-                )
-                Text("Delete")
+
+                Text("Cancel")
             }
         },
         confirmButton = {
-            if (outlineType != OutlineType.ImageMask) {
-                Button(
+            TextButton(
                     onClick = {
-                        showEditDialog = true
+                        onConfirm(updatedCropFrame)
                     }
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit"
-                    )
-                    Text("Edit")
+                    Text("Accept")
                 }
-            }
         }
     )
 }
@@ -296,7 +337,6 @@ private fun CropOutlineGridItem(
                 .aspectRatio(1f),
             cropOutline = cropOutline,
             aspectRatio,
-            selected,
             color
         )
 
@@ -305,13 +345,13 @@ private fun CropOutlineGridItem(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .background(Color.White.copy(.2f))
-                .padding(horizontal = 5.dp, vertical = 4.dp),
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = .7f))
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = cropOutline.title,
-                color = color,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 12.sp,
                 maxLines = 1,
                 fontWeight = FontWeight.Bold,
@@ -326,7 +366,6 @@ private fun CropOutlineDisplay(
     modifier: Modifier,
     cropOutline: CropOutline,
     aspectRatio: AspectRatio,
-    selected: Boolean,
     color: Color
 ) {
 
@@ -348,8 +387,8 @@ private fun CropOutlineDisplay(
                         .drawWithCache {
                             val coefficient = .8f
 
-                            val (left, top, outline) = buildOutline(
-                                AspectRatio(1f),
+                            val (offset, outline) = buildOutline(
+                                aspectRatio,
                                 coefficient,
                                 cropOutline.shape,
                                 size,
@@ -359,8 +398,8 @@ private fun CropOutlineDisplay(
 
                             onDrawWithContent {
                                 translate(
-                                    left = left,
-                                    top = top
+                                    left = offset.x,
+                                    top = offset.y
                                 ) {
                                     drawOutline(
                                         outline = outline,
@@ -387,11 +426,14 @@ private fun CropOutlineDisplay(
                             onDrawWithContent {
                                 drawPath(path, color)
                             }
-                        })
+                        }
+                )
             }
             is CropImageMask -> {
                 Box(
-                    modifier = Modifier.matchParentSize(),
+                    modifier = Modifier
+                        .matchParentSize()
+                        .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(bitmap = cropOutline.image, contentDescription = "ImageMask")

@@ -51,9 +51,19 @@ fun ImageCropDemo() {
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
 
-    val defaultImage = ImageBitmap.imageResource(id = R.drawable.squircle)
+    val defaultImage1 = ImageBitmap.imageResource(id = R.drawable.squircle)
+    val defaultImage2 = ImageBitmap.imageResource(id = R.drawable.cloud)
+    val defaultImage3 = ImageBitmap.imageResource(id = R.drawable.sun)
 
-    val cropFrameFactory = remember { CropFrameFactory(defaultImage) }
+    val cropFrameFactory = remember {
+        CropFrameFactory(
+            listOf(
+                defaultImage1,
+                defaultImage2,
+                defaultImage3
+            )
+        )
+    }
 
     var cropProperties by remember {
         mutableStateOf(
