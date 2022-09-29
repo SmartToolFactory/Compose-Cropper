@@ -97,6 +97,11 @@ class CropAgent {
                         cropRect.height / pathSize.height
                     )
                     this.asAndroidPath().transform(matrix)
+
+                    val left = getBounds().left
+                    val top = getBounds().top
+
+                    translate(Offset(-left, -top))
                 }
 
                 Canvas(image = imageToCrop).run {

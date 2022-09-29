@@ -125,13 +125,36 @@ fun buildOutline(
     size: Size,
     layoutDirection: LayoutDirection,
     density: Density
-): Triple<Float, Float, Outline> {
+): Pair<Offset, Outline> {
+
+    val (shapeSize, offset) = calculateSizeAndOffsetFromAspectRatio(aspectRatio, coefficient, size)
+
+    val outline = shape.createOutline(
+        size = shapeSize,
+        layoutDirection = layoutDirection,
+        density = density
+    )
+    return Pair(offset, outline)
+}
+
+
+/**
+ * Calculate new size and offset based on [size], [coefficient] and [aspectRatio]
+ *
+ * For 4/3f aspect ratio with 1000px width, 1000px height with coefficient 1f
+ * it returns Size(1000f, 750f), Offset(0f, 125f).
+ */
+fun calculateSizeAndOffsetFromAspectRatio(
+    aspectRatio: AspectRatio,
+    coefficient: Float,
+    size: Size,
+): Pair<Size, Offset> {
     val width = size.width
     val height = size.height
 
     val value = aspectRatio.value
 
-    val shapeSize = if (aspectRatio == AspectRatio.Unspecified) {
+    val newSize = if (aspectRatio == AspectRatio.Unspecified) {
         Size(width * coefficient, height * coefficient)
     } else if (value > 1) {
         Size(
@@ -142,13 +165,8 @@ fun buildOutline(
         Size(width = coefficient * height * value, height = coefficient * height)
     }
 
-    val left = (width - shapeSize.width) / 2
-    val top = (height - shapeSize.height) / 2
+    val left = (width - newSize.width) / 2
+    val top = (height - newSize.height) / 2
 
-    val outline = shape.createOutline(
-        size = shapeSize,
-        layoutDirection = layoutDirection,
-        density = density
-    )
-    return Triple(left, top, outline)
+   return Pair(newSize, Offset(left, top))
 }
