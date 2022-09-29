@@ -1,26 +1,28 @@
 package com.smarttoolfactory.cropper.settings
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.ImageBitmap
 import com.smarttoolfactory.cropper.model.*
+import com.smarttoolfactory.cropper.util.createPolygonShape
 
 class CropFrameFactory(private val defaultImage: ImageBitmap) {
 
-    private val cropFrameMap = linkedMapOf<OutlineType, CropFrame>()
-    private var items = listOf<CropFrame>()
+    private val cropFrames = mutableStateListOf<CropFrame>()
 
     fun getCropFrames(): List<CropFrame> {
-        if (items.isEmpty()) {
+        if (cropFrames.isEmpty()) {
             val temp = mutableListOf<CropFrame>()
             OutlineType.values().forEach {
                 temp.add(getCropFrame(it))
             }
-            items = temp
+            cropFrames.addAll(temp)
         }
-        return items.toList()
+        return cropFrames
     }
 
     fun getCropFrame(outlineType: OutlineType): CropFrame {
-        return cropFrameMap[outlineType] ?: createDefaultFrame(outlineType)
+        return cropFrames
+            .firstOrNull { it.outlineType == outlineType } ?: createDefaultFrame(outlineType)
     }
 
     private fun createDefaultFrame(outlineType: OutlineType): CropFrame {
@@ -114,7 +116,30 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
 
             OutlineType.Polygon -> {
                 PolygonOutlineContainer(
-                    outlines = listOf(PolygonCropShape(id = 0, title = "Polygon"))
+                    outlines = listOf(
+                        PolygonCropShape(
+                            id = 0,
+                            title = "Polygon"
+                        ),
+                        PolygonCropShape(
+                            id = 1,
+                            title = "Pentagon",
+                            polygonProperties = PolygonProperties(sides = 5, 0f),
+                            shape = createPolygonShape(5, 0f)
+                        ),
+                        PolygonCropShape(
+                            id = 2,
+                            title = "Heptagon",
+                            polygonProperties = PolygonProperties(sides = 7, 0f),
+                            shape = createPolygonShape(7, 0f)
+                        ),
+                        PolygonCropShape(
+                            id = 3,
+                            title = "Octagon",
+                            polygonProperties = PolygonProperties(sides = 8, 0f),
+                            shape = createPolygonShape(8, 0f)
+                        )
+                    )
                 )
             }
 
@@ -122,7 +147,7 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
                 CustomOutlineContainer(
                     outlines = listOf(
                         CustomPathOutline(id = 0, title = "Custom", path = Paths.Favorite),
-                        CustomPathOutline(id = 0, title = "Star", path = Paths.Star),
+                        CustomPathOutline(id = 1, title = "Star", path = Paths.Star)
                     )
                 )
             }
@@ -138,6 +163,7 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
     }
 
     fun editCropFrame(cropFrame: CropFrame) {
-        cropFrameMap[cropFrame.outlineType] = cropFrame
+        val indexOf = cropFrames.indexOfFirst { it.outlineType == cropFrame.outlineType }
+        cropFrames[indexOf] = cropFrame
     }
 }
