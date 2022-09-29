@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.smarttoolfactory.cropper.model.*
 import com.smarttoolfactory.cropper.util.createPolygonShape
 
-class CropFrameFactory(private val defaultImage: ImageBitmap) {
+class CropFrameFactory(private val defaultImages: List<ImageBitmap>) {
 
     private val cropFrames = mutableStateListOf<CropFrame>()
 
@@ -153,10 +153,13 @@ class CropFrameFactory(private val defaultImage: ImageBitmap) {
             }
 
             OutlineType.ImageMask -> {
+
+                val outlines = defaultImages.mapIndexed { index, image ->
+                    ImageMaskOutline(id = index, title = "ImageMask", image = image)
+
+                }
                 ImageMaskOutlineContainer(
-                    outlines = listOf(
-                        ImageMaskOutline(id = 0, title = "ImageMask", image = defaultImage)
-                    )
+                    outlines = outlines
                 )
             }
         }
