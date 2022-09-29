@@ -1,14 +1,11 @@
 # Compose Image Cropper
 
-Image cropper that can crop with static, dynamic crop behavior and shapes with various customizations.
+Image cropper that can crop with static, dynamic crop behavior, can use customizable shapes, vectors, and other png images as iamge to crop with various customizations.
 
 
-https://user-images.githubusercontent.com/35650605/191830053-a2e8601b-9efc-4709-9598-520be7a0158b.mp4
 
+https://user-images.githubusercontent.com/35650605/193119122-ed5d9919-4181-45ae-87f6-3c2697d96b45.mp4
 
-## ⚠️ This Library is under progress(Initial version is for testing)
-This is initial release that contains bugs and unfinished free-hand crop soon to be 
-free of bugs, optimized and will include free-hand crop
 
 ## Features
 * Crop with Static Overlay
@@ -17,6 +14,8 @@ free of bugs, optimized and will include free-hand crop
 * Animate overlay back to bounds
 * Animate image to overlay bounds
 * Crop with shapes including Rectangle, Rounded Rectangle, Cut Corner Shape, Oval, and Polygons
+* Crop with vector drawables
+* Crop with png files as image mask
 * Option to change Content scale from 7 options
 * Option to change fling gesture when pointer is up to continue movement
 * Overlay and grid color, stroke width options
