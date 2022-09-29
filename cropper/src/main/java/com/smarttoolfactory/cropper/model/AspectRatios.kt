@@ -6,13 +6,49 @@ import com.smarttoolfactory.cropper.util.createRectShape
  * Aspect ratio list with pre-defined aspect ratios
  */
 val aspectRatios = listOf(
-    CropAspectRatio("9:16", createRectShape(AspectRatio(9 / 16f)), AspectRatio(9 / 16f)),
-    CropAspectRatio("2:3", createRectShape(AspectRatio(2 / 3f)), AspectRatio(2 / 3f)),
-    CropAspectRatio("Full", createRectShape(AspectRatio.Unspecified), AspectRatio.Unspecified),
-    CropAspectRatio("1:1", createRectShape(AspectRatio(1 / 1f)), AspectRatio(1 / 1f)),
-    CropAspectRatio("16:9", createRectShape(AspectRatio(16 / 9f)), AspectRatio(16 / 9f)),
-    CropAspectRatio("1.91:1", createRectShape(AspectRatio(1.91f / 1f)), AspectRatio(1.91f / 1f)),
-    CropAspectRatio("3:2", createRectShape(AspectRatio(3 / 2f)), AspectRatio(3 / 2f)),
-    CropAspectRatio("3:4", createRectShape(AspectRatio(3 / 4f)), AspectRatio(3 / 4f)),
-    CropAspectRatio("3:5", createRectShape(AspectRatio(3 / 5f)), AspectRatio(3 / 5f))
+    CropAspectRatio(
+        title = "9:16",
+        shape = createRectShape(AspectRatio(9 / 16f)),
+        aspectRatio = AspectRatio(9 / 16f)
+    ),
+    CropAspectRatio(
+        title = "2:3",
+        shape = createRectShape(AspectRatio(2 / 3f)),
+        aspectRatio = AspectRatio(2 / 3f)
+    ),
+    CropAspectRatio(
+        title = "Full",
+        shape = createRectShape(AspectRatio.Unspecified),
+        aspectRatio = AspectRatio.Unspecified
+    ),
+    CropAspectRatio(
+        title = "1:1",
+        shape = createRectShape(AspectRatio(1 / 1f)),
+        aspectRatio = AspectRatio(1 / 1f)
+    ),
+    CropAspectRatio(
+        title = "16:9",
+        shape = createRectShape(AspectRatio(16 / 9f)),
+        aspectRatio = AspectRatio(16 / 9f)
+    ),
+    CropAspectRatio(
+        title = "1.91:1",
+        shape = createRectShape(AspectRatio(1.91f / 1f)),
+        aspectRatio = AspectRatio(1.91f / 1f)
+    ),
+    CropAspectRatio(
+        title = "3:2",
+        shape = createRectShape(AspectRatio(3 / 2f)),
+        aspectRatio = AspectRatio(3 / 2f)
+    ),
+    CropAspectRatio(
+        title = "3:4",
+        shape = createRectShape(AspectRatio(3 / 4f)),
+        aspectRatio = AspectRatio(3 / 4f)
+    ),
+    CropAspectRatio(
+        title = "3:5",
+        shape = createRectShape(AspectRatio(3 / 5f)),
+        aspectRatio = AspectRatio(3 / 5f)
+    )
 )

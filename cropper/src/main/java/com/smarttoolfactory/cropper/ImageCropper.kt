@@ -13,7 +13,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -21,8 +20,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.crop.CropAgent
+import com.smarttoolfactory.cropper.draw.DrawingOverlay
+import com.smarttoolfactory.cropper.draw.ImageDrawCanvas
 import com.smarttoolfactory.cropper.image.ImageWithConstraints
 import com.smarttoolfactory.cropper.image.getScaledImageBitmap
+import com.smarttoolfactory.cropper.model.CropOutline
 import com.smarttoolfactory.cropper.settings.CropDefaults
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropStyle
@@ -38,7 +40,7 @@ fun ImageCropper(
     imageBitmap: ImageBitmap,
     contentDescription: String?,
     cropStyle: CropStyle = CropDefaults.style(),
-    cropProperties: CropProperties = CropDefaults.properties(),
+    cropProperties: CropProperties,
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
     crop: Boolean = false,
     onCropStart: () -> Unit,
@@ -93,7 +95,8 @@ fun ImageCropper(
 
         val cropType = cropProperties.cropType
         val contentScale = cropProperties.contentScale
-        val shape = cropProperties.cropShape.shape
+
+        val cropOutline = cropProperties.cropOutlineProperty.cropOutline
 
         // these keys are for resetting cropper when image width/height, contentScale or
         // overlay aspect ratio changes
@@ -147,7 +150,7 @@ fun ImageCropper(
                         cropAgent.crop(
                             scaledImageBitmap,
                             rectCrop,
-                            shape,
+                            cropOutline,
                             layoutDirection,
                             density
                         )
@@ -181,7 +184,7 @@ fun ImageCropper(
                 imageWidthPx = imageWidthPx,
                 imageHeightPx = imageHeightPx,
                 cropType = cropType,
-                shape = shape,
+                cropOutline = cropOutline,
                 handleSize = cropProperties.handleSize,
                 cropStyle = cropStyle,
                 rectOverlay = cropState.overlayRect
@@ -212,7 +215,7 @@ private fun ImageCropperImpl(
     imageWidthPx: Int,
     imageHeightPx: Int,
     cropType: CropType,
-    shape: Shape,
+    cropOutline: CropOutline,
     handleSize: Dp,
     cropStyle: CropStyle,
     rectOverlay: Rect
@@ -221,7 +224,7 @@ private fun ImageCropperImpl(
     Box(contentAlignment = Alignment.Center) {
 
         // Draw Image
-        ImageOverlay(
+        ImageDrawCanvas(
             modifier = modifier,
             imageBitmap = imageBitmap,
             imageWidth = imageWidthPx,
@@ -242,7 +245,7 @@ private fun ImageCropperImpl(
             modifier = Modifier.size(containerWidth, containerHeight),
             drawOverlay = drawOverlay,
             rect = rectOverlay,
-            shape = shape,
+            cropOutline = cropOutline,
             drawGrid = drawGrid,
             overlayColor = overlayColor,
             handleColor = handleColor,

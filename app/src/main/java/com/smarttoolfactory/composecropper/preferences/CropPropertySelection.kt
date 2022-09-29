@@ -8,7 +8,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.cropper.model.*
+import com.smarttoolfactory.cropper.model.AspectRatio
+import com.smarttoolfactory.cropper.model.CropAspectRatio
+import com.smarttoolfactory.cropper.model.aspectRatios
+import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropType
 import kotlin.math.roundToInt
@@ -16,6 +19,7 @@ import kotlin.math.roundToInt
 
 @Composable
 internal fun CropPropertySelectionMenu(
+    cropFrameFactory: CropFrameFactory,
     cropProperties: CropProperties,
     onCropPropertiesChange: (CropProperties) -> Unit
 ) {
@@ -24,7 +28,7 @@ internal fun CropPropertySelectionMenu(
     val aspectRatio = cropProperties.aspectRatio
     val handleSize = cropProperties.handleSize
     val contentScale = cropProperties.contentScale
-    val cropShape = cropProperties.cropShape
+    val cropOutlineProperty = cropProperties.cropOutlineProperty
 
     Title("Crop Type")
     CropTypeDialogSelection(
@@ -53,12 +57,14 @@ internal fun CropPropertySelectionMenu(
         }
     )
 
-    Title("Shape")
-    ShapeSelection(
-        cropShape = cropShape,
-        onCropShapeChange = {
+    Title("Frame")
+    CropFrameSelection(
+        aspectRatio = aspectRatio,
+        cropFrameFactory = cropFrameFactory,
+        cropOutlineProperty = cropOutlineProperty,
+        conCropOutlinePropertyChange = {
             onCropPropertiesChange(
-                cropProperties.copy(cropShape = it)
+                cropProperties.copy(cropOutlineProperty = it)
             )
         }
     )
@@ -156,26 +162,6 @@ internal fun AspectRatioSelection(
         initialSelectedIndex = initialSelectedIndex
     ) {
         onAspectRatioChange(it)
-    }
-}
-
-@Composable
-internal fun ShapeSelection(
-    cropShape: CropShape,
-    onCropShapeChange: (CropShape) -> Unit
-) {
-
-    val initialSelectedIndex = remember {
-        val shapes = shapes
-        val currentModel = shapes.first { it == cropShape }
-        shapes.indexOf(currentModel)
-    }
-
-    AnimatedShapeSelection(
-        modifier = Modifier.fillMaxWidth(),
-        initialSelectedIndex = initialSelectedIndex
-    ) {
-        onCropShapeChange(it)
     }
 }
 

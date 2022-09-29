@@ -62,9 +62,6 @@ dependencies {
     // Animated List
     implementation 'com.github.SmartToolFactory:Compose-AnimatedList:0.5.1'
 
-    // Snapper for lazy lists
-    implementation "dev.chrisbanes.snapper:snapper:0.3.0"
-
     implementation "androidx.compose.ui:ui:$compose_version"
     // Tooling support (Previews, etc.)
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
@@ -76,12 +73,12 @@ dependencies {
     implementation "androidx.compose.material:material-icons-core:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     // Integration with activities
-    implementation 'androidx.activity:activity-compose:1.5.1'
+    implementation 'androidx.activity:activity-compose:1.6.0'
     // Integration with ViewModels
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
 
     // Material Design 3 for Compose
-    implementation "androidx.compose.material3:material3:1.0.0-beta02"
+    implementation "androidx.compose.material3:material3:1.0.0-beta03"
 
     def nav_compose_version = "2.5.2"
     implementation "androidx.navigation:navigation-compose:$nav_compose_version"

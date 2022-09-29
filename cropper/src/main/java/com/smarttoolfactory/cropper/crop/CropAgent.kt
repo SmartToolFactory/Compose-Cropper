@@ -6,6 +6,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import com.smarttoolfactory.cropper.model.CropImageMask
+import com.smarttoolfactory.cropper.model.CropOutline
+import com.smarttoolfactory.cropper.model.CropPath
+import com.smarttoolfactory.cropper.model.CropShape
+
 
 /**
  * Crops imageBitmap based on path that is passed in [crop] function
@@ -18,66 +23,120 @@ class CropAgent {
 
     private val paint = Paint()
 
-    fun crop(
-        imageBitmap: ImageBitmap,
-        cropRect: Rect,
-        shape: Shape,
-        layoutDirection: LayoutDirection,
-        density: Density,
-        onCropSuccess: (ImageBitmap) -> Unit
-    ) {
-
-        val croppedBitmap = Bitmap.createBitmap(
-            imageBitmap.asAndroidBitmap(),
-            cropRect.left.toInt(),
-            cropRect.top.toInt(),
-            cropRect.width.toInt(),
-            cropRect.height.toInt()
-        ).asImageBitmap()
-
-        val path = Path().apply {
-            val outline = shape.createOutline(cropRect.size, layoutDirection, density)
-            addOutline(outline)
-        }
-
-        Canvas(image = croppedBitmap).run {
-            saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
-            drawPath(path, paint)
-            drawImage(image = croppedBitmap, topLeftOffset = Offset.Zero, imagePaint)
-            onCropSuccess(croppedBitmap)
-            restore()
-        }
-    }
 
     fun crop(
         imageBitmap: ImageBitmap,
         cropRect: Rect,
-        shape: Shape,
+        cropOutline: CropOutline,
         layoutDirection: LayoutDirection,
         density: Density,
     ): ImageBitmap {
 
-        val croppedBitmap = Bitmap.createBitmap(
+        // TODO pass mutable bitmap
+        val croppedBitmap: Bitmap = Bitmap.createBitmap(
             imageBitmap.asAndroidBitmap(),
             cropRect.left.toInt(),
             cropRect.top.toInt(),
             cropRect.width.toInt(),
-            cropRect.height.toInt()
-        ).asImageBitmap()
+            cropRect.height.toInt(),
+        )
 
-        val path = Path().apply {
-            val outline = shape.createOutline(cropRect.size, layoutDirection, density)
-            addOutline(outline)
-        }
+        val imageToCrop = croppedBitmap
+            .copy(Bitmap.Config.ARGB_8888, true)!!
+            .asImageBitmap()
 
-        Canvas(image = croppedBitmap).run {
-            saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
-            drawPath(path, paint)
-            drawImage(image = croppedBitmap, topLeftOffset = Offset.Zero, imagePaint)
-            restore()
-        }
+        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, imageToCrop)
 
-        return croppedBitmap
+        return imageToCrop
     }
 
+    private fun drawCroppedImage(
+        cropOutline: CropOutline,
+        cropRect: Rect,
+        layoutDirection: LayoutDirection,
+        density: Density,
+        imageToCrop: ImageBitmap,
+    ) {
+
+        when (cropOutline) {
+            is CropShape -> {
+
+                val path = Path().apply {
+                    val outline =
+                        cropOutline.shape.createOutline(cropRect.size, layoutDirection, density)
+                    addOutline(outline)
+                }
+
+                Canvas(image = imageToCrop).run {
+                    saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
+
+                    // Destination
+                    drawPath(path, paint)
+
+                    // Source
+                    drawImage(
+                        image = imageToCrop,
+                        topLeftOffset = Offset.Zero,
+                        paint = imagePaint
+                    )
+                    restore()
+                }
+            }
+            is CropPath -> {
+
+                val path = Path().apply {
+
+                    addPath(cropOutline.path)
+
+                    val pathSize = getBounds().size
+                    val rectSize = cropRect.size
+
+                    val matrix = android.graphics.Matrix()
+                    matrix.postScale(
+                        rectSize.width / pathSize.width,
+                        cropRect.height / pathSize.height
+                    )
+                    this.asAndroidPath().transform(matrix)
+
+                    val left = getBounds().left
+                    val top = getBounds().top
+
+                    translate(Offset(-left, -top))
+                }
+
+                Canvas(image = imageToCrop).run {
+                    saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
+
+                    // Destination
+                    drawPath(path, paint)
+
+                    // Source
+                    drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, imagePaint)
+                    restore()
+                }
+            }
+            is CropImageMask -> {
+
+                val imageMask = Bitmap.createScaledBitmap(
+                    cropOutline.image.asAndroidBitmap(),
+                    cropRect.width.toInt(),
+                    cropRect.height.toInt(),
+                    true
+                ).asImageBitmap()
+
+                Canvas(image = imageToCrop).run {
+                    saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
+
+                    // Destination
+                    drawImage(imageMask, topLeftOffset = Offset.Zero, paint)
+
+                    // Source
+                    drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, imagePaint)
+
+                    restore()
+                }
+            }
+        }
+    }
 }
+

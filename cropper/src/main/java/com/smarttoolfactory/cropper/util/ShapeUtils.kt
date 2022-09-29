@@ -5,8 +5,11 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.AspectRatio
 import kotlin.math.cos
@@ -84,4 +87,86 @@ fun createRectShape(aspectRatio: AspectRatio): GenericShape {
 
         addRect(Rect(offset = Offset.Zero, size = shapeSize))
     }
+}
+
+/**
+ * Scales this path to [width] and [height] from [Path.getBounds] and translates
+ * as difference between scaled path and original path
+ */
+fun Path.scaleAndTranslatePath(
+    width: Float,
+    height: Float,
+) {
+    val pathSize = getBounds().size
+
+    val matrix = Matrix()
+    matrix.postScale(
+        width / pathSize.width,
+        height / pathSize.height
+    )
+
+    this.asAndroidPath().transform(matrix)
+
+    val left = getBounds().left
+    val top = getBounds().top
+
+    translate(Offset(-left, -top))
+}
+
+/**
+ * Build an outline from a shape using aspect ratio, shape and coefficient to scale
+ *
+ * @return [Triple] that contains left, top offset and [Outline]
+ */
+fun buildOutline(
+    aspectRatio: AspectRatio,
+    coefficient: Float,
+    shape: Shape,
+    size: Size,
+    layoutDirection: LayoutDirection,
+    density: Density
+): Pair<Offset, Outline> {
+
+    val (shapeSize, offset) = calculateSizeAndOffsetFromAspectRatio(aspectRatio, coefficient, size)
+
+    val outline = shape.createOutline(
+        size = shapeSize,
+        layoutDirection = layoutDirection,
+        density = density
+    )
+    return Pair(offset, outline)
+}
+
+
+/**
+ * Calculate new size and offset based on [size], [coefficient] and [aspectRatio]
+ *
+ * For 4/3f aspect ratio with 1000px width, 1000px height with coefficient 1f
+ * it returns Size(1000f, 750f), Offset(0f, 125f).
+ */
+fun calculateSizeAndOffsetFromAspectRatio(
+    aspectRatio: AspectRatio,
+    coefficient: Float,
+    size: Size,
+): Pair<Size, Offset> {
+    val width = size.width
+    val height = size.height
+
+    val value = aspectRatio.value
+
+    val newSize = if (aspectRatio == AspectRatio.Unspecified) {
+        Size(width * coefficient, height * coefficient)
+    } else if (value > 1) {
+        Size(
+            width = coefficient * width,
+            height = coefficient * width / value
+        )
+    } else {
+        Size(width = coefficient * height * value, height = coefficient * height)
+    }
+
+    val left = (width - newSize.width) / 2
+    val top = (height - newSize.height) / 2
+
+   return Pair(newSize, Offset(left, top))
 }
