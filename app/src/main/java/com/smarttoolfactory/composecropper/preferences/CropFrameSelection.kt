@@ -14,7 +14,7 @@ import com.smarttoolfactory.cropper.model.CropFrame
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropOutlineProperty
-import com.smarttoolfactory.cropper.settings.frames.edit.CropFrameEditDialog
+import com.smarttoolfactory.cropper.settings.frames.edit.CropFrameListDialog
 import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
 
 /**
@@ -37,10 +37,10 @@ fun CropFrameSelection(
     }
 
     if (showEditDialog) {
-        CropFrameEditDialog(
+        CropFrameListDialog(
             aspectRatio = aspectRatio,
             cropFrame = cropFrame,
-            onConfirm = {
+            onDismiss = {
                 cropFrame = it
                 cropFrameFactory.editCropFrame(cropFrame)
 
@@ -50,10 +50,6 @@ fun CropFrameSelection(
                         it.cropOutlineContainer.selectedItem
                     )
                 )
-
-                showEditDialog = false
-            },
-            onDismiss = {
                 showEditDialog = false
             }
         )
