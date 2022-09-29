@@ -1,7 +1,5 @@
 package com.smarttoolfactory.cropper.model
 
-import androidx.compose.runtime.Immutable
-
 /**
  * Interface for containing multiple [CropOutline]s, currently selected item and index
  * for displaying on settings UI
@@ -11,13 +9,14 @@ interface CropOutlineContainer<O : CropOutline> {
     val outlines: List<O>
     val selectedItem: O
         get() = outlines[selectedIndex]
+    val size: Int
+        get() = outlines.size
 }
 
 /**
  * Container for [RectCropShape]
  */
-@Immutable
-class RectOutlineContainer(
+data class RectOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<RectCropShape>
 ) : CropOutlineContainer<RectCropShape>
@@ -25,8 +24,7 @@ class RectOutlineContainer(
 /**
  * Container for [RoundedCornerCropShape]s
  */
-@Immutable
-class RoundedRectOutlineContainer(
+data class RoundedRectOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<RoundedCornerCropShape>
 ) : CropOutlineContainer<RoundedCornerCropShape>
@@ -34,8 +32,7 @@ class RoundedRectOutlineContainer(
 /**
  * Container for [CutCornerCropShape]s
  */
-@Immutable
-class CutCornerRectOutlineContainer(
+data class CutCornerRectOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<CutCornerCropShape>
 ) : CropOutlineContainer<CutCornerCropShape>
@@ -43,8 +40,7 @@ class CutCornerRectOutlineContainer(
 /**
  * Container for [OvalCropShape]s
  */
-@Immutable
-class OvalOutlineContainer(
+data class OvalOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<OvalCropShape>
 ) : CropOutlineContainer<OvalCropShape>
@@ -52,8 +48,7 @@ class OvalOutlineContainer(
 /**
  * Container for [PolygonCropShape]s
  */
-@Immutable
-class PolygonOutlineContainer(
+data class PolygonOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<PolygonCropShape>
 ) : CropOutlineContainer<PolygonCropShape>
@@ -61,8 +56,7 @@ class PolygonOutlineContainer(
 /**
  * Container for [CustomPathOutline]s
  */
-@Immutable
-class CustomOutlineContainer(
+data class CustomOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<CustomPathOutline>
 ) : CropOutlineContainer<CustomPathOutline>
@@ -70,8 +64,7 @@ class CustomOutlineContainer(
 /**
  * Container for [ImageMaskOutline]s
  */
-@Immutable
-class ImageMaskOutlineContainer(
+data class ImageMaskOutlineContainer(
     override var selectedIndex: Int = 0,
     override val outlines: List<ImageMaskOutline>
 ) : CropOutlineContainer<ImageMaskOutline>

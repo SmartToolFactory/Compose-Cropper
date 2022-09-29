@@ -45,10 +45,10 @@ internal fun PolygonCropShapeEdit(
         )
     }
 
-    val shape by remember(sides, angle) {
-        derivedStateOf {
-            createPolygonShape(sides = sides, angle)
-        }
+    var shape by remember {
+        mutableStateOf(
+            polygonCropShape.shape
+        )
     }
 
     onChange(
@@ -87,16 +87,20 @@ internal fun PolygonCropShapeEdit(
 
         Slider(
             value = sides.toFloat(),
-            onValueChange = { sides = it.toInt() },
+            onValueChange = {
+                sides = it.toInt()
+                shape = createPolygonShape(sides = sides, angle)
+            },
             valueRange = 3f..15f,
             steps = 10
         )
         Slider(
             value = angle,
-            onValueChange = { angle = it },
+            onValueChange = {
+                angle = it
+                shape = createPolygonShape(sides = sides, degrees = angle)
+            },
             valueRange = 0f..360f
         )
-
-
     }
 }
