@@ -1,5 +1,9 @@
-package com.smarttoolfactory.cropper.settings.frames.edit
-
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,16 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.modernstorage.photopicker.PhotoPicker
+import com.smarttoolfactory.composecropper.preferences.frames.edit.CropFrameEditDialog
 import com.smarttoolfactory.cropper.model.*
+import com.smarttoolfactory.composecropper.preferences.frames.edit.CropShapeAddDialog
 import com.smarttoolfactory.cropper.util.buildOutline
 import com.smarttoolfactory.cropper.util.scaleAndTranslatePath
 
@@ -49,8 +55,11 @@ fun CropFrameListDialog(
         mutableStateOf(updatedCropFrame.selectedIndex)
     }
 
+    val outlineType = cropFrame.outlineType
+
     var showEditDialog by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
+
 
     if (showEditDialog) {
         CropFrameEditDialog(
@@ -69,18 +78,45 @@ fun CropFrameListDialog(
     }
 
     if (showAddDialog) {
-        CropFrameAddDialog(
-            aspectRatio = aspectRatio,
-            cropFrame = updatedCropFrame.copy(),
-            onConfirm = {
-                updatedCropFrame = it
-                selectedIndex = updatedCropFrame.selectedIndex
-                showAddDialog = false
-            },
-            onDismiss = {
-                showAddDialog = false
+
+        val outline = updatedCropFrame.cropOutlineContainer.selectedItem
+        if (outline is CropShape) {
+            CropShapeAddDialog(
+                aspectRatio = aspectRatio,
+                cropFrame = updatedCropFrame.copy(),
+                onConfirm = {
+                    updatedCropFrame = it
+                    selectedIndex = updatedCropFrame.selectedIndex
+                    showAddDialog = false
+                },
+                onDismiss = {
+                    showAddDialog = false
+                }
+            )
+        } else if (outline is CropImageMask) {
+
+            PickImageMask {
+
+                val id = updatedCropFrame.outlineCount
+                val newOutline =
+                    ImageMaskOutline(id = updatedCropFrame.outlineCount, "ImageMask $id", it)
+
+                val newOutlines: List<CropOutline> = cropFrame.outlines
+                    .toMutableList()
+                    .apply {
+                        add(newOutline)
+                    }
+                    .toList()
+
+                updatedCropFrame = cropFrame.copy(
+                    cropOutlineContainer = getOutlineContainer(
+                        outlineType = outlineType,
+                        index = newOutlines.size - 1,
+                        outlines = newOutlines
+                    )
+                )
             }
-        )
+        }
     }
 
     AlertDialog(
@@ -91,6 +127,7 @@ fun CropFrameListDialog(
                     .fillMaxWidth()
                     .heightIn(min = 280.dp),
                 selectedIndex = selectedIndex,
+                outlineType = updatedCropFrame.outlineType,
                 outlines = updatedCropFrame.outlines,
                 aspectRatio = aspectRatio,
                 onItemClick = {
@@ -138,16 +175,18 @@ fun CropFrameListDialog(
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
-                    showEditDialog = true
+            if (outlineType != OutlineType.ImageMask) {
+                Button(
+                    onClick = {
+                        showEditDialog = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit"
+                    )
+                    Text("Edit")
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit"
-                )
-                Text("Edit")
             }
         }
     )
@@ -157,6 +196,7 @@ fun CropFrameListDialog(
 private fun CropOutlineGridList(
     modifier: Modifier = Modifier,
     selectedIndex: Int,
+    outlineType: OutlineType,
     outlines: List<CropOutline>,
     aspectRatio: AspectRatio,
     onItemClick: (Int) -> Unit,
@@ -189,13 +229,15 @@ private fun CropOutlineGridList(
             }
         }
 
-        item {
-            AddItemButton(
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(3 / 4f)
-            ) {
-                onAddItemClick()
+        if (outlineType != OutlineType.Custom) {
+            item {
+                AddItemButton(
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                ) {
+                    onAddItemClick()
+                }
             }
         }
     }
@@ -356,5 +398,35 @@ private fun CropOutlineDisplay(
                 }
             }
         }
+    }
+}
+
+@SuppressLint("UnsafeOptInUsageError")
+@Composable
+private fun PickImageMask(
+    onImageSelected: (ImageBitmap) -> Unit
+
+) {
+    val context = LocalContext.current
+
+    val photoPicker = rememberLauncherForActivityResult(PhotoPicker()) { uris ->
+        val uri = uris.firstOrNull() ?: return@rememberLauncherForActivityResult
+
+        val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.decodeBitmap(
+                ImageDecoder.createSource(context.contentResolver, uri)
+            ) { decoder, info, source ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                decoder.isMutableRequired = true
+            }
+        } else {
+            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+        }
+
+        onImageSelected(bitmap.asImageBitmap())
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        photoPicker.launch(PhotoPicker.Args(PhotoPicker.Type.IMAGES_ONLY, 1))
     }
 }

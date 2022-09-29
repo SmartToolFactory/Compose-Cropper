@@ -1,5 +1,6 @@
 package com.smarttoolfactory.composecropper.preferences
 
+import CropFrameListDialog
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -14,7 +15,6 @@ import com.smarttoolfactory.cropper.model.CropFrame
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropOutlineProperty
-import com.smarttoolfactory.cropper.settings.frames.edit.CropFrameListDialog
 import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
 
 /**

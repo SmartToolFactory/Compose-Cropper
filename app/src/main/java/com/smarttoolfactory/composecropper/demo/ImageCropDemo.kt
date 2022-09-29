@@ -51,7 +51,9 @@ fun ImageCropDemo() {
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
 
-    val cropFrameFactory = remember { CropFrameFactory() }
+    val defaultImage = ImageBitmap.imageResource(id = R.drawable.squircle)
+
+    val cropFrameFactory = remember { CropFrameFactory(defaultImage) }
 
     var cropProperties by remember {
         mutableStateOf(
@@ -148,7 +150,9 @@ private fun MainContent(
         Column(modifier = Modifier.fillMaxSize()) {
 
             ImageCropper(
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 imageBitmap = imageBitmap,
                 contentDescription = "Image Cropper",
                 cropStyle = cropStyle,

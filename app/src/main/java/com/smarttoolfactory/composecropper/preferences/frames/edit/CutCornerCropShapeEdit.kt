@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper.settings.frames.edit
+package com.smarttoolfactory.composecropper.preferences.frames.edit
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape

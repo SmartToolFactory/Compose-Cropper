@@ -1,4 +1,4 @@
-package com.smarttoolfactory.cropper.settings.frames.edit
+package com.smarttoolfactory.composecropper.preferences.frames.edit
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -10,8 +10,9 @@ import com.smarttoolfactory.cropper.R
 import com.smarttoolfactory.cropper.model.*
 
 @Composable
-fun CropFrameAddDialog(
+fun CropFrameEditDialog(
     aspectRatio: AspectRatio,
+    index: Int,
     cropFrame: CropFrame,
     onConfirm: (CropFrame) -> Unit,
     onDismiss: () -> Unit
@@ -22,7 +23,7 @@ fun CropFrameAddDialog(
     val outlineType = cropFrame.outlineType
 
     var outline: CropOutline by remember {
-        mutableStateOf(cropFrame.copy().outlines[0])
+        mutableStateOf(cropFrame.outlines[index])
     }
 
     AlertDialog(
@@ -89,16 +90,12 @@ fun CropFrameAddDialog(
                 val newOutlines: List<CropOutline> = cropFrame.outlines
                     .toMutableList()
                     .apply {
-                        add(outline)
+                        set(index, outline)
                     }
                     .toList()
 
                 val newCropFrame = cropFrame.copy(
-                    cropOutlineContainer = getOutlineContainer(
-                        outlineType = outlineType,
-                        index = newOutlines.size - 1,
-                        outlines = newOutlines
-                    )
+                    cropOutlineContainer = getOutlineContainer(outlineType, index, newOutlines)
                 )
 
                 onConfirm(newCropFrame)

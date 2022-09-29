@@ -22,6 +22,11 @@ data class CropFrame(
 
     val outlineCount: Int
         get() = cropOutlineContainer.size
+
+    fun addOutline(outline: CropOutline): CropFrame {
+
+       return this
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
