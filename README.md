@@ -1,11 +1,40 @@
 # Compose Image Cropper
 
+[![](https://jitpack.io/v/SmartToolFactory/Compose-Cropper.svg)](https://jitpack.io/#SmartToolFactory/Compose-Cropper)
+
+
 Image cropper that can crop with static, dynamic crop behavior, can use customizable shapes, vectors, and other png images as iamge to crop with various customizations.
 
 
 
 https://user-images.githubusercontent.com/35650605/193119122-ed5d9919-4181-45ae-87f6-3c2697d96b45.mp4
 
+## Gradle Setup
+
+To get a Git project into your build:
+
+* Step 1. Add the JitPack repository to your build file Add it in your root build.gradle at the end
+  of repositories:
+
+```
+allprojects {
+  repositories {
+      ...
+      maven { url 'https://jitpack.io' }
+  }
+}
+```
+
+* Step 2. Add the dependency
+
+```
+dependencies {
+	  implementation 'com.github.SmartToolFactory:Compose-Cropper:Tag'
+}
+```
+
+## ⚠️ This version is for testing for features
+If you find any bugs please open an issue, suggest a solution or fork and open a PR. It's more than welcome to assiting for finding bugs or things that don't work as intended faster.
 
 ## Features
 * Crop with Static Overlay
