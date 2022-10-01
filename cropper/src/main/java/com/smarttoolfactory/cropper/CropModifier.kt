@@ -49,6 +49,11 @@ fun Modifier.crop(
 ) = composed(
 
     factory = {
+
+        LaunchedEffect(key1 = cropState){
+            cropState.init()
+        }
+
         val coroutineScope = rememberCoroutineScope()
 
         // Current Zoom level
