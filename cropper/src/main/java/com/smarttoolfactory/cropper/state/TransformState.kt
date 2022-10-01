@@ -1,7 +1,9 @@
 package com.smarttoolfactory.cropper.state
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.exponentialDecay
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +62,7 @@ open class TransformState(
 
     internal val animatablePanX = Animatable(0f)
     internal val animatablePanY = Animatable(0f)
-    internal val animatableZoom = Animatable(zoomInitial)
+    internal val animatableZoom = Animatable(0f)
     internal val animatableRotation = Animatable(rotationInitial)
 
     private val velocityTracker = VelocityTracker()
@@ -129,36 +131,49 @@ open class TransformState(
     internal suspend fun resetWithAnimation(
         pan: Offset = Offset.Zero,
         zoom: Float = 1f,
-        rotation: Float = 0f
+        rotation: Float = 0f,
+        animationSpec: AnimationSpec<Float> = tween(400)
     ) = coroutineScope {
-        launch { animatePanXto(pan.x) }
-        launch { animatePanYto(pan.y) }
-        launch { animateZoomTo(zoom) }
-        launch { animateRotationTo(rotation) }
+        launch { animatePanXto(pan.x, animationSpec) }
+        launch { animatePanYto(pan.y, animationSpec) }
+        launch { animateZoomTo(zoom, animationSpec) }
+        launch { animateRotationTo(rotation, animationSpec) }
     }
 
-    internal suspend fun animatePanXto(panX: Float) {
+    internal suspend fun animatePanXto(
+        panX: Float,
+        animationSpec: AnimationSpec<Float> = tween(400)
+    ) {
         if (pannable && pan.x != panX) {
-            animatablePanX.animateTo(panX)
+            animatablePanX.animateTo(panX, animationSpec)
         }
     }
 
-    internal suspend fun animatePanYto(panY: Float) {
+    internal suspend fun animatePanYto(
+        panY: Float,
+        animationSpec: AnimationSpec<Float> = tween(400)
+    ) {
         if (pannable && pan.y != panY) {
-            animatablePanY.animateTo(panY)
+            animatablePanY.animateTo(panY, animationSpec)
         }
     }
 
-    internal suspend fun animateZoomTo(zoom: Float) {
+    internal suspend fun animateZoomTo(
+        zoom: Float,
+        animationSpec: AnimationSpec<Float> = tween(400)
+    ) {
         if (zoomable && this.zoom != zoom) {
             val newZoom = zoom.coerceIn(zoomMin, zoomMax)
-            animatableZoom.animateTo(newZoom)
+            animatableZoom.animateTo(newZoom, animationSpec)
         }
     }
 
-    internal suspend fun animateRotationTo(rotation: Float) {
+    internal suspend fun animateRotationTo(
+        rotation: Float,
+        animationSpec: AnimationSpec<Float> = tween(400)
+    ) {
         if (rotatable && this.rotation != rotation) {
-            animatableRotation.animateTo(rotation)
+            animatableRotation.animateTo(rotation, animationSpec)
         }
     }
 
