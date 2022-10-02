@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -92,11 +93,14 @@ fun Modifier.crop(
 
         val tapModifier = Modifier.pointerInput(*keys) {
             detectTapGestures(
-                onDoubleTap = {
+                onDoubleTap = { offset: Offset ->
                     coroutineScope.launch {
                         zoomLevel = getNextZoomLevel(zoomLevel)
                         val newZoom = zoomOnDoubleTap(zoomLevel)
-                        cropState.onDoubleTap(zoom = newZoom) {
+                        cropState.onDoubleTap(
+                            offset = offset,
+                            zoom = newZoom
+                        ) {
                             onGestureEnd?.invoke(cropState.cropData)
                         }
                     }
