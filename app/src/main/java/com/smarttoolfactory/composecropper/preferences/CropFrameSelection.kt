@@ -89,7 +89,7 @@ fun CropFrameSelection(
 @Composable
 private fun CropFrameSelectionList(
     modifier: Modifier = Modifier,
-    initialSelectedIndex: Int = 2,
+    initialSelectedIndex: Int = 0,
     cropFrames: List<CropFrame>,
     onClick: (CropFrame) -> Unit,
     onCropFrameChange: (CropFrame) -> Unit
@@ -102,7 +102,7 @@ private fun CropFrameSelectionList(
         items = cropFrames,
         inactiveItemPercent = 80,
         initialFirstVisibleIndex = initialSelectedIndex - 2,
-    ) { animationProgress: AnimationProgress, _, item: CropFrame, width: Dp ->
+    ) { animationProgress: AnimationProgress, index: Int, item: CropFrame, width: Dp ->
 
         val scale = animationProgress.scale
         val color = animationProgress.color

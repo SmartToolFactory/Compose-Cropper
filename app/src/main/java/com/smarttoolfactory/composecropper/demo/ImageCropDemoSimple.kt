@@ -39,7 +39,7 @@ fun ImageCropDemoSimple() {
 
     val imageBitmapLarge = ImageBitmap.imageResource(
         LocalContext.current.resources,
-        R.drawable.landscape1
+        R.drawable.cinnamon
     )
 
     val imageBitmap by remember { mutableStateOf(imageBitmapLarge) }

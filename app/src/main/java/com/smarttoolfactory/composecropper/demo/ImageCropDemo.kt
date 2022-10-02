@@ -4,10 +4,7 @@ package com.smarttoolfactory.composecropper.demo
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -28,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
+import com.smarttoolfactory.colorpicker.widget.drawChecker
 import com.smarttoolfactory.composecropper.ImageSelectionButton
 import com.smarttoolfactory.composecropper.R
 import com.smarttoolfactory.composecropper.preferences.CropStyleSelectionMenu
@@ -140,7 +138,7 @@ private fun MainContent(
 
     val imageBitmapLarge = ImageBitmap.imageResource(
         LocalContext.current.resources,
-        R.drawable.landscape1
+        R.drawable.cinnamon
     )
 
     var imageBitmap by remember { mutableStateOf(imageBitmapLarge) }
@@ -239,7 +237,10 @@ private fun ShowCroppedImageDialog(imageBitmap: ImageBitmap, onDismissRequest: (
         onDismissRequest = onDismissRequest,
         text = {
             Image(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .drawChecker(RoundedCornerShape(8.dp))
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
                 contentScale = ContentScale.Fit,
                 bitmap = imageBitmap,
                 contentDescription = "result"

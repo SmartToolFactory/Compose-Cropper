@@ -4,6 +4,7 @@ package com.smarttoolfactory.cropper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
@@ -119,6 +120,7 @@ fun ImageCropper(
         }
 
         val transparentColor by animateColorAsState(
+            animationSpec = tween(300, easing = LinearEasing),
             targetValue = if (isTouched.value) Color(0x77000000) else Color(0xAA000000)
         )
 
