@@ -102,15 +102,14 @@ class StaticCropState internal constructor(
                 onBoundsCalculated()
             }
 
-            animateTransformationToOverlayBounds()
+            animateTransformationToOverlayBounds(overlayRect, animate = true)
         }
     }
 
     // Double Tap
     override suspend fun onDoubleTap(
-        pan: Offset,
+        offset: Offset,
         zoom: Float,
-        rotation: Float,
         onAnimationEnd: () -> Unit
     ) {
         doubleTapped = true
