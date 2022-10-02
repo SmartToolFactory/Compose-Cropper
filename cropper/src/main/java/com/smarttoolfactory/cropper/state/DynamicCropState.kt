@@ -56,9 +56,9 @@ class DynamicCropState internal constructor(
 ) {
 
     /**
-     * Rectangle that covers Image composable
-      */
-
+     * Rectangle that covers bounds of Composable. This is a rectangle uses [containerSize] as
+     * size and [Offset.Zero] as top left corner
+     */
     private val rectBounds = Rect(
         offset = Offset.Zero,
         size = Size(containerSize.width.toFloat(), containerSize.height.toFloat())
@@ -139,15 +139,23 @@ class DynamicCropState internal constructor(
 
     override suspend fun onUp(change: PointerInputChange) = coroutineScope {
         if (touchRegion != TouchRegion.None) {
-            // Update overlay if it's out of Container bounds
-            rectTemp = calculateOverlayRectInBounds(rectBounds, overlayRect)
-            animateOverlayRectTo(rectTemp)
+
+            val isInContainerBounds = isRectInContainerBounds(overlayRect)
+            if (!isInContainerBounds) {
+
+                // Calculate new overlay since it's out of Container bounds
+                rectTemp = calculateOverlayRectInBounds(rectBounds, overlayRect)
+
+                // Animate overlay to new bounds inside container
+                animateOverlayRectTo(rectTemp)
+            }
 
             // Update and animate pan, zoom and image draw area after overlay position is updated
-            animateTransformationToOverlayBounds()
+            animateTransformationToOverlayBounds(overlayRect, true)
 
             // Update image draw area after animating pan, zoom or rotation is completed
             drawAreaRect = updateImageDrawRectFromTransformation()
+
             touchRegion = TouchRegion.None
         }
 
@@ -208,15 +216,14 @@ class DynamicCropState internal constructor(
                     onBoundsCalculated()
                 }
 
-                animateTransformationToOverlayBounds()
+                animateTransformationToOverlayBounds(overlayRect, animate = true)
             }
         }
     }
 
     override suspend fun onDoubleTap(
-        pan: Offset,
+        offset: Offset,
         zoom: Float,
-        rotation: Float,
         onAnimationEnd: () -> Unit
     ) {
         doubleTapped = true
@@ -226,10 +233,26 @@ class DynamicCropState internal constructor(
         }
         resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
 
-        animateOverlayRectTo(
-            calculateOverlayRectInBounds(rectBounds, overlayRect)
-        )
-        animateTransformationToOverlayBounds()
+        // We get target value on start instead of updating bounds after
+        // gesture has finished
+        drawAreaRect = updateImageDrawRectFromTransformation()
+
+
+        if (!isOverlayInImageDrawBounds()) {
+            // Moves rectangle to bounds inside drawArea Rect while keeping aspect ratio
+            // of current overlay rect
+            animateOverlayRectTo(
+                getOverlayFromAspectRatio(
+                    containerSize.width.toFloat(),
+                    containerSize.height.toFloat(),
+                    drawAreaSize.width.toFloat(),
+                    drawAreaSize.height.toFloat(),
+                    aspectRatio
+                )
+            )
+
+            animateTransformationToOverlayBounds(overlayRect,false)
+        }
         onAnimationEnd()
     }
 
