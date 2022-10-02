@@ -1,9 +1,9 @@
-@file:OptIn(ExperimentalAnimationApi::class)
 
 package com.smarttoolfactory.cropper
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
@@ -33,6 +34,7 @@ import com.smarttoolfactory.cropper.settings.CropDefaults
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropStyle
 import com.smarttoolfactory.cropper.settings.CropType
+import com.smarttoolfactory.cropper.state.DynamicCropState
 import com.smarttoolfactory.cropper.state.rememberCropState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -62,22 +64,20 @@ fun ImageCropper(
 
         // No crop operation is applied by ScalableImage so rect points to bounds of original
         // bitmap
-        val scaledImageBitmap =
-            getScaledImageBitmap(
-                imageWidth = imageWidth,
-                imageHeight = imageHeight,
-                rect = rect,
-                bitmap = imageBitmap,
-                contentScale = cropProperties.contentScale,
-            )
-
-        val cropAgent = remember {
-            CropAgent()
-        }
+        val scaledImageBitmap = getScaledImageBitmap(
+            imageWidth = imageWidth,
+            imageHeight = imageHeight,
+            rect = rect,
+            bitmap = imageBitmap,
+            contentScale = cropProperties.contentScale,
+        )
 
         // Container Dimensions
         val containerWidthPx = constraints.maxWidth
         val containerHeightPx = constraints.maxHeight
+
+        val containerWidth: Dp
+        val containerHeight: Dp
 
         // Bitmap Dimensions
         val bitmapWidth = scaledImageBitmap.width
@@ -86,9 +86,6 @@ fun ImageCropper(
         // Dimensions of Composable that displays Bitmap
         val imageWidthPx: Int
         val imageHeightPx: Int
-
-        val containerWidth: Dp
-        val containerHeight: Dp
 
         with(LocalDensity.current) {
             imageWidthPx = imageWidth.roundToPx()
@@ -104,21 +101,8 @@ fun ImageCropper(
 
         // these keys are for resetting cropper when image width/height, contentScale or
         // overlay aspect ratio changes
-        val resetKeys = remember(
-            scaledImageBitmap,
-            imageWidthPx,
-            imageHeightPx,
-            contentScale,
-            cropType
-        ) {
-            arrayOf(
-                scaledImageBitmap,
-                imageWidthPx,
-                imageHeightPx,
-                contentScale,
-                cropType
-            )
-        }
+        val resetKeys =
+            getResetKeys(scaledImageBitmap, imageWidthPx, imageHeightPx, contentScale, cropType)
 
         val cropState = rememberCropState(
             imageSize = IntSize(bitmapWidth, bitmapHeight),
@@ -128,44 +112,25 @@ fun ImageCropper(
             keys = resetKeys
         )
 
-        LaunchedEffect(key1 = cropProperties) {
-            cropState.updateProperties(cropProperties)
-        }
-
-        /**
-         * Rectangle that is used for cropping image, this rectangle is not the
-         * one that draws on screen. We might have 4000x3000 rect while we
-         * draw 1000x750px Composable on screen
-         */
-        val rectCrop = cropState.cropRect
-
-        val density = LocalDensity.current
-        val layoutDirection = LocalLayoutDirection.current
-
-        LaunchedEffect(crop) {
-            if (crop) {
-                flow {
-                    emit(
-                        cropAgent.crop(
-                            scaledImageBitmap,
-                            rectCrop,
-                            cropOutline,
-                            layoutDirection,
-                            density
-                        )
-                    )
-                }
-                    .flowOn(Dispatchers.Default)
-                    .onStart {
-                        onCropStart()
-                        delay(400)
-                    }
-                    .onEach {
-                        onCropSuccess(it)
-                    }
-                    .launchIn(this)
+        val isTouched = remember(cropState) {
+            derivedStateOf {
+                cropState is DynamicCropState && handlesTouched(cropState.touchRegion)
             }
         }
+
+        val transparentColor by animateColorAsState(
+            targetValue = if (isTouched.value) Color(0x77000000) else Color(0xAA000000)
+        )
+
+        // Crops image when user invokes crop operation
+        Crop(
+            crop,
+            scaledImageBitmap,
+            cropState.cropRect,
+            cropOutline,
+            onCropStart,
+            onCropSuccess
+        )
 
         val imageModifier = Modifier
             .size(containerWidth, containerHeight)
@@ -174,40 +139,82 @@ fun ImageCropper(
                 cropState = cropState
             )
 
-        Box(modifier = Modifier
+        LaunchedEffect(key1 = cropProperties) {
+            cropState.updateProperties(cropProperties)
+        }
+
+        /// Create a MutableTransitionState<Boolean> for the AnimatedVisibility.
+        var visible by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            delay(100)
+            visible = true
+        }
+
+        ImageCropper(
+            modifier = imageModifier,
+            visible = visible,
+            imageBitmap = imageBitmap,
+            containerWidth = containerWidth,
+            containerHeight = containerHeight,
+            imageWidthPx = imageWidthPx,
+            imageHeightPx = imageHeightPx,
+            handleSize = cropProperties.handleSize,
+            overlayRect = cropState.overlayRect,
+            cropType = cropType,
+            cropOutline = cropOutline,
+            cropStyle = cropStyle,
+            transparentColor = transparentColor
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun ImageCropper(
+    modifier: Modifier,
+    visible: Boolean,
+    imageBitmap: ImageBitmap,
+    containerWidth: Dp,
+    containerHeight: Dp,
+    imageWidthPx: Int,
+    imageHeightPx: Int,
+    handleSize: Dp,
+    cropType: CropType,
+    cropOutline: CropOutline,
+    cropStyle: CropStyle,
+    overlayRect: Rect,
+    transparentColor: Color,
+) {
+    Box(
+        modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+    ) {
+
+        AnimatedVisibility(
+            visible = visible,
+            enter = scaleIn(tween(500))
         ) {
 
-            /// Create a MutableTransitionState<Boolean> for the AnimatedVisibility.
-            var visible by remember { mutableStateOf(false) }
+            ImageCropperImpl(
+                modifier = modifier,
+                imageBitmap = imageBitmap,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                imageWidthPx = imageWidthPx,
+                imageHeightPx = imageHeightPx,
+                cropType = cropType,
+                cropOutline = cropOutline,
+                handleSize = handleSize,
+                cropStyle = cropStyle,
+                rectOverlay = overlayRect,
+                transparentColor = transparentColor
+            )
+        }
 
-            LaunchedEffect(Unit) {
-                delay(100)
-                visible = true
-            }
-
-            AnimatedVisibility(
-                visible = visible,
-                enter = scaleIn(tween(500))
-            ) {
-
-                ImageCropperImpl(
-                    modifier = imageModifier,
-                    imageBitmap = scaledImageBitmap,
-                    containerWidth = containerWidth,
-                    containerHeight = containerHeight,
-                    imageWidthPx = imageWidthPx,
-                    imageHeightPx = imageHeightPx,
-                    cropType = cropType,
-                    cropOutline = cropOutline,
-                    handleSize = cropProperties.handleSize,
-                    cropStyle = cropStyle,
-                    rectOverlay = cropState.overlayRect
-                )
-            }
-            
-            // TODO Remove this text when cropper is complete. This is for debugging
+        // TODO Remove this text when cropper is complete. This is for debugging
+//            val rectCrop = cropState.cropRect
 //            val drawAreaRect = cropState.drawAreaRect
 //            val pan = cropState.pan
 //            val zoom = cropState.zoom
@@ -222,7 +229,6 @@ fun ImageCropper(
 //                        "overlayRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}\n" +
 //                        "cropRect: $rectCrop, size: ${rectCrop.size}"
 //            )
-        }
     }
 }
 
@@ -238,6 +244,7 @@ private fun ImageCropperImpl(
     cropOutline: CropOutline,
     handleSize: Dp,
     cropStyle: CropStyle,
+    transparentColor: Color,
     rectOverlay: Rect
 ) {
 
@@ -271,8 +278,74 @@ private fun ImageCropperImpl(
             handleColor = handleColor,
             strokeWidth = strokeWidth,
             drawHandles = drawHandles,
-            handleSize = handleSizeInPx
+            handleSize = handleSizeInPx,
+            transparentColor = transparentColor,
         )
 
     }
+}
+
+@Composable
+private fun Crop(
+    crop: Boolean,
+    scaledImageBitmap: ImageBitmap,
+    cropRect: Rect,
+    cropOutline: CropOutline,
+    onCropStart: () -> Unit,
+    onCropSuccess: (ImageBitmap) -> Unit
+) {
+
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+
+    // Crop Agent is responsible for cropping image
+    val cropAgent = remember { CropAgent() }
+
+    LaunchedEffect(crop) {
+        if (crop) {
+            flow {
+                emit(
+                    cropAgent.crop(
+                        scaledImageBitmap,
+                        cropRect,
+                        cropOutline,
+                        layoutDirection,
+                        density
+                    )
+                )
+            }
+                .flowOn(Dispatchers.Default)
+                .onStart {
+                    onCropStart()
+                    delay(400)
+                }
+                .onEach {
+                    onCropSuccess(it)
+                }
+                .launchIn(this)
+        }
+    }
+}
+
+@Composable
+private fun getResetKeys(
+    scaledImageBitmap: ImageBitmap,
+    imageWidthPx: Int,
+    imageHeightPx: Int,
+    contentScale: ContentScale,
+    cropType: CropType
+) = remember(
+    scaledImageBitmap,
+    imageWidthPx,
+    imageHeightPx,
+    contentScale,
+    cropType
+) {
+    arrayOf(
+        scaledImageBitmap,
+        imageWidthPx,
+        imageHeightPx,
+        contentScale,
+        cropType
+    )
 }

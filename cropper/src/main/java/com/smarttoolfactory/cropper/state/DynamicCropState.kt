@@ -69,9 +69,6 @@ class DynamicCropState internal constructor(
     // When pointer is up
     private var rectTemp = Rect.Zero
 
-    // Region of touch inside, corners of or outside of overlay rectangle
-    private var touchRegion = TouchRegion.None
-
     // Touch position for edge of the rectangle, used for not jumping to edge of rectangle
     // when user moves a handle. We set positionActual as position of selected handle
     // and using this distance as offset to not have a jump from touch position

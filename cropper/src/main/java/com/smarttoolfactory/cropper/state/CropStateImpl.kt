@@ -4,11 +4,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntSize
+import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
 import com.smarttoolfactory.cropper.settings.CropProperties
@@ -89,6 +93,11 @@ abstract class CropState internal constructor(
 
 
     private var initialized: Boolean = false
+
+    /**
+     * Region of touch inside, corners of or outside of overlay rectangle
+     */
+    var touchRegion by mutableStateOf(TouchRegion.None)
 
     internal suspend fun init() {
         // When initial aspect ratio doesn't match drawable area
