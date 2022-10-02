@@ -118,6 +118,8 @@ class StaticCropState internal constructor(
             resetTracking()
         }
         resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
+        drawAreaRect = updateImageDrawRectFromTransformation()
+        animateTransformationToOverlayBounds(overlayRect,true)
         onAnimationEnd()
     }
 }
