@@ -49,7 +49,7 @@ object CropDefaults {
         drawOverlay: Boolean = true,
         drawGrid: Boolean = true,
         strokeWidth: Dp = 1.dp,
-        overlayColor: Color = Color.DarkGray,
+        overlayColor: Color = Color.Gray,
         handleColor: Color = Color.White
     ): CropStyle {
         return CropStyle(

@@ -62,7 +62,7 @@ open class TransformState(
 
     internal val animatablePanX = Animatable(0f)
     internal val animatablePanY = Animatable(0f)
-    internal val animatableZoom = Animatable(0f)
+    internal val animatableZoom = Animatable(zoomInitial)
     internal val animatableRotation = Animatable(rotationInitial)
 
     private val velocityTracker = VelocityTracker()

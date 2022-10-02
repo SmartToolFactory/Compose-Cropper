@@ -1,11 +1,16 @@
+@file:OptIn(ExperimentalAnimationApi::class)
+
 package com.smarttoolfactory.cropper
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -18,7 +23,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.crop.CropAgent
 import com.smarttoolfactory.cropper.draw.DrawingOverlay
 import com.smarttoolfactory.cropper.draw.ImageDrawCanvas
@@ -135,11 +139,6 @@ fun ImageCropper(
          */
         val rectCrop = cropState.cropRect
 
-        val drawAreaRect = cropState.drawAreaRect
-
-        val pan = cropState.pan
-        val zoom = cropState.zoom
-
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
 
@@ -175,33 +174,54 @@ fun ImageCropper(
                 cropState = cropState
             )
 
-        Box {
-            ImageCropperImpl(
-                modifier = imageModifier,
-                imageBitmap = scaledImageBitmap,
-                containerWidth = containerWidth,
-                containerHeight = containerHeight,
-                imageWidthPx = imageWidthPx,
-                imageHeightPx = imageHeightPx,
-                cropType = cropType,
-                cropOutline = cropOutline,
-                handleSize = cropProperties.handleSize,
-                cropStyle = cropStyle,
-                rectOverlay = cropState.overlayRect
-            )
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+        ) {
 
+            /// Create a MutableTransitionState<Boolean> for the AnimatedVisibility.
+            var visible by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                delay(100)
+                visible = true
+            }
+
+            AnimatedVisibility(
+                visible = visible,
+                enter = scaleIn(tween(500))
+            ) {
+
+                ImageCropperImpl(
+                    modifier = imageModifier,
+                    imageBitmap = scaledImageBitmap,
+                    containerWidth = containerWidth,
+                    containerHeight = containerHeight,
+                    imageWidthPx = imageWidthPx,
+                    imageHeightPx = imageHeightPx,
+                    cropType = cropType,
+                    cropOutline = cropOutline,
+                    handleSize = cropProperties.handleSize,
+                    cropStyle = cropStyle,
+                    rectOverlay = cropState.overlayRect
+                )
+            }
+            
             // TODO Remove this text when cropper is complete. This is for debugging
-            Text(
-                modifier = Modifier.align(Alignment.TopStart),
-                color = Color.White,
-                fontSize = 10.sp,
-                text = "imageWidthInPx: $imageWidthPx, imageHeightInPx: $imageHeightPx\n" +
-                        "bitmapWidth: $bitmapWidth, bitmapHeight: $bitmapHeight\n" +
-                        "zoom: $zoom, pan: $pan\n" +
-                        "drawAreaRect: $drawAreaRect, size: ${drawAreaRect.size}\n" +
-                        "overlayRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}\n" +
-                        "cropRect: $rectCrop, size: ${rectCrop.size}"
-            )
+//            val drawAreaRect = cropState.drawAreaRect
+//            val pan = cropState.pan
+//            val zoom = cropState.zoom
+//            Text(
+//                modifier = Modifier.align(Alignment.TopStart),
+//                color = Color.White,
+//                fontSize = 10.sp,
+//                text = "imageWidthInPx: $imageWidthPx, imageHeightInPx: $imageHeightPx\n" +
+//                        "bitmapWidth: $bitmapWidth, bitmapHeight: $bitmapHeight\n" +
+//                        "zoom: $zoom, pan: $pan\n" +
+//                        "drawAreaRect: $drawAreaRect, size: ${drawAreaRect.size}\n" +
+//                        "overlayRect: ${cropState.overlayRect}, size: ${cropState.overlayRect.size}\n" +
+//                        "cropRect: $rectCrop, size: ${rectCrop.size}"
+//            )
         }
     }
 }
