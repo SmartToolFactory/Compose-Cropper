@@ -1,6 +1,7 @@
 package com.smarttoolfactory.cropper.state
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.geometry.Offset
@@ -43,7 +44,7 @@ abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
     drawAreaSize: IntSize,
-   private var aspectRatio: AspectRatio,
+    internal var aspectRatio: AspectRatio,
     maxZoom: Float,
     var fling: Boolean = true,
     zoomable: Boolean = true,
@@ -67,8 +68,8 @@ abstract class CropState internal constructor(
         getOverlayFromAspectRatio(
             containerSize.width.toFloat(),
             containerSize.height.toFloat(),
-            drawAreaRect.size.width,
-            drawAreaRect.size.height,
+            drawAreaSize.width.toFloat(),
+            drawAreaSize.height.toFloat(),
             aspectRatio
         ),
         Rect.VectorConverter
@@ -87,10 +88,22 @@ abstract class CropState internal constructor(
         private set
 
 
+    private var initialized: Boolean = false
+
+    internal suspend fun init() {
+        // When initial aspect ratio doesn't match drawable area
+        // overlay gets updated so update draw area as well
+        animateTransformationToOverlayBounds(overlayRect, animate = true)
+        initialized = true
+    }
+
     /**
      * Update properties of [CropState] and animate to valid intervals if required
      */
     internal open suspend fun updateProperties(cropProperties: CropProperties) {
+
+        if (!initialized) return
+
         fling = cropProperties.fling
         pannable = cropProperties.pannable
         zoomable = cropProperties.zoomable
@@ -102,14 +115,21 @@ abstract class CropState internal constructor(
         val aspectRatio = cropProperties.aspectRatio
 
         if(this.aspectRatio.value != aspectRatio.value || maxZoom != zoomMax) {
+            this.aspectRatio = aspectRatio
 
             zoomMax = maxZoom
             animatableZoom.updateBounds(zoomMin, zoomMax)
 
-            val currentZoom = if(zoom>zoomMax) zoomMax else zoom
+            val currentZoom = if (zoom > zoomMax) zoomMax else zoom
 
-            resetWithAnimation(zoom = currentZoom)
+            // Set new zoom
+            snapZoomTo(currentZoom)
 
+            // Calculate new region of image is drawn. It can be drawn left of 0 and right
+            // of container width depending on transformation
+            drawAreaRect = updateImageDrawRectFromTransformation()
+
+            // Update overlay rectangle based on current draw area and new aspect ratio
             animateOverlayRectTo(
                 getOverlayFromAspectRatio(
                     containerSize.width.toFloat(),
@@ -121,17 +141,21 @@ abstract class CropState internal constructor(
             )
         }
 
-        // Update image draw area
-        drawAreaRect = updateImageDrawRectFromTransformation()
+        // Animate zoom, pan, rotation to move draw area to cover overlay rect
+        // inside draw area rect
+        animateTransformationToOverlayBounds(overlayRect, animate = true)
     }
 
     /**
      * Animate overlay rectangle to target value
      */
-    internal suspend fun animateOverlayRectTo(rect: Rect) {
+    internal suspend fun animateOverlayRectTo(
+        rect: Rect,
+        animationSpec: AnimationSpec<Rect> = tween(400)
+    ) {
         animatableRectOverlay.animateTo(
             targetValue = rect,
-            animationSpec = tween(400)
+            animationSpec = animationSpec
         )
     }
 
@@ -169,11 +193,30 @@ abstract class CropState internal constructor(
 
     // Double Tap
     internal abstract suspend fun onDoubleTap(
-        pan: Offset = Offset.Zero,
+        offset: Offset,
         zoom: Float = 1f,
-        rotation: Float = 0f,
         onAnimationEnd: () -> Unit
     )
+
+    /**
+     * Check if area that image is drawn covers [overlayRect]
+     */
+    internal fun isOverlayInImageDrawBounds(): Boolean {
+        return drawAreaRect.left <= overlayRect.left &&
+                drawAreaRect.top <= overlayRect.top &&
+                drawAreaRect.right >= overlayRect.right &&
+                drawAreaRect.bottom >= overlayRect.bottom
+    }
+
+    /**
+     * Check if [rect] is inside container bounds
+     */
+    internal fun isRectInContainerBounds(rect: Rect): Boolean {
+        return rect.left >= 0 &&
+                rect.right <= containerSize.width &&
+                rect.top >= 0 &&
+                rect.bottom <= containerSize.height
+    }
 
     /**
      * Update rectangle for area that image is drawn. This rect changes when zoom and
@@ -223,7 +266,11 @@ abstract class CropState internal constructor(
      * Resets to bounds with animation and resets tracking for fling animation.
      * Changes pan, zoom and rotation to valid bounds based on [drawAreaRect] and [overlayRect]
      */
-    internal suspend fun animateTransformationToOverlayBounds() {
+    internal suspend fun animateTransformationToOverlayBounds(
+        overlayRect: Rect,
+        animate: Boolean,
+        animationSpec: AnimationSpec<Float> = tween(400)
+    ) {
 
         val zoom = zoom.coerceAtLeast(1f)
 
@@ -248,7 +295,18 @@ abstract class CropState internal constructor(
         // Update draw area based on new pan and zoom values
         drawAreaRect = newDrawAreaRect
 
-        resetWithAnimation(pan = Offset(newPanX, newPanY), zoom = newZoom)
+        if (animate) {
+            resetWithAnimation(
+                pan = Offset(newPanX, newPanY),
+                zoom = newZoom,
+                animationSpec = animationSpec
+            )
+        } else {
+            snapPanXto(newPanX)
+            snapPanYto(newPanY)
+            snapZoomTo(newZoom)
+        }
+
         resetTracking()
     }
 
@@ -257,6 +315,8 @@ abstract class CropState internal constructor(
      * size of bigger dimension for image draw area([drawAreaRect]) to cover overlay([overlayRect])
      */
     private fun calculateNewZoom(oldRect: Rect, newRect: Rect, zoom: Float): Float {
+
+        if (oldRect.size == Size.Zero || newRect.size == Size.Zero) return zoom
 
         val widthChange = (newRect.width / oldRect.width)
             .coerceAtLeast(1f)
@@ -310,38 +370,47 @@ abstract class CropState internal constructor(
     /**
      * Create [Rect] to draw overlay based on selected aspect ratio
      */
-    private fun getOverlayFromAspectRatio(
+    internal fun getOverlayFromAspectRatio(
         containerWidth: Float,
         containerHeight: Float,
         drawAreaWidth: Float,
         drawAreaHeight: Float,
-        aspectRatio: AspectRatio
+        aspectRatio: AspectRatio,
+        coefficient: Float = .9f
     ): Rect {
 
-        val offset = Offset(
-            x = (containerWidth - drawAreaWidth) / 2,
-            y = (containerHeight - drawAreaHeight) / 2
-        )
+        if (aspectRatio == AspectRatio.Unspecified) {
 
-        if (aspectRatio == AspectRatio.Unspecified) return Rect(
-            offset = offset,
-            size = Size(drawAreaWidth, drawAreaHeight)
-        )
+            // Maximum width and height overlay rectangle can be measured with
+            val overlayWidthMax = drawAreaWidth.coerceAtMost(containerWidth * coefficient)
+            val overlayHeightMax = drawAreaHeight.coerceAtMost(containerHeight * coefficient)
+
+            val offsetX = (containerWidth - overlayWidthMax) / 2f
+            val offsetY = (containerHeight - overlayHeightMax) / 2f
+
+            return Rect(
+                offset = Offset(offsetX, offsetY),
+                size = Size(overlayWidthMax, overlayHeightMax)
+            )
+        }
+
+        val overlayWidthMax = containerWidth * coefficient
+        val overlayHeightMax = containerHeight * coefficient
 
         val aspectRatioValue = aspectRatio.value
 
-        var width = drawAreaWidth
-        var height = drawAreaWidth / aspectRatioValue
+        var width = overlayWidthMax
+        var height = overlayWidthMax / aspectRatioValue
 
-        if (height > drawAreaHeight) {
-            height = drawAreaHeight
+        if (height > overlayHeightMax) {
+            height = overlayHeightMax
             width = height * aspectRatioValue
         }
 
-        val posX = offset.x + ((drawAreaWidth - width) / 2)
-        val posY = offset.y + ((drawAreaHeight - height) / 2)
+        val offsetX = (containerWidth - width) / 2f
+        val offsetY = (containerHeight - height) / 2f
 
-        return Rect(offset = Offset(posX, posY), size = Size(width, height))
+        return Rect(offset = Offset(offsetX, offsetY), size = Size(width, height))
     }
 
     /**
@@ -353,6 +422,11 @@ abstract class CropState internal constructor(
         drawAreaRect: Rect,
         overlayRect: Rect
     ): Rect {
+
+        if (drawAreaRect == Rect.Zero || overlayRect == Rect.Zero) return Rect(
+            offset = Offset.Zero,
+            Size(bitmapWidth.toFloat(), bitmapHeight.toFloat())
+        )
 
         // Calculate latest image draw area based on overlay position
         // This is valid rectangle that contains crop area inside overlay
