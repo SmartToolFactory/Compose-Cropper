@@ -44,9 +44,12 @@ fun Modifier.crop(
     vararg keys: Any?,
     cropState: CropState,
     zoomOnDoubleTap: (ZoomLevel) -> Float = cropState.DefaultOnDoubleTap,
+    onDown: ((CropData) -> Unit)? = null,
+    onMove: ((CropData) -> Unit)? = null,
+    onUp: ((CropData) -> Unit)? = null,
     onGestureStart: ((CropData) -> Unit)? = null,
     onGesture: ((CropData) -> Unit)? = null,
-    onGestureEnd: ((CropData) -> Unit)? = null,
+    onGestureEnd: ((CropData) -> Unit)? = null
 ) = composed(
 
     factory = {
@@ -113,19 +116,19 @@ fun Modifier.crop(
                 onDown = {
                     coroutineScope.launch {
                         cropState.onDown(it)
-                        onGestureStart?.invoke(cropState.cropData)
+                        onDown?.invoke(cropState.cropData)
                     }
                 },
                 onMove = {
                     coroutineScope.launch {
                         cropState.onMove(it)
-                        onGesture?.invoke(cropState.cropData)
+                        onMove?.invoke(cropState.cropData)
                     }
                 },
                 onUp = {
                     coroutineScope.launch {
                         cropState.onUp(it)
-                        onGestureEnd?.invoke(cropState.cropData)
+                        onUp?.invoke(cropState.cropData)
                     }
                 }
             )
