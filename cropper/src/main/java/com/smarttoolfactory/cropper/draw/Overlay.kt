@@ -33,6 +33,7 @@ internal fun DrawingOverlay(
     rect: Rect,
     cropOutline: CropOutline,
     drawGrid: Boolean,
+    transparentColor:Color,
     overlayColor: Color,
     handleColor: Color,
     strokeWidth: Dp,
@@ -60,6 +61,7 @@ internal fun DrawingOverlay(
                 drawOverlay = drawOverlay,
                 rect = rect,
                 drawGrid = drawGrid,
+                transparentColor = transparentColor,
                 overlayColor = overlayColor,
                 handleColor = handleColor,
                 strokeWidth = strokeWidthPx,
@@ -83,6 +85,7 @@ internal fun DrawingOverlay(
                 drawOverlay = drawOverlay,
                 rect = rect,
                 drawGrid = drawGrid,
+                transparentColor = transparentColor,
                 overlayColor = overlayColor,
                 handleColor = handleColor,
                 strokeWidth = strokeWidthPx,
@@ -100,6 +103,7 @@ internal fun DrawingOverlay(
                 drawOverlay = drawOverlay,
                 rect = rect,
                 drawGrid = drawGrid,
+                transparentColor = transparentColor,
                 overlayColor = overlayColor,
                 handleColor = handleColor,
                 strokeWidth = strokeWidthPx,
@@ -118,6 +122,7 @@ private fun DrawingOverlayImpl(
     drawOverlay: Boolean,
     rect: Rect,
     drawGrid: Boolean,
+    transparentColor: Color,
     overlayColor: Color,
     handleColor: Color,
     strokeWidth: Float,
@@ -131,6 +136,7 @@ private fun DrawingOverlayImpl(
             drawOverlay,
             rect,
             drawGrid,
+            transparentColor,
             overlayColor,
             handleColor,
             strokeWidth,
@@ -149,6 +155,7 @@ private fun DrawingOverlayImpl(
     drawOverlay: Boolean,
     rect: Rect,
     drawGrid: Boolean,
+    transparentColor: Color,
     overlayColor: Color,
     handleColor: Color,
     strokeWidth: Float,
@@ -162,6 +169,7 @@ private fun DrawingOverlayImpl(
             drawOverlay,
             rect,
             drawGrid,
+            transparentColor,
             overlayColor,
             handleColor,
             strokeWidth,
@@ -180,6 +188,7 @@ private fun DrawingOverlayImpl(
     drawOverlay: Boolean,
     rect: Rect,
     drawGrid: Boolean,
+    transparentColor: Color,
     overlayColor: Color,
     handleColor: Color,
     strokeWidth: Float,
@@ -193,6 +202,7 @@ private fun DrawingOverlayImpl(
             drawOverlay,
             rect,
             drawGrid,
+            transparentColor,
             overlayColor,
             handleColor,
             strokeWidth,
@@ -209,6 +219,7 @@ private fun DrawScope.drawOverlay(
     drawOverlay: Boolean,
     rect: Rect,
     drawGrid: Boolean,
+    transparentColor: Color,
     overlayColor: Color,
     handleColor: Color,
     strokeWidth: Float,
@@ -220,7 +231,7 @@ private fun DrawScope.drawOverlay(
    drawWithLayer {
 
         // Destination
-        drawRect(Color(0x88000000))
+        drawRect(transparentColor)
 
         // Source
         translate(left = rect.left, top = rect.top) {
