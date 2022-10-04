@@ -38,7 +38,7 @@ fun CropFrameDisplayCard(
     modifier: Modifier = Modifier,
     editable: Boolean,
     scale: Float,
-    backgroundColor: Color = Color.White,
+    contentColor: Color = MaterialTheme.colorScheme.surface,
     outlineColor: Color,
     editButtonBackgroundColor: Color = MaterialTheme.colorScheme.tertiary,
     editButtonContentColor: Color = MaterialTheme.colorScheme.onTertiary,
@@ -50,7 +50,7 @@ fun CropFrameDisplayCard(
 
     Box(
         modifier = modifier
-            .background(backgroundColor)
+            .background(contentColor)
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {

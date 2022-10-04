@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.RadioButton
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -173,29 +172,22 @@ internal fun DialogWithMultipleSelection(
                 }
             }
         },
-
-        buttons = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.End
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(selectedOption)
+                }
             ) {
-                Button(
-                    onClick = {
-                        onDismiss()
-                    }
-                ) {
-                    Text(text = "Dismiss")
+                Text(text = "Accept")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(
-                    onClick = {
-                        onConfirm(selectedOption)
-                    }
-                ) {
-                    Text(text = "Confirm")
-                }
+            ) {
+                Text(text = "Cancel")
             }
         }
     )

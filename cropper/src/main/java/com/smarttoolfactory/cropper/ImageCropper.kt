@@ -121,7 +121,7 @@ fun ImageCropper(
 
         val transparentColor by animateColorAsState(
             animationSpec = tween(300, easing = LinearEasing),
-            targetValue = if (isTouched.value) Color(0x77000000) else Color(0xAA000000)
+            targetValue = if (isTouched.value) Color(0x66000000) else Color(0x99000000)
         )
 
         // Crops image when user invokes crop operation

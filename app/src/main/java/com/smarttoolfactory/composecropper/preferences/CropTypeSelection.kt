@@ -1,11 +1,13 @@
 package com.smarttoolfactory.composecropper.preferences
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.settings.CropType
@@ -24,7 +26,9 @@ internal fun CropTypeExposedSelection(
     }
 
     ExposedSelectionMenu(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, Color.Cyan),
         index = index,
         title = "Crop Type",
         options = cropTypeOptions,

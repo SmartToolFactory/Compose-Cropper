@@ -2,6 +2,7 @@ package com.smarttoolfactory.composecropper.preferences
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,6 +40,7 @@ internal fun AnimatedAspectRatioSelection(
                 scaleY = scale
             }
             .width(width),
+            contentColor = MaterialTheme.colorScheme.surface,
             color = color,
             cropAspectRatio = item
         )
