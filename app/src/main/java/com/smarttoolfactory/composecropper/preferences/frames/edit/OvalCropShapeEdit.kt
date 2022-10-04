@@ -71,12 +71,16 @@ internal fun OvalCropShapeEdit(
                 val left = (width - diameter) / 2
                 val top = (height - diameter) / 2
 
-
                 val rect = Rect(offset = Offset(left, top), size = Size(diameter, diameter))
-//                moveTo(size.width / 2, size.height / 2)
-                // FIXME There is a bug when start angle is 0f and sweep 360f
-                arcTo(rect, startAngle, sweepAngle, false)
-//                addArc(rect, startAngle, sweepAngle)
+
+                if (sweepAngle == 360f) {
+                    addOval(rect)
+                } else {
+                    moveTo(size.width / 2, size.height / 2)
+                    arcTo(rect, startAngle, sweepAngle, false)
+
+                }
+
                 close()
             }
         }

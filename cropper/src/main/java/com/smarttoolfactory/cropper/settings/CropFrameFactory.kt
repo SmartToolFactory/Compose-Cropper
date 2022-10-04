@@ -51,11 +51,10 @@ class CropFrameFactory(private val defaultImages: List<ImageBitmap>) {
                 )
             }
 
-            // TODO This should be editable in future releases
             OutlineType.Oval -> {
                 CropFrame(
                     outlineType = outlineType,
-                    editable = false,
+                    editable = true,
                     cropOutlineContainer = createCropOutlineContainer(outlineType)
                 )
             }
