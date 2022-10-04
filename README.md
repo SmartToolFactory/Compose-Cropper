@@ -7,7 +7,10 @@ Image cropper that can crop with static, dynamic crop behavior, can use customiz
 
 
 
-https://user-images.githubusercontent.com/35650605/193119122-ed5d9919-4181-45ae-87f6-3c2697d96b45.mp4
+https://user-images.githubusercontent.com/35650605/193474776-fecd3235-72a7-443a-bad1-7f5fdf8ffda8.mp4
+
+
+
 
 ## Gradle Setup
 
