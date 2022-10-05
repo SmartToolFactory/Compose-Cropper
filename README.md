@@ -7,8 +7,7 @@ Image cropper that can crop with static, dynamic crop behavior, can use customiz
 
 
 
-https://user-images.githubusercontent.com/35650605/193474776-fecd3235-72a7-443a-bad1-7f5fdf8ffda8.mp4
-
+https://user-images.githubusercontent.com/35650605/194116575-8a5cb314-a34d-433c-b2d2-c114253670ba.mp4
 
 
 
