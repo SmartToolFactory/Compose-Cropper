@@ -4,6 +4,7 @@ package com.smarttoolfactory.composecropper.demo
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -30,6 +31,7 @@ import com.smarttoolfactory.composecropper.ImageSelectionButton
 import com.smarttoolfactory.composecropper.R
 import com.smarttoolfactory.composecropper.preferences.CropStyleSelectionMenu
 import com.smarttoolfactory.composecropper.preferences.PropertySelectionSheet
+import com.smarttoolfactory.composecropper.ui.theme.ComposeCropperTheme
 import com.smarttoolfactory.cropper.ImageCropper
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.model.RectCropShape
@@ -78,51 +80,66 @@ fun ImageCropDemo() {
 
     var selectionPage by remember { mutableStateOf(SelectionPage.Properties) }
 
-    BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState,
-        sheetElevation = 16.dp,
-        sheetShape = RoundedCornerShape(
-            bottomStart = 0.dp,
-            bottomEnd = 0.dp,
-            topStart = 28.dp,
-            topEnd = 28.dp
-        ),
 
-        sheetGesturesEnabled = true,
-        sheetContent = {
+    val theme by remember {
+        derivedStateOf {
+            cropStyle.cropTheme
+        }
+    }
 
-            if (selectionPage == SelectionPage.Properties) {
-                PropertySelectionSheet(
-                    cropFrameFactory = cropFrameFactory,
-                    cropProperties = cropProperties,
-                    onCropPropertiesChange = {
-                        cropProperties = it
-                    }
-                )
-            } else {
-                CropStyleSelectionMenu(
-                    cropStyle = cropStyle,
-                    onCropStyleChange = {
-                        cropStyle = it
-                    }
-                )
-            }
-        },
-
-        // This is the height in collapsed state
-        sheetPeekHeight = 0.dp
+    ComposeCropperTheme(
+        darkTheme = when(theme){
+            CropTheme.Dark ->true
+            CropTheme.Light->false
+            else -> isSystemInDarkTheme()
+        }
     ) {
-        MainContent(
-            cropProperties,
-            cropStyle,
-        ) {
-            selectionPage = it
+        BottomSheetScaffold(
+            scaffoldState = bottomSheetScaffoldState,
+            sheetElevation = 16.dp,
+            sheetShape = RoundedCornerShape(
+                bottomStart = 0.dp,
+                bottomEnd = 0.dp,
+                topStart = 28.dp,
+                topEnd = 28.dp
+            ),
 
-            coroutineScope.launch {
-                if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
-                    bottomSheetScaffoldState.bottomSheetState.collapse()
+            sheetGesturesEnabled = true,
+            sheetContent = {
+
+                if (selectionPage == SelectionPage.Properties) {
+                    PropertySelectionSheet(
+                        cropFrameFactory = cropFrameFactory,
+                        cropProperties = cropProperties,
+                        onCropPropertiesChange = {
+                            cropProperties = it
+                        }
+                    )
                 } else {
-                    bottomSheetScaffoldState.bottomSheetState.expand()
+                    CropStyleSelectionMenu(
+                        cropStyle = cropStyle,
+                        onCropStyleChange = {
+                            cropStyle = it
+                        }
+                    )
+                }
+            },
+
+            // This is the height in collapsed state
+            sheetPeekHeight = 0.dp
+        ) {
+            MainContent(
+                cropProperties,
+                cropStyle,
+            ) {
+                selectionPage = it
+
+                coroutineScope.launch {
+                    if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    } else {
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                    }
                 }
             }
         }

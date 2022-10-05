@@ -91,7 +91,8 @@ data class CropStyle internal constructor(
     val drawGrid: Boolean,
     val strokeWidth: Dp,
     val overlayColor: Color,
-    val handleColor: Color
+    val handleColor: Color,
+    val cropTheme: CropTheme = CropTheme.Dark
 )
 
 /**
@@ -102,3 +103,12 @@ data class CropOutlineProperty(
     val outlineType: OutlineType,
     val cropOutline: CropOutline
 )
+
+/**
+ * Light, Dark or system controlled theme
+ */
+enum class CropTheme{
+    Light,
+    Dark,
+    System
+}

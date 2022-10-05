@@ -32,6 +32,18 @@ internal fun CropStyleSelectionMenu(
         val overlayColor = cropStyle.overlayColor
         val handleColor = cropStyle.handleColor
         val drawGridEnabled = cropStyle.drawGrid
+        val theme = cropStyle.cropTheme
+
+        Title("Theme")
+        CropThemeSelection(
+            cropTheme = theme,
+            onThemeChange = {
+                onCropStyleChange(
+                    cropStyle.copy(cropTheme = it)
+                )
+            }
+        )
+
 
         Title("Overlay")
         FullRowSwitch(
