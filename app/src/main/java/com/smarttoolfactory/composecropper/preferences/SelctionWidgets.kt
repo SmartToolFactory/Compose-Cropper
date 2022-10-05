@@ -49,6 +49,48 @@ internal fun DpSliderSelection(
     )
 }
 
+@Composable
+internal fun SliderWithValueSelection(
+    modifier: Modifier = Modifier,
+    value: Float,
+    title: String = "",
+    text: String,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    colors: MaterialSliderColors = MaterialSliderDefaults.materialColors(
+        activeTrackColor = SliderBrushColor(MaterialTheme.colorScheme.primary),
+        inactiveTrackColor = SliderBrushColor(Color.Transparent),
+        thumbColor = SliderBrushColor(MaterialTheme.colorScheme.inversePrimary)
+    )
+) {
+    Column {
+
+        Text(
+            text = if (title.isNotEmpty()) "$title $text" else text,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.tertiary,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            ColorfulSlider(
+                modifier = Modifier.weight(1f),
+                value = value,
+                onValueChange = onValueChange,
+                valueRange = valueRange,
+                colors = colors,
+                trackHeight = 11.dp,
+                thumbRadius = 14.dp
+            )
+
+
+        }
+    }
+}
 
 @Composable
 internal fun SliderSelection(

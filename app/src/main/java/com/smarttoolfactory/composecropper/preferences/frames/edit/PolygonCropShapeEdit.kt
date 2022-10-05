@@ -2,7 +2,6 @@ package com.smarttoolfactory.composecropper.preferences.frames.edit
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Slider
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -10,6 +9,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.smarttoolfactory.composecropper.preferences.SliderWithValueSelection
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.PolygonCropShape
 import com.smarttoolfactory.cropper.util.createPolygonShape
@@ -85,17 +85,21 @@ internal fun PolygonCropShapeEdit(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Slider(
+        SliderWithValueSelection(
             value = sides.toFloat(),
+            title="Sides",
+            text = "$sides",
             onValueChange = {
                 sides = it.toInt()
                 shape = createPolygonShape(sides = sides, angle)
             },
-            valueRange = 3f..15f,
-            steps = 10
+            valueRange = 3f..15f
         )
-        Slider(
+
+        SliderWithValueSelection(
             value = angle,
+            title="Angle",
+            text = "${angle.toInt()}°",
             onValueChange = {
                 angle = it
                 shape = createPolygonShape(sides = sides, degrees = angle)

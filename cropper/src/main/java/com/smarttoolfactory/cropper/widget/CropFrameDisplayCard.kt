@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawOutline
@@ -88,16 +87,20 @@ fun CropFrameDisplayCard(
                                 scaleX = iconScale
                                 scaleY = iconScale
 
-                                translationX = 20f
-                                translationY = -20f
-                            }
-                            .clip(CircleShape)
-                            .background(editButtonBackgroundColor)
-                            .fillMaxSize(.35f)
+                                val translation = this.density.run { 12.dp.toPx() }
+                                translationX = translation
+                                translationY = -translation
+                                clip = true
+                                shape = CircleShape
 
+                                this.density
+                            }
                             .clickable {
                                 onClick()
                             }
+                            .padding(8.dp)
+                            .background(editButtonBackgroundColor, CircleShape)
+                            .size(20.dp)
                             .padding(4.dp),
                         imageVector = Icons.Default.Edit,
                         tint = editButtonContentColor,
