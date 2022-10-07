@@ -3,7 +3,7 @@
 [![](https://jitpack.io/v/SmartToolFactory/Compose-Cropper.svg)](https://jitpack.io/#SmartToolFactory/Compose-Cropper)
 
 
-Image cropper that can crop with static, dynamic crop behavior, can use customizable shapes, vectors, and other png images as iamge to crop with various customizations.
+Image cropper that can crop with static, dynamic crop behavior, can use customizable shapes, vectors, and other png images as image mask to crop with various customizations.
 
 
 
