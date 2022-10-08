@@ -37,6 +37,8 @@ import com.smarttoolfactory.cropper.settings.CropStyle
 import com.smarttoolfactory.cropper.settings.CropType
 import com.smarttoolfactory.cropper.state.DynamicCropState
 import com.smarttoolfactory.cropper.state.rememberCropState
+import com.smarttoolfactory.cropper.ui.theme.BackgroundIdle
+import com.smarttoolfactory.cropper.ui.theme.BackgroundPressed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -113,7 +115,7 @@ fun ImageCropper(
             keys = resetKeys
         )
 
-        val isTouched = remember(cropState) {
+        val isTouched by remember(cropState) {
             derivedStateOf {
                 cropState is DynamicCropState && handlesTouched(cropState.touchRegion)
             }
@@ -121,7 +123,7 @@ fun ImageCropper(
 
         val transparentColor by animateColorAsState(
             animationSpec = tween(300, easing = LinearEasing),
-            targetValue = if (isTouched.value) Color(0x66000000) else Color(0x99000000)
+            targetValue = if (isTouched) BackgroundPressed else BackgroundIdle
         )
 
         // Crops image when user invokes crop operation
