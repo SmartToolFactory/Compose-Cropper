@@ -31,6 +31,7 @@ internal fun CropStyleSelectionMenu(
         val overlayStrokeWidth = cropStyle.strokeWidth
         val overlayColor = cropStyle.overlayColor
         val handleColor = cropStyle.handleColor
+        val backgroundColor = cropStyle.backgroundColor
         val drawGridEnabled = cropStyle.drawGrid
         val theme = cropStyle.cropTheme
 
@@ -73,6 +74,7 @@ internal fun CropStyleSelectionMenu(
                     upperBound = 3.dp
                 )
 
+
                 ColorSelection(
                     title = "Overlay Color",
                     color = overlayColor,
@@ -90,6 +92,17 @@ internal fun CropStyleSelectionMenu(
                     onColorChange = { color: Color ->
                         onCropStyleChange(
                             cropStyle.copy(handleColor = color)
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+                ColorSelection(
+                    title = "Background Color",
+                    color = backgroundColor,
+                    onColorChange = { color: Color ->
+                        onCropStyleChange(
+                            cropStyle.copy(backgroundColor = color)
                         )
                     }
                 )

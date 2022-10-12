@@ -13,6 +13,9 @@ import com.smarttoolfactory.cropper.model.CropOutline
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.model.aspectRatios
 import com.smarttoolfactory.cropper.state.CropState
+import com.smarttoolfactory.cropper.ui.theme.DefaultBackgroundColor
+import com.smarttoolfactory.cropper.ui.theme.DefaultHandleColor
+import com.smarttoolfactory.cropper.ui.theme.DefaultOverlayColor
 
 /**
  * Contains the default values used by [ImageCropper]
@@ -49,15 +52,17 @@ object CropDefaults {
         drawOverlay: Boolean = true,
         drawGrid: Boolean = true,
         strokeWidth: Dp = 1.dp,
-        overlayColor: Color = Color.Gray,
-        handleColor: Color = Color.White
+        overlayColor: Color = DefaultOverlayColor,
+        handleColor: Color = DefaultHandleColor,
+        backgroundColor: Color = DefaultBackgroundColor
     ): CropStyle {
         return CropStyle(
             drawOverlay = drawOverlay,
             drawGrid = drawGrid,
             strokeWidth = strokeWidth,
             overlayColor = overlayColor,
-            handleColor = handleColor
+            handleColor = handleColor,
+            backgroundColor = backgroundColor
         )
     }
 }
@@ -92,6 +97,7 @@ data class CropStyle internal constructor(
     val strokeWidth: Dp,
     val overlayColor: Color,
     val handleColor: Color,
+    val backgroundColor: Color,
     val cropTheme: CropTheme = CropTheme.Dark
 )
 
