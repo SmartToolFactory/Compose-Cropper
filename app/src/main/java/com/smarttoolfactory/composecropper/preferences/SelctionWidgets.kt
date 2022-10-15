@@ -76,18 +76,15 @@ internal fun SliderWithValueSelection(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             ColorfulSlider(
                 modifier = Modifier.weight(1f),
                 value = value,
                 onValueChange = onValueChange,
                 valueRange = valueRange,
                 colors = colors,
-                trackHeight = 11.dp,
-                thumbRadius = 14.dp
+                trackHeight = 10.dp,
+                thumbRadius = 12.dp
             )
-
-
         }
     }
 }
@@ -96,12 +93,13 @@ internal fun SliderWithValueSelection(
 internal fun SliderSelection(
     modifier: Modifier = Modifier,
     value: Float,
-    onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
     colors: MaterialSliderColors = MaterialSliderDefaults.materialColors(
         activeTrackColor = SliderBrushColor(MaterialTheme.colorScheme.primary),
         inactiveTrackColor = SliderBrushColor(Color.Transparent)
-    )
+    ),
+    onValueChangeFinished: (() -> Unit)? = null,
+    onValueChange: (Float) -> Unit,
 ) {
     ColorfulSlider(
         modifier = modifier,
@@ -110,8 +108,9 @@ internal fun SliderSelection(
         valueRange = valueRange,
         colors = colors,
         borderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        trackHeight = 11.dp,
-        thumbRadius = 14.dp
+        trackHeight = 10.dp,
+        thumbRadius = 12.dp,
+        onValueChangeFinished = onValueChangeFinished
     )
 }
 
@@ -159,6 +158,21 @@ internal fun FullRowSwitch(
             onCheckedChange = null
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun CropTextField(value: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        )
+    )
 }
 
 @Composable

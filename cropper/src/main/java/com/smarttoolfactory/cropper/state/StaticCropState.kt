@@ -27,6 +27,7 @@ class StaticCropState internal constructor(
     containerSize: IntSize,
     drawAreaSize: IntSize,
     aspectRatio: AspectRatio,
+    overlayRatio: Float,
     maxZoom: Float = 5f,
     fling: Boolean = false,
     zoomable: Boolean = true,
@@ -38,6 +39,7 @@ class StaticCropState internal constructor(
     containerSize = containerSize,
     drawAreaSize = drawAreaSize,
     aspectRatio = aspectRatio,
+    overlayRatio = overlayRatio,
     maxZoom = maxZoom,
     fling = fling,
     zoomable = zoomable,
@@ -119,7 +121,7 @@ class StaticCropState internal constructor(
         }
         resetWithAnimation(pan = pan, zoom = zoom, rotation = rotation)
         drawAreaRect = updateImageDrawRectFromTransformation()
-        animateTransformationToOverlayBounds(overlayRect,true)
+        animateTransformationToOverlayBounds(overlayRect, true)
         onAnimationEnd()
     }
 }

@@ -26,9 +26,11 @@ internal fun CropPropertySelectionMenu(
     // Crop properties
     val cropType = cropProperties.cropType
     val aspectRatio = cropProperties.aspectRatio
+
     val handleSize = cropProperties.handleSize
     val contentScale = cropProperties.contentScale
     val cropOutlineProperty = cropProperties.cropOutlineProperty
+    val overlayRatio = (cropProperties.overlayRatio * 100)
 
     Title("Crop Type")
     CropTypeDialogSelection(
@@ -69,6 +71,15 @@ internal fun CropPropertySelectionMenu(
         }
     )
 
+    Title("Overlay Ratio ${overlayRatio.toInt()}%")
+    SliderSelection(
+        value = overlayRatio, valueRange = 50f..100f
+    ) {
+        onCropPropertiesChange(
+            cropProperties.copy(overlayRatio = (it.toInt() / 100f))
+        )
+    }
+
     // Handle size and overlay size applies only to Dynamic crop
     if (cropType == CropType.Dynamic) {
         Title("Handle Size")
@@ -96,21 +107,22 @@ internal fun CropGestureSelectionMenu(
     val zoomable = cropProperties.zoomable
     val maxZoom = cropProperties.maxZoom
 
-    Title("Fling")
-    FlingEnableSelection(
-        flingEnabled = flingEnabled,
-        onFlingEnabledChange = {
-            onCropPropertiesChange(
-                cropProperties.copy(fling = it)
-            )
-        }
-    )
     Title("Pan Enabled")
     PanEnableSelection(
         panEnabled = pannable,
         onPanEnabledChange = {
             onCropPropertiesChange(
                 cropProperties.copy(pannable = it)
+            )
+        }
+    )
+
+    Title("Fling")
+    FlingEnableSelection(
+        flingEnabled = flingEnabled,
+        onFlingEnabledChange = {
+            onCropPropertiesChange(
+                cropProperties.copy(fling = it)
             )
         }
     )

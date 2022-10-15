@@ -22,13 +22,17 @@ import com.smarttoolfactory.cropper.ui.theme.DefaultOverlayColor
  */
 object CropDefaults {
 
+    /**
+     * Properties effect crop behavior that should be passed to [CropState]
+     */
     fun properties(
         cropType: CropType = CropType.Dynamic,
         handleSize: Dp = 20.dp,
         maxZoom: Float = 10f,
-        aspectRatio: AspectRatio = aspectRatios[2].aspectRatio,
         contentScale: ContentScale = ContentScale.Fit,
         cropOutlineProperty: CropOutlineProperty,
+        aspectRatio: AspectRatio = aspectRatios[2].aspectRatio,
+        overlayRatio:Float = .9f,
         pannable: Boolean = true,
         fling: Boolean = false,
         zoomable: Boolean = true,
@@ -41,6 +45,7 @@ object CropDefaults {
             cropOutlineProperty = cropOutlineProperty,
             maxZoom = maxZoom,
             aspectRatio = aspectRatio,
+            overlayRatio = overlayRatio,
             pannable = pannable,
             fling = fling,
             zoomable = zoomable,
@@ -48,6 +53,10 @@ object CropDefaults {
         )
     }
 
+    /**
+     * Style is cosmetic changes that don't effect how [CropState] behaves because of that
+     * none of these properties are passed to [CropState]
+     */
     fun style(
         drawOverlay: Boolean = true,
         drawGrid: Boolean = true,
@@ -76,9 +85,10 @@ object CropDefaults {
 data class CropProperties internal constructor(
     val cropType: CropType,
     val handleSize: Dp,
-    val aspectRatio: AspectRatio,
     val contentScale: ContentScale,
     val cropOutlineProperty: CropOutlineProperty,
+    val aspectRatio: AspectRatio,
+    val overlayRatio: Float,
     val pannable: Boolean,
     val fling: Boolean,
     val rotatable: Boolean,

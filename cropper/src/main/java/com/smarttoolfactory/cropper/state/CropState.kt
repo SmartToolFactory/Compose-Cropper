@@ -33,6 +33,7 @@ fun rememberCropState(
     val minOverlaySize = handleSize * 2
     val cropType = cropProperties.cropType
     val aspectRatio = cropProperties.aspectRatio
+    val overlayRatio = cropProperties.overlayRatio
     val maxZoom = cropProperties.maxZoom
     val fling = cropProperties.fling
     val zoomable = cropProperties.zoomable
@@ -55,6 +56,7 @@ fun rememberCropState(
                     containerSize = containerSize,
                     drawAreaSize = drawAreaSize,
                     aspectRatio = aspectRatio,
+                    overlayRatio = overlayRatio,
                     maxZoom = maxZoom,
                     fling = fling,
                     zoomable = zoomable,
@@ -70,6 +72,7 @@ fun rememberCropState(
                     containerSize = containerSize,
                     drawAreaSize = drawAreaSize,
                     aspectRatio = aspectRatio,
+                    overlayRatio = overlayRatio,
                     maxZoom = maxZoom,
                     handleSize = handleSizeInPx,
                     minOverlaySize = minOverlaySizePx,

@@ -2,14 +2,13 @@ package com.smarttoolfactory.composecropper.preferences.frames.edit
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.smarttoolfactory.composecropper.preferences.CropTextField
 import com.smarttoolfactory.composecropper.preferences.SliderWithValueSelection
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CornerRadiusProperties
@@ -17,7 +16,6 @@ import com.smarttoolfactory.cropper.model.RoundedCornerCropShape
 import com.smarttoolfactory.cropper.util.drawOutlineWithBlendModeAndChecker
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RoundedCornerCropShapeEdit(
     aspectRatio: AspectRatio,
@@ -99,7 +97,7 @@ internal fun RoundedCornerCropShapeEdit(
                 )
         )
 
-        TextField(
+        CropTextField(
             value = newTitle,
             onValueChange = { newTitle = it }
         )

@@ -48,9 +48,10 @@ abstract class CropState internal constructor(
     imageSize: IntSize,
     containerSize: IntSize,
     drawAreaSize: IntSize,
-    internal var aspectRatio: AspectRatio,
     maxZoom: Float,
-    var fling: Boolean = true,
+    internal var fling: Boolean = true,
+    internal var aspectRatio: AspectRatio,
+    internal var overlayRatio: Float,
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
@@ -74,7 +75,8 @@ abstract class CropState internal constructor(
             containerSize.height.toFloat(),
             drawAreaSize.width.toFloat(),
             drawAreaSize.height.toFloat(),
-            aspectRatio
+            aspectRatio,
+            overlayRatio
         ),
         Rect.VectorConverter
     )
@@ -123,8 +125,16 @@ abstract class CropState internal constructor(
         // Update overlay rectangle
         val aspectRatio = cropProperties.aspectRatio
 
-        if(this.aspectRatio.value != aspectRatio.value || maxZoom != zoomMax) {
+        // Ratio of overlay to screen
+        val overlayRatio = cropProperties.overlayRatio
+
+        if (
+            this.aspectRatio.value != aspectRatio.value ||
+            maxZoom != zoomMax ||
+            this.overlayRatio != overlayRatio
+        ) {
             this.aspectRatio = aspectRatio
+            this.overlayRatio = overlayRatio
 
             zoomMax = maxZoom
             animatableZoom.updateBounds(zoomMin, zoomMax)
@@ -145,7 +155,8 @@ abstract class CropState internal constructor(
                     containerSize.height.toFloat(),
                     drawAreaSize.width.toFloat(),
                     drawAreaSize.height.toFloat(),
-                    aspectRatio
+                    aspectRatio,
+                    overlayRatio
                 )
             )
         }
@@ -385,7 +396,7 @@ abstract class CropState internal constructor(
         drawAreaWidth: Float,
         drawAreaHeight: Float,
         aspectRatio: AspectRatio,
-        coefficient: Float = .9f
+        coefficient: Float
     ): Rect {
 
         if (aspectRatio == AspectRatio.Unspecified) {

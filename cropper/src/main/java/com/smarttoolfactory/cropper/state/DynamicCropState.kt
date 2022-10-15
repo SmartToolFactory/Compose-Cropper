@@ -36,6 +36,7 @@ class DynamicCropState internal constructor(
     containerSize: IntSize,
     drawAreaSize: IntSize,
     aspectRatio: AspectRatio,
+    overlayRatio: Float,
     maxZoom: Float,
     fling: Boolean,
     zoomable: Boolean,
@@ -47,6 +48,7 @@ class DynamicCropState internal constructor(
     containerSize = containerSize,
     drawAreaSize = drawAreaSize,
     aspectRatio = aspectRatio,
+    overlayRatio = overlayRatio,
     maxZoom = maxZoom,
     fling = fling,
     zoomable = zoomable,
@@ -244,11 +246,12 @@ class DynamicCropState internal constructor(
                     containerSize.height.toFloat(),
                     drawAreaSize.width.toFloat(),
                     drawAreaSize.height.toFloat(),
-                    aspectRatio
+                    aspectRatio,
+                    overlayRatio
                 )
             )
 
-            animateTransformationToOverlayBounds(overlayRect,false)
+            animateTransformationToOverlayBounds(overlayRect, false)
         }
         onAnimationEnd()
     }
