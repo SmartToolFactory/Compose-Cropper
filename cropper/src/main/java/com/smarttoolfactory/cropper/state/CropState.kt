@@ -2,7 +2,6 @@ package com.smarttoolfactory.cropper.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.settings.CropProperties
 import com.smarttoolfactory.cropper.settings.CropType
@@ -40,13 +39,6 @@ fun rememberCropState(
     val pannable = cropProperties.pannable
     val rotatable = cropProperties.rotatable
 
-    val handleSizeInPx: Float
-    val minOverlaySizePx: Float
-
-    with(LocalDensity.current) {
-        handleSizeInPx = handleSize.toPx()
-        minOverlaySizePx = minOverlaySize.toPx()
-    }
 
     return remember(*keys) {
         when (cropType) {
@@ -74,8 +66,8 @@ fun rememberCropState(
                     aspectRatio = aspectRatio,
                     overlayRatio = overlayRatio,
                     maxZoom = maxZoom,
-                    handleSize = handleSizeInPx,
-                    minOverlaySize = minOverlaySizePx,
+                    handleSize = handleSize,
+                    minOverlaySize = minOverlaySize,
                     fling = fling,
                     zoomable = zoomable,
                     pannable = pannable,

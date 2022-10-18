@@ -16,12 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.colorpicker.dialog.ColorPickerRingDiamondHSLDialog
 import com.smarttoolfactory.cropper.settings.CropStyle
+import com.smarttoolfactory.cropper.settings.CropType
 
 /**
  * Crop style selection menu
  */
 @Composable
 internal fun CropStyleSelectionMenu(
+    cropType: CropType,
     cropStyle: CropStyle,
     onCropStyleChange: (CropStyle) -> Unit
 ) {
@@ -85,16 +87,18 @@ internal fun CropStyleSelectionMenu(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-                ColorSelection(
-                    title = "Handle Color",
-                    color = handleColor,
-                    onColorChange = { color: Color ->
-                        onCropStyleChange(
-                            cropStyle.copy(handleColor = color)
-                        )
-                    }
-                )
+                if(cropType== CropType.Dynamic){
+                    Spacer(modifier = Modifier.height(20.dp))
+                    ColorSelection(
+                        title = "Handle Color",
+                        color = handleColor,
+                        onColorChange = { color: Color ->
+                            onCropStyleChange(
+                                cropStyle.copy(handleColor = color)
+                            )
+                        }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
                 ColorSelection(

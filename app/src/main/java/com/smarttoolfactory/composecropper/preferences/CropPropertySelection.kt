@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.cropper.model.AspectRatio
@@ -23,11 +24,14 @@ internal fun CropPropertySelectionMenu(
     cropProperties: CropProperties,
     onCropPropertiesChange: (CropProperties) -> Unit
 ) {
+
+    val density = LocalDensity.current
+
     // Crop properties
     val cropType = cropProperties.cropType
     val aspectRatio = cropProperties.aspectRatio
 
-    val handleSize = cropProperties.handleSize
+    val handleSize = density.run { cropProperties.handleSize.toDp() }
     val contentScale = cropProperties.contentScale
     val cropOutlineProperty = cropProperties.cropOutlineProperty
     val overlayRatio = (cropProperties.overlayRatio * 100)
@@ -87,11 +91,11 @@ internal fun CropPropertySelectionMenu(
             value = handleSize,
             onValueChange = {
                 onCropPropertiesChange(
-                    cropProperties.copy(handleSize = it)
+                    cropProperties.copy(handleSize = density.run { it.toPx() })
                 )
             },
             lowerBound = 10.dp,
-            upperBound = 50.dp
+            upperBound = 40.dp
         )
     }
 }
@@ -154,7 +158,6 @@ internal fun CropGestureSelectionMenu(
             )
         }
     }
-
 }
 
 @Composable

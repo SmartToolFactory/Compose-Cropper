@@ -8,6 +8,7 @@ import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.unit.IntSize
 import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
+import com.smarttoolfactory.cropper.settings.CropProperties
 import kotlinx.coroutines.coroutineScope
 
 /**
@@ -81,6 +82,13 @@ class DynamicCropState internal constructor(
     // Check if transform gesture has been invoked
     // inside overlay but with multiple pointers to zoom
     private var gestureInvoked = false
+
+    override suspend fun updateProperties(cropProperties: CropProperties, forceUpdate: Boolean) {
+        handleSize = cropProperties.handleSize
+        minOverlaySize = handleSize * 2
+        
+        super.updateProperties(cropProperties, forceUpdate)
+    }
 
     override suspend fun onDown(change: PointerInputChange) {
 

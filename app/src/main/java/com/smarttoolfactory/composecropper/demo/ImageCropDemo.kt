@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.colorpicker.widget.drawChecker
@@ -46,7 +47,6 @@ internal enum class SelectionPage {
 @Composable
 fun ImageCropDemo() {
 
-
     val bottomSheetScaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
@@ -65,13 +65,16 @@ fun ImageCropDemo() {
         )
     }
 
+    val handleSize: Float = LocalDensity.current.run { 20.dp.toPx() }
+
     var cropProperties by remember {
         mutableStateOf(
             CropDefaults.properties(
                 cropOutlineProperty = CropOutlineProperty(
                     OutlineType.Rect,
-                    RectCropShape(0, "")
-                )
+                    RectCropShape(0, "Rect")
+                ),
+                handleSize = handleSize
             )
         )
     }
@@ -117,6 +120,7 @@ fun ImageCropDemo() {
                     )
                 } else {
                     CropStyleSelectionMenu(
+                        cropType = cropProperties.cropType,
                         cropStyle = cropStyle,
                         onCropStyleChange = {
                             cropStyle = it

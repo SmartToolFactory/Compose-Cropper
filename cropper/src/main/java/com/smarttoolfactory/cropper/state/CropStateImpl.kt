@@ -103,7 +103,7 @@ abstract class CropState internal constructor(
 
     internal suspend fun init() {
         // When initial aspect ratio doesn't match drawable area
-        // overlay gets updated so update draw area as well
+        // overlay gets updated so updates draw area as well
         animateTransformationToOverlayBounds(overlayRect, animate = true)
         initialized = true
     }
@@ -111,7 +111,10 @@ abstract class CropState internal constructor(
     /**
      * Update properties of [CropState] and animate to valid intervals if required
      */
-    internal open suspend fun updateProperties(cropProperties: CropProperties) {
+    internal open suspend fun updateProperties(
+        cropProperties: CropProperties,
+        forceUpdate: Boolean = false
+    ) {
 
         if (!initialized) return
 
@@ -131,7 +134,8 @@ abstract class CropState internal constructor(
         if (
             this.aspectRatio.value != aspectRatio.value ||
             maxZoom != zoomMax ||
-            this.overlayRatio != overlayRatio
+            this.overlayRatio != overlayRatio ||
+            forceUpdate
         ) {
             this.aspectRatio = aspectRatio
             this.overlayRatio = overlayRatio

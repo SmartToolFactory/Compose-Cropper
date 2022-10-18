@@ -185,7 +185,7 @@ private fun ImageCropper(
     containerHeight: Dp,
     imageWidthPx: Int,
     imageHeightPx: Int,
-    handleSize: Dp,
+    handleSize: Float,
     cropType: CropType,
     cropOutline: CropOutline,
     cropStyle: CropStyle,
@@ -248,7 +248,7 @@ private fun ImageCropperImpl(
     imageHeightPx: Int,
     cropType: CropType,
     cropOutline: CropOutline,
-    handleSize: Dp,
+    handleSize: Float,
     cropStyle: CropStyle,
     transparentColor: Color,
     rectOverlay: Rect
@@ -271,9 +271,7 @@ private fun ImageCropperImpl(
         val handleColor = cropStyle.handleColor
         val drawHandles = cropType == CropType.Dynamic
         val strokeWidth = cropStyle.strokeWidth
-
-        val handleSizeInPx = LocalDensity.current.run { handleSize.toPx() }
-
+        
         DrawingOverlay(
             modifier = Modifier.size(containerWidth, containerHeight),
             drawOverlay = drawOverlay,
@@ -284,7 +282,7 @@ private fun ImageCropperImpl(
             handleColor = handleColor,
             strokeWidth = strokeWidth,
             drawHandles = drawHandles,
-            handleSize = handleSizeInPx,
+            handleSize = handleSize,
             transparentColor = transparentColor,
         )
 
