@@ -73,14 +73,14 @@ dependencies {
     implementation "androidx.compose.material:material-icons-core:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     // Integration with activities
-    implementation 'androidx.activity:activity-compose:1.6.0'
+    implementation 'androidx.activity:activity-compose:1.6.1'
     // Integration with ViewModels
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
 
     // Material Design 3 for Compose
-    implementation "androidx.compose.material3:material3:1.0.0-rc01"
+    implementation "androidx.compose.material3:material3:1.0.0"
 
-    def nav_compose_version = "2.5.2"
+    def nav_compose_version = "2.5.3"
     implementation "androidx.navigation:navigation-compose:$nav_compose_version"
 
     def accompanist_version = "0.25.0"
