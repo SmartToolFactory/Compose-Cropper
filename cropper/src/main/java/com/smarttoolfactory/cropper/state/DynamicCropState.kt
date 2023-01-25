@@ -1,5 +1,6 @@
 package com.smarttoolfactory.cropper.state
 
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -10,6 +11,7 @@ import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.settings.CropProperties
 import kotlinx.coroutines.coroutineScope
+import kotlin.math.abs
 
 /**
  * State for cropper with dynamic overlay. Overlay of this state can be moved or resized
@@ -369,9 +371,15 @@ class DynamicCropState internal constructor(
                 // limit position to not intersect other handles
                 val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
                 val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+
+                val combinedMagnitude = combinedMagnitudes(
+                    (left - rectTemp.right),
+                    (top - rectTemp.bottom)
+                )
+
                 Rect(
-                    left = left,
-                    top = top,
+                    left = rectTemp.right - combinedMagnitude,
+                    top = rectTemp.bottom - combinedMagnitude,
                     right = rectTemp.right,
                     bottom = rectTemp.bottom
                 )
@@ -383,11 +391,17 @@ class DynamicCropState internal constructor(
                 // limit position to not intersect other handles
                 val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
                 val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+
+                val combinedMagnitude = combinedMagnitudes(
+                    (left - rectTemp.right),
+                    (bottom - rectTemp.top)
+                )
+
                 Rect(
-                    left = left,
+                    left = rectTemp.right - combinedMagnitude,
                     top = rectTemp.top,
                     right = rectTemp.right,
-                    bottom = bottom,
+                    bottom = combinedMagnitude + rectTemp.top,
                 )
             }
 
@@ -398,10 +412,15 @@ class DynamicCropState internal constructor(
                 val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
                 val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
 
+                val combinedMagnitude = combinedMagnitudes(
+                    (right - rectTemp.left),
+                    (top - rectTemp.bottom)
+                )
+
                 Rect(
                     left = rectTemp.left,
-                    top = top,
-                    right = right,
+                    top = rectTemp.bottom - combinedMagnitude,
+                    right = combinedMagnitude + rectTemp.left,
                     bottom = rectTemp.bottom,
                 )
 
@@ -414,11 +433,16 @@ class DynamicCropState internal constructor(
                 val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
                 val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
 
+                val combinedMagnitude = combinedMagnitudes(
+                    (right - rectTemp.left),
+                    (bottom - rectTemp.top)
+                )
+
                 Rect(
                     left = rectTemp.left,
                     top = rectTemp.top,
-                    right = right,
-                    bottom = bottom
+                    right = combinedMagnitude + rectTemp.left,
+                    bottom = combinedMagnitude + rectTemp.top,
                 )
             }
 
@@ -491,3 +515,10 @@ class DynamicCropState internal constructor(
         }
     }
 }
+
+/**
+ * Find the average of two provided magnitudes.  Used to combine the vertical and horizontal
+ * distances from each corner on the cropping rectangle so we can maintain a square or circle.
+ */
+private fun combinedMagnitudes(distance1: Float, distance2: Float) =
+    listOf(abs(distance1), abs(distance2)).average().toFloat()
