@@ -165,7 +165,6 @@ private fun MainContent(
     var imageBitmap by remember { mutableStateOf(imageBitmapLarge) }
     var croppedImage by remember { mutableStateOf<ImageBitmap?>(null) }
 
-
     var crop by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var isCropping by remember { mutableStateOf(false) }
@@ -201,8 +200,6 @@ private fun MainContent(
         BottomAppBar(
             modifier = Modifier.align(Alignment.BottomStart),
             actions = {
-
-
                 IconButton(
                     onClick = {
                         onSelectionPageMenuClicked(SelectionPage.Properties)
