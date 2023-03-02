@@ -1,0 +1,3 @@
+[submodule "cropper"]
+	path = cropper
+	url = git@chrisdottel.github.com:chrisdottel/Cropper.git
