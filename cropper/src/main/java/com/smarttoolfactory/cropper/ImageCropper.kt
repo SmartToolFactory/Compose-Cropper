@@ -48,9 +48,11 @@ fun ImageCropper(
     cropStyle: CropStyle = CropDefaults.style(),
     cropProperties: CropProperties,
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
+    createCropRect: Boolean = false,
+    onCropRect: ((Rect) -> Unit)? = null,
     crop: Boolean = false,
     onCropStart: () -> Unit,
-    onCropSuccess: (ImageBitmap) -> Unit
+    onCropSuccess: (ImageBitmap) -> Unit,
 ) {
 
     ImageWithConstraints(
@@ -137,6 +139,12 @@ fun ImageCropper(
             onCropStart,
             onCropSuccess
         )
+        // Creates crop rect when user invokes the createCropRect operation
+        LaunchedEffect(createCropRect) {
+            if (createCropRect) {
+                onCropRect?.invoke(cropState.cropRect)
+            }
+        }
 
         val imageModifier = Modifier
             .size(containerWidth, containerHeight)
