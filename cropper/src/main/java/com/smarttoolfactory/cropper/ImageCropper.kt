@@ -120,7 +120,7 @@ fun ImageCropper(
             }
         }
 
-        val pressedStateColor = remember(cropStyle.backgroundColor){
+        val pressedStateColor = remember(cropStyle.backgroundColor) {
             cropStyle.backgroundColor
                 .copy(cropStyle.backgroundColor.alpha * .7f)
         }
@@ -157,17 +157,8 @@ fun ImageCropper(
             cropState.updateProperties(cropProperties)
         }
 
-        /// Create a MutableTransitionState<Boolean> for the AnimatedVisibility.
-        var visible by remember { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            visible = true
-        }
-
         ImageCropper(
             modifier = imageModifier,
-            visible = visible,
             imageBitmap = imageBitmap,
             containerWidth = containerWidth,
             containerHeight = containerHeight,
@@ -187,7 +178,6 @@ fun ImageCropper(
 @Composable
 private fun ImageCropper(
     modifier: Modifier,
-    visible: Boolean,
     imageBitmap: ImageBitmap,
     containerWidth: Dp,
     containerHeight: Dp,
@@ -205,27 +195,20 @@ private fun ImageCropper(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-
-        AnimatedVisibility(
-            visible = visible,
-            enter = scaleIn(tween(500))
-        ) {
-
-            ImageCropperImpl(
-                modifier = modifier,
-                imageBitmap = imageBitmap,
-                containerWidth = containerWidth,
-                containerHeight = containerHeight,
-                imageWidthPx = imageWidthPx,
-                imageHeightPx = imageHeightPx,
-                cropType = cropType,
-                cropOutline = cropOutline,
-                handleSize = handleSize,
-                cropStyle = cropStyle,
-                rectOverlay = overlayRect,
-                transparentColor = transparentColor
-            )
-        }
+        ImageCropperImpl(
+            modifier = modifier,
+            imageBitmap = imageBitmap,
+            containerWidth = containerWidth,
+            containerHeight = containerHeight,
+            imageWidthPx = imageWidthPx,
+            imageHeightPx = imageHeightPx,
+            cropType = cropType,
+            cropOutline = cropOutline,
+            handleSize = handleSize,
+            cropStyle = cropStyle,
+            rectOverlay = overlayRect,
+            transparentColor = transparentColor
+        )
 
         // TODO Remove this text when cropper is complete. This is for debugging
 //            val rectCrop = cropState.cropRect
@@ -279,7 +262,7 @@ private fun ImageCropperImpl(
         val handleColor = cropStyle.handleColor
         val drawHandles = cropType == CropType.Dynamic
         val strokeWidth = cropStyle.strokeWidth
-        
+
         DrawingOverlay(
             modifier = Modifier.size(containerWidth, containerHeight),
             drawOverlay = drawOverlay,
