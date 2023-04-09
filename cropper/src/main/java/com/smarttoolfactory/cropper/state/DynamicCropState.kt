@@ -10,6 +10,7 @@ import com.smarttoolfactory.cropper.TouchRegion
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.settings.CropProperties
 import kotlinx.coroutines.coroutineScope
+import kotlin.math.roundToInt
 
 /**
  * State for cropper with dynamic overlay. Overlay of this state can be moved or resized
@@ -17,7 +18,6 @@ import kotlinx.coroutines.coroutineScope
  * or moves out of bounds it animates back to valid size and position
  *
  * @param handleSize size of the handle to control, move or scale dynamic overlay
- * @param minOverlaySize minimum overlay size that can be shrunk to by moving handles
  * @param imageSize size of the **Bitmap**
  * @param containerSize size of the Composable that draws **Bitmap**
  * @param maxZoom maximum zoom value
@@ -29,11 +29,11 @@ import kotlinx.coroutines.coroutineScope
  * @param rotatable when set to true rotation is enabled
  * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
  * @param fixedAspectRatio when set to true aspect ratio of overlay is fixed
+ * @param minDimension minimum size of the overlay, if null defaults to handleSize * 2
  * empty space on sides or edges of parent
  */
 class DynamicCropState internal constructor(
     private var handleSize: Float,
-    private var minOverlaySize: Float,
     imageSize: IntSize,
     containerSize: IntSize,
     drawAreaSize: IntSize,
@@ -46,6 +46,7 @@ class DynamicCropState internal constructor(
     rotatable: Boolean,
     limitPan: Boolean,
     private val fixedAspectRatio: Boolean,
+    private val minDimension: IntSize?
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
@@ -87,8 +88,6 @@ class DynamicCropState internal constructor(
 
     override suspend fun updateProperties(cropProperties: CropProperties, forceUpdate: Boolean) {
         handleSize = cropProperties.handleSize
-        minOverlaySize = handleSize * 2
-
         super.updateProperties(cropProperties, forceUpdate)
     }
 
@@ -131,12 +130,17 @@ class DynamicCropState internal constructor(
 
             val change = changes.first()
 
+            // Default min dimension is handle size * 2
+            val doubleHandleSize = handleSize * 2
+            val defaultMinDimension =
+                IntSize(doubleHandleSize.roundToInt(), doubleHandleSize.roundToInt())
+
             // update overlay rectangle based on where its touched and touch position to corners
             // This function moves and/or scales overlay rectangle
             val newRect = updateOverlayRect(
                 distanceToEdgeFromTouch = distanceToEdgeFromTouch,
                 touchRegion = touchRegion,
-                minDimension = minOverlaySize,
+                minDimension = minDimension ?: defaultMinDimension,
                 rectTemp = rectTemp,
                 overlayRect = overlayRect,
                 change = change,
@@ -359,7 +363,7 @@ class DynamicCropState internal constructor(
     private fun updateOverlayRect(
         distanceToEdgeFromTouch: Offset,
         touchRegion: TouchRegion,
-        minDimension: Float,
+        minDimension: IntSize,
         rectTemp: Rect,
         overlayRect: Rect,
         change: PointerInputChange,
@@ -380,7 +384,7 @@ class DynamicCropState internal constructor(
 
                 // Set position of top left while moving with top left handle and
                 // limit position to not intersect other handles
-                val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
+                val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension.width)
                 val top = if (fixedAspectRatio) {
                     // If aspect ratio is fixed we need to calculate top position based on
                     // left position and aspect ratio
@@ -388,7 +392,7 @@ class DynamicCropState internal constructor(
                     val height = width / aspectRatio
                     rectTemp.bottom - height
                 } else {
-                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension.height)
                 }
                 Rect(
                     left = left,
@@ -402,7 +406,7 @@ class DynamicCropState internal constructor(
 
                 // Set position of top left while moving with bottom left handle and
                 // limit position to not intersect other handles
-                val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
+                val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension.width)
                 val bottom = if (fixedAspectRatio) {
                     // If aspect ratio is fixed we need to calculate bottom position based on
                     // left position and aspect ratio
@@ -410,7 +414,7 @@ class DynamicCropState internal constructor(
                     val height = width / aspectRatio
                     rectTemp.top + height
                 } else {
-                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension.height)
                 }
                 Rect(
                     left = left,
@@ -424,7 +428,7 @@ class DynamicCropState internal constructor(
 
                 // Set position of top left while moving with top right handle and
                 // limit position to not intersect other handles
-                val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
+                val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension.width)
                 val top = if (fixedAspectRatio) {
                     // If aspect ratio is fixed we need to calculate top position based on
                     // right position and aspect ratio
@@ -432,7 +436,7 @@ class DynamicCropState internal constructor(
                     val height = width / aspectRatio
                     rectTemp.bottom - height
                 } else {
-                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension.height)
                 }
 
                 Rect(
@@ -448,7 +452,7 @@ class DynamicCropState internal constructor(
 
                 // Set position of top left while moving with bottom right handle and
                 // limit position to not intersect other handles
-                val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
+                val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension.width)
                 val bottom = if (fixedAspectRatio) {
                     // If aspect ratio is fixed we need to calculate bottom position based on
                     // right position and aspect ratio
@@ -456,7 +460,7 @@ class DynamicCropState internal constructor(
                     val height = width / aspectRatio
                     rectTemp.top + height
                 } else {
-                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension.height)
                 }
 
                 Rect(

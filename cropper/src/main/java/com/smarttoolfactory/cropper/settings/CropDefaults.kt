@@ -39,7 +39,8 @@ object CropDefaults {
         zoomable: Boolean = true,
         rotatable: Boolean = false,
         fixedAspectRatio: Boolean = false,
-        requiredSize: IntSize? = null
+        requiredSize: IntSize? = null,
+        minDimension: IntSize? = null,
     ): CropProperties {
         return CropProperties(
             cropType = cropType,
@@ -54,7 +55,8 @@ object CropDefaults {
             zoomable = zoomable,
             rotatable = rotatable,
             fixedAspectRatio = fixedAspectRatio,
-            requiredSize = requiredSize
+            requiredSize = requiredSize,
+            minDimension = minDimension,
         )
     }
 
@@ -100,7 +102,8 @@ data class CropProperties internal constructor(
     val zoomable: Boolean,
     val maxZoom: Float,
     val fixedAspectRatio: Boolean = false,
-    val requiredSize: IntSize? = null
+    val requiredSize: IntSize? = null,
+    val minDimension: IntSize? = null,
 )
 
 /**
