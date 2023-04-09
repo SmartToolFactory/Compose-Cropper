@@ -149,7 +149,7 @@ class DynamicCropState internal constructor(
     }
 
     private fun getAspectRatio(): Float {
-        return if (aspectRatio == AspectRatio.Unspecified) {
+        return if (aspectRatio == AspectRatio.Original) {
             imageSize.width / imageSize.height.toFloat()
         } else {
             aspectRatio.value

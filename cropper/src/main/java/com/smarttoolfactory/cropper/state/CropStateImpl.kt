@@ -403,7 +403,7 @@ abstract class CropState internal constructor(
         coefficient: Float
     ): Rect {
 
-        if (aspectRatio == AspectRatio.Unspecified) {
+        if (aspectRatio == AspectRatio.Original) {
 
             // Maximum width and height overlay rectangle can be measured with
             val overlayWidthMax = drawAreaWidth.coerceAtMost(containerWidth * coefficient)
