@@ -265,7 +265,6 @@ class DynamicCropState internal constructor(
                     containerSize.width.toFloat(),
                     containerSize.height.toFloat(),
                     drawAreaSize.width.toFloat(),
-                    drawAreaSize.height.toFloat(),
                     aspectRatio,
                     overlayRatio
                 )
