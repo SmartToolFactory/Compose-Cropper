@@ -3,7 +3,17 @@ package com.smarttoolfactory.cropper.crop
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.smarttoolfactory.cropper.model.CropImageMask
@@ -137,6 +147,21 @@ class CropAgent {
                 }
             }
         }
+    }
+
+    fun resize(
+        croppedImageBitmap: ImageBitmap,
+        requiredWidth: Int,
+        requiredHeight: Int
+    ): ImageBitmap {
+        val resizedBitmap: Bitmap = Bitmap.createScaledBitmap(
+            croppedImageBitmap.asAndroidBitmap(),
+            requiredWidth,
+            requiredHeight,
+            true
+        )
+
+        return resizedBitmap.asImageBitmap()
     }
 }
 
