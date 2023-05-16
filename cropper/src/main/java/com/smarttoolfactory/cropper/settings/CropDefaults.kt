@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.cropper.ImageCropper
 import com.smarttoolfactory.cropper.crop
@@ -38,6 +39,7 @@ object CropDefaults {
         zoomable: Boolean = true,
         rotatable: Boolean = false,
         fixedAspectRatio: Boolean = false,
+        requiredSize: IntSize? = null
     ): CropProperties {
         return CropProperties(
             cropType = cropType,
@@ -52,6 +54,7 @@ object CropDefaults {
             zoomable = zoomable,
             rotatable = rotatable,
             fixedAspectRatio = fixedAspectRatio,
+            requiredSize = requiredSize
         )
     }
 
@@ -97,6 +100,7 @@ data class CropProperties internal constructor(
     val zoomable: Boolean,
     val maxZoom: Float,
     val fixedAspectRatio: Boolean = false,
+    val requiredSize: IntSize? = null
 )
 
 /**

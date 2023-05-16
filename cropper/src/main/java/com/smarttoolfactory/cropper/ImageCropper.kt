@@ -142,7 +142,8 @@ fun ImageCropper(
             cropState.cropRect,
             cropOutline,
             onCropStart,
-            onCropSuccess
+            onCropSuccess,
+            cropProperties.requiredSize
         )
 
         val imageModifier = Modifier
@@ -303,7 +304,8 @@ private fun Crop(
     cropRect: Rect,
     cropOutline: CropOutline,
     onCropStart: () -> Unit,
-    onCropSuccess: (ImageBitmap) -> Unit
+    onCropSuccess: (ImageBitmap) -> Unit,
+    requiredSize: IntSize?,
 ) {
 
     val density = LocalDensity.current
@@ -315,15 +317,24 @@ private fun Crop(
     LaunchedEffect(crop) {
         if (crop) {
             flow {
-                emit(
-                    cropAgent.crop(
-                        scaledImageBitmap,
-                        cropRect,
-                        cropOutline,
-                        layoutDirection,
-                        density
-                    )
+                val croppedImageBitmap = cropAgent.crop(
+                    scaledImageBitmap,
+                    cropRect,
+                    cropOutline,
+                    layoutDirection,
+                    density
                 )
+                if (requiredSize != null) {
+                    emit(
+                        cropAgent.resize(
+                            croppedImageBitmap,
+                            requiredSize.width,
+                            requiredSize.height,
+                        )
+                    )
+                } else {
+                    emit(croppedImageBitmap)
+                }
             }
                 .flowOn(Dispatchers.Default)
                 .onStart {
