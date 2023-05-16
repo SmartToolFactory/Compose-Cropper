@@ -63,6 +63,16 @@ internal fun CropPropertySelectionMenu(
         }
     )
 
+    Title("Fix aspect ratio")
+    FixedAspectRatioEnableSelection(
+        fixedAspectRatioEnabled = cropProperties.fixedAspectRatio,
+        onFixedAspectRatioChanged = {
+            onCropPropertiesChange(
+                cropProperties.copy(fixedAspectRatio = it)
+            )
+        }
+    )
+
     Title("Frame")
     CropFrameSelection(
         aspectRatio = aspectRatio,
@@ -191,6 +201,18 @@ internal fun FlingEnableSelection(
         onStateChange = onFlingEnabledChange
     )
 
+}
+
+@Composable
+internal fun FixedAspectRatioEnableSelection(
+    fixedAspectRatioEnabled: Boolean,
+    onFixedAspectRatioChanged: (Boolean) -> Unit
+) {
+    FullRowSwitch(
+        label = "Enable fixed aspect ratio",
+        state = fixedAspectRatioEnabled,
+        onStateChange = onFixedAspectRatioChanged
+    )
 }
 
 @Composable

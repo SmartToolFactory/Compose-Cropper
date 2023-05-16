@@ -33,12 +33,13 @@ object CropDefaults {
         contentScale: ContentScale = ContentScale.Fit,
         cropOutlineProperty: CropOutlineProperty,
         aspectRatio: AspectRatio = aspectRatios[2].aspectRatio,
-        overlayRatio:Float = .9f,
+        overlayRatio: Float = .9f,
         pannable: Boolean = true,
         fling: Boolean = false,
         zoomable: Boolean = true,
         rotatable: Boolean = false,
-        requiredSize: IntSize? = null,
+        fixedAspectRatio: Boolean = false,
+        requiredSize: IntSize? = null
     ): CropProperties {
         return CropProperties(
             cropType = cropType,
@@ -52,7 +53,8 @@ object CropDefaults {
             fling = fling,
             zoomable = zoomable,
             rotatable = rotatable,
-            requiredSize = requiredSize,
+            fixedAspectRatio = fixedAspectRatio,
+            requiredSize = requiredSize
         )
     }
 
@@ -97,7 +99,8 @@ data class CropProperties internal constructor(
     val rotatable: Boolean,
     val zoomable: Boolean,
     val maxZoom: Float,
-    val requiredSize: IntSize? = null,
+    val fixedAspectRatio: Boolean = false,
+    val requiredSize: IntSize? = null
 )
 
 /**

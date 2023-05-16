@@ -28,6 +28,7 @@ import kotlinx.coroutines.coroutineScope
  * @param pannable when set to true pan is enabled
  * @param rotatable when set to true rotation is enabled
  * @param limitPan limits pan to bounds of parent Composable. Using this flag prevents creating
+ * @param fixedAspectRatio when set to true aspect ratio of overlay is fixed
  * empty space on sides or edges of parent
  */
 class DynamicCropState internal constructor(
@@ -43,7 +44,8 @@ class DynamicCropState internal constructor(
     zoomable: Boolean,
     pannable: Boolean,
     rotatable: Boolean,
-    limitPan: Boolean
+    limitPan: Boolean,
+    private val fixedAspectRatio: Boolean,
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
@@ -86,7 +88,7 @@ class DynamicCropState internal constructor(
     override suspend fun updateProperties(cropProperties: CropProperties, forceUpdate: Boolean) {
         handleSize = cropProperties.handleSize
         minOverlaySize = handleSize * 2
-        
+
         super.updateProperties(cropProperties, forceUpdate)
     }
 
@@ -137,10 +139,20 @@ class DynamicCropState internal constructor(
                 minDimension = minOverlaySize,
                 rectTemp = rectTemp,
                 overlayRect = overlayRect,
-                change = change
+                change = change,
+                aspectRatio = getAspectRatio(),
+                fixedAspectRatio = fixedAspectRatio,
             )
 
             snapOverlayRectTo(newRect)
+        }
+    }
+
+    private fun getAspectRatio(): Float {
+        return if (aspectRatio == AspectRatio.Original) {
+            imageSize.width / imageSize.height.toFloat()
+        } else {
+            aspectRatio.value
         }
     }
 
@@ -253,7 +265,6 @@ class DynamicCropState internal constructor(
                     containerSize.width.toFloat(),
                     containerSize.height.toFloat(),
                     drawAreaSize.width.toFloat(),
-                    drawAreaSize.height.toFloat(),
                     aspectRatio,
                     overlayRatio
                 )
@@ -351,7 +362,9 @@ class DynamicCropState internal constructor(
         minDimension: Float,
         rectTemp: Rect,
         overlayRect: Rect,
-        change: PointerInputChange
+        change: PointerInputChange,
+        aspectRatio: Float,
+        fixedAspectRatio: Boolean,
     ): Rect {
 
         val position = change.position
@@ -368,7 +381,15 @@ class DynamicCropState internal constructor(
                 // Set position of top left while moving with top left handle and
                 // limit position to not intersect other handles
                 val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
-                val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                val top = if (fixedAspectRatio) {
+                    // If aspect ratio is fixed we need to calculate top position based on
+                    // left position and aspect ratio
+                    val width = rectTemp.right - left
+                    val height = width / aspectRatio
+                    rectTemp.bottom - height
+                } else {
+                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                }
                 Rect(
                     left = left,
                     top = top,
@@ -382,7 +403,15 @@ class DynamicCropState internal constructor(
                 // Set position of top left while moving with bottom left handle and
                 // limit position to not intersect other handles
                 val left = screenPositionX.coerceAtMost(rectTemp.right - minDimension)
-                val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                val bottom = if (fixedAspectRatio) {
+                    // If aspect ratio is fixed we need to calculate bottom position based on
+                    // left position and aspect ratio
+                    val width = rectTemp.right - left
+                    val height = width / aspectRatio
+                    rectTemp.top + height
+                } else {
+                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                }
                 Rect(
                     left = left,
                     top = rectTemp.top,
@@ -396,7 +425,15 @@ class DynamicCropState internal constructor(
                 // Set position of top left while moving with top right handle and
                 // limit position to not intersect other handles
                 val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
-                val top = screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                val top = if (fixedAspectRatio) {
+                    // If aspect ratio is fixed we need to calculate top position based on
+                    // right position and aspect ratio
+                    val width = right - rectTemp.left
+                    val height = width / aspectRatio
+                    rectTemp.bottom - height
+                } else {
+                    screenPositionY.coerceAtMost(rectTemp.bottom - minDimension)
+                }
 
                 Rect(
                     left = rectTemp.left,
@@ -412,7 +449,15 @@ class DynamicCropState internal constructor(
                 // Set position of top left while moving with bottom right handle and
                 // limit position to not intersect other handles
                 val right = screenPositionX.coerceAtLeast(rectTemp.left + minDimension)
-                val bottom = screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                val bottom = if (fixedAspectRatio) {
+                    // If aspect ratio is fixed we need to calculate bottom position based on
+                    // right position and aspect ratio
+                    val width = right - rectTemp.left
+                    val height = width / aspectRatio
+                    rectTemp.top + height
+                } else {
+                    screenPositionY.coerceAtLeast(rectTemp.top + minDimension)
+                }
 
                 Rect(
                     left = rectTemp.left,

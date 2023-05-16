@@ -38,7 +38,7 @@ fun rememberCropState(
     val zoomable = cropProperties.zoomable
     val pannable = cropProperties.pannable
     val rotatable = cropProperties.rotatable
-
+    val fixedAspectRatio = cropProperties.fixedAspectRatio
 
     return remember(*keys) {
         when (cropType) {
@@ -72,7 +72,8 @@ fun rememberCropState(
                     zoomable = zoomable,
                     pannable = pannable,
                     rotatable = rotatable,
-                    limitPan = true
+                    limitPan = true,
+                    fixedAspectRatio = fixedAspectRatio,
                 )
             }
         }
