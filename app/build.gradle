@@ -37,7 +37,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.2"
+        kotlinCompilerExtensionVersion = "1.4.7"
     }
     packagingOptions {
         resources {
@@ -50,15 +50,15 @@ dependencies {
 
     implementation project(':cropper')
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
 
     // Colorful Customizable Sliders
-    implementation 'com.github.SmartToolFactory:Compose-Colorful-Sliders:1.1.0'
+    implementation 'com.github.SmartToolFactory:Compose-Colorful-Sliders:1.2.0'
     // Color picker
     implementation 'com.github.SmartToolFactory:Compose-Color-Picker-Bundle:1.0.1'
     // Gestures
-    implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:2.1.0'
+    implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:3.0.0'
     // Animated List
     implementation 'com.github.SmartToolFactory:Compose-AnimatedList:0.5.1'
 
@@ -73,31 +73,32 @@ dependencies {
     implementation "androidx.compose.material:material-icons-core:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     // Integration with activities
-    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.activity:activity-compose:1.7.1'
     // Integration with ViewModels
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1'
 
     // Material Design 3 for Compose
-    implementation "androidx.compose.material3:material3:1.0.0"
+    implementation "androidx.compose.material3:material3:1.1.0"
 
     def nav_compose_version = "2.5.3"
     implementation "androidx.navigation:navigation-compose:$nav_compose_version"
 
     def accompanist_version = "0.25.0"
+
     // Accompanist
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     implementation "com.google.accompanist:accompanist-drawablepainter:$accompanist_version"
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
     // Photo Picker
     implementation("com.google.modernstorage:modernstorage-photopicker:1.0.0-alpha06")
 
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"

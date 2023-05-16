@@ -1,6 +1,7 @@
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -451,7 +452,7 @@ private fun PickImageMask(
 ) {
     val context = LocalContext.current
 
-    val photoPicker = rememberLauncherForActivityResult(PhotoPicker()) { uris ->
+    val photoPicker = rememberLauncherForActivityResult(PhotoPicker()) { uris: List<Uri> ->
         val uri = uris.firstOrNull() ?: return@rememberLauncherForActivityResult
 
         val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

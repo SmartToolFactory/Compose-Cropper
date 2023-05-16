@@ -260,7 +260,6 @@ internal fun ExposedSelectionMenu(
         fontSize = 14.sp
     ),
     colors: TextFieldColors = ExposedDropdownMenuDefaults.textFieldColors(
-        containerColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent,
         disabledIndicatorColor = Color.Transparent
