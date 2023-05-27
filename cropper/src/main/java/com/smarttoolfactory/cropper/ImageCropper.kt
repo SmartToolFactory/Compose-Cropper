@@ -50,7 +50,8 @@ fun ImageCropper(
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
     crop: Boolean = false,
     onCropStart: () -> Unit,
-    onCropSuccess: (ImageBitmap) -> Unit
+    onCropSuccess: (ImageBitmap) -> Unit,
+    onDrawGrid: (DrawScope.(rect: Rect, strokeWidth: Float, color: Color) -> Unit)? = null,
 ) {
 
     ImageWithConstraints(
@@ -178,7 +179,8 @@ fun ImageCropper(
             cropType = cropType,
             cropOutline = cropOutline,
             cropStyle = cropStyle,
-            transparentColor = transparentColor
+            transparentColor = transparentColor,
+            onDrawGrid = onDrawGrid,
         )
     }
 }
@@ -199,6 +201,7 @@ private fun ImageCropper(
     cropStyle: CropStyle,
     overlayRect: Rect,
     transparentColor: Color,
+    onDrawGrid: (DrawScope.(rect: Rect, strokeWidth: Float, color: Color) -> Unit)?,
 ) {
     Box(
         modifier = Modifier
@@ -223,7 +226,8 @@ private fun ImageCropper(
                 handleSize = handleSize,
                 cropStyle = cropStyle,
                 rectOverlay = overlayRect,
-                transparentColor = transparentColor
+                transparentColor = transparentColor,
+                onDrawGrid = onDrawGrid,
             )
         }
 
@@ -259,7 +263,8 @@ private fun ImageCropperImpl(
     handleSize: Float,
     cropStyle: CropStyle,
     transparentColor: Color,
-    rectOverlay: Rect
+    rectOverlay: Rect,
+    onDrawGrid: (DrawScope.(rect: Rect, strokeWidth: Float, color: Color) -> Unit)?,
 ) {
 
     Box(contentAlignment = Alignment.Center) {
@@ -292,6 +297,7 @@ private fun ImageCropperImpl(
             drawHandles = drawHandles,
             handleSize = handleSize,
             transparentColor = transparentColor,
+            onDrawGrid = onDrawGrid,
         )
 
     }
