@@ -68,9 +68,9 @@ fun ImageCropDemoSimple() {
                 cropStyle = cropStyle,
                 cropProperties = cropProperties,
                 crop = crop,
-                onCropStart = {}
-            ) {
-            }
+                onCropStart = {},
+                onCropSuccess = {},
+            )
         }
     }
 }
