@@ -49,6 +49,7 @@ fun ImageCropper(
     cropProperties: CropProperties,
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
     crop: Boolean = false,
+    backgroundColor: Color = Color.Black,
     onCropStart: () -> Unit,
     onCropSuccess: (ImageBitmap) -> Unit,
     onDrawGrid: (DrawScope.(rect: Rect, strokeWidth: Float, color: Color) -> Unit)? = null,
@@ -180,6 +181,7 @@ fun ImageCropper(
             cropOutline = cropOutline,
             cropStyle = cropStyle,
             transparentColor = transparentColor,
+            backgroundColor = backgroundColor,
             onDrawGrid = onDrawGrid,
         )
     }
@@ -201,12 +203,13 @@ private fun ImageCropper(
     cropStyle: CropStyle,
     overlayRect: Rect,
     transparentColor: Color,
+    backgroundColor: Color,
     onDrawGrid: (DrawScope.(rect: Rect, strokeWidth: Float, color: Color) -> Unit)?,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(backgroundColor)
     ) {
 
         AnimatedVisibility(
@@ -284,7 +287,7 @@ private fun ImageCropperImpl(
         val handleColor = cropStyle.handleColor
         val drawHandles = cropType == CropType.Dynamic
         val strokeWidth = cropStyle.strokeWidth
-        
+
         DrawingOverlay(
             modifier = Modifier.size(containerWidth, containerHeight),
             drawOverlay = drawOverlay,
