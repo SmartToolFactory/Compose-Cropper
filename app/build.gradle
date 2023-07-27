@@ -60,7 +60,7 @@ dependencies {
     // Gestures
     implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:3.0.0'
     // Animated List
-    implementation 'com.github.SmartToolFactory:Compose-AnimatedList:0.5.1'
+    implementation 'com.github.SmartToolFactory:Compose-AnimatedList:0.6.1'
 
     implementation "androidx.compose.ui:ui:$compose_version"
     // Tooling support (Previews, etc.)
@@ -73,17 +73,17 @@ dependencies {
     implementation "androidx.compose.material:material-icons-core:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     // Integration with activities
-    implementation 'androidx.activity:activity-compose:1.7.1'
+    implementation 'androidx.activity:activity-compose:1.7.2'
     // Integration with ViewModels
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1'
 
     // Material Design 3 for Compose
-    implementation "androidx.compose.material3:material3:1.1.0"
+    implementation "androidx.compose.material3:material3:1.1.1"
 
     def nav_compose_version = "2.5.3"
     implementation "androidx.navigation:navigation-compose:$nav_compose_version"
 
-    def accompanist_version = "0.25.0"
+    def accompanist_version = "0.30.1"
 
     // Accompanist
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
@@ -91,7 +91,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-drawablepainter:$accompanist_version"
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("io.coil-kt:coil-compose:2.3.0")
 
     // Photo Picker
     implementation("com.google.modernstorage:modernstorage-photopicker:1.0.0-alpha06")

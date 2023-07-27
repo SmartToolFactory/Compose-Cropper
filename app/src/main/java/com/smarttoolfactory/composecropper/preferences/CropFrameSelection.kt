@@ -1,13 +1,14 @@
 package com.smarttoolfactory.composecropper.preferences
 
 import CropFrameListDialog
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.smarttoolfactory.animatedlist.AnimatedInfiniteLazyRow
 import com.smarttoolfactory.animatedlist.model.AnimationProgress
 import com.smarttoolfactory.cropper.model.AspectRatio
@@ -16,6 +17,7 @@ import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.settings.CropFrameFactory
 import com.smarttoolfactory.cropper.settings.CropOutlineProperty
 import com.smarttoolfactory.cropper.widget.CropFrameDisplayCard
+import kotlinx.coroutines.launch
 
 /**
  * Crop frame selection
@@ -96,13 +98,18 @@ private fun CropFrameSelectionList(
 ) {
 
     var currentIndex by remember { mutableStateOf(initialSelectedIndex) }
+    val coroutineScope = rememberCoroutineScope()
 
     AnimatedInfiniteLazyRow(
-        modifier = modifier.padding(horizontal = 10.dp),
+        modifier = modifier,
         items = cropFrames,
         inactiveItemPercent = 80,
         initialFirstVisibleIndex = initialSelectedIndex - 2,
-    ) { animationProgress: AnimationProgress, index: Int, item: CropFrame, width: Dp ->
+    ) { animationProgress: AnimationProgress,
+        index: Int,
+        item: CropFrame,
+        width: Dp,
+        lazyListState ->
 
         val scale = animationProgress.scale
         val color = animationProgress.color
@@ -113,7 +120,18 @@ private fun CropFrameSelectionList(
         val editable = item.editable
 
         CropFrameDisplayCard(
-            modifier = Modifier.width(width),
+            modifier = Modifier
+                .width(width)
+                .clickable(
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    },
+                    indication = null
+                ) {
+                    coroutineScope.launch {
+                        lazyListState.animateScrollBy(animationProgress.distanceToSelector)
+                    }
+                },
             editable = editable,
             scale = scale,
             outlineColor = color,
