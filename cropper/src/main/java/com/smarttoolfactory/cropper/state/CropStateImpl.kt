@@ -314,9 +314,6 @@ abstract class CropState internal constructor(
         val newPanX = pan.x + panXChange
         val newPanY = pan.y + panYChange
 
-        // Update draw area based on new pan and zoom values
-        drawAreaRect = newDrawAreaRect
-
         if (animate) {
             resetWithAnimation(
                 pan = Offset(newPanX, newPanY),
@@ -330,6 +327,8 @@ abstract class CropState internal constructor(
         }
 
         resetTracking()
+
+        drawAreaRect = updateImageDrawRectFromTransformation()
     }
 
     /**
