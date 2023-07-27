@@ -59,9 +59,8 @@ internal fun SliderWithValueSelection(
     valueRange: ClosedFloatingPointRange<Float>,
     colors: MaterialSliderColors = MaterialSliderDefaults.materialColors(
         activeTrackColor = SliderBrushColor(MaterialTheme.colorScheme.primary),
-        inactiveTrackColor = SliderBrushColor(Color.Transparent),
-        thumbColor = SliderBrushColor(MaterialTheme.colorScheme.inversePrimary)
-    )
+        inactiveTrackColor = SliderBrushColor(Color.Transparent)
+    ),
 ) {
     Column {
 
@@ -83,7 +82,7 @@ internal fun SliderWithValueSelection(
                 valueRange = valueRange,
                 colors = colors,
                 trackHeight = 10.dp,
-                thumbRadius = 12.dp
+                thumbRadius = 10.dp
             )
         }
     }
@@ -109,7 +108,7 @@ internal fun SliderSelection(
         colors = colors,
         borderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         trackHeight = 10.dp,
-        thumbRadius = 12.dp,
+        thumbRadius = 10.dp,
         onValueChangeFinished = onValueChangeFinished
     )
 }
@@ -160,17 +159,18 @@ internal fun FullRowSwitch(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CropTextField(value: String, onValueChange: (String) -> Unit) {
     TextField(
         value = value,
         onValueChange = onValueChange,
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = Color.Transparent,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
+            disabledIndicatorColor = Color.Transparent,
         )
     )
 }
