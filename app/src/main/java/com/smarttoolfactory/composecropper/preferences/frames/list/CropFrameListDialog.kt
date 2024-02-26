@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.BuildCompat
 import com.google.modernstorage.photopicker.PhotoPicker
 import com.smarttoolfactory.composecropper.preferences.frames.edit.CropFrameEditDialog
 import com.smarttoolfactory.composecropper.preferences.frames.edit.CropShapeAddDialog
@@ -444,6 +445,7 @@ private fun CropOutlineDisplay(
     }
 }
 
+@OptIn(BuildCompat.PrereleaseSdkCheck::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 private fun PickImageMask(
