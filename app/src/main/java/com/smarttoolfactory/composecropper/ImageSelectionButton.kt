@@ -16,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.os.BuildCompat
 import com.google.modernstorage.photopicker.PhotoPicker
 
+@OptIn(BuildCompat.PrereleaseSdkCheck::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun ImageSelectionButton(
