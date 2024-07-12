@@ -17,6 +17,8 @@ import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.CropData
 import com.smarttoolfactory.cropper.settings.CropProperties
 
+internal const val MIN_OVERLAY_RATIO = 0.5F
+
 val CropState.cropData: CropData
     get() = CropData(
         zoom = animatableZoom.targetValue,
@@ -293,8 +295,7 @@ abstract class CropState internal constructor(
         animate: Boolean,
         animationSpec: AnimationSpec<Float> = tween(400)
     ) {
-
-        val zoom = zoom.coerceAtLeast(1f)
+        val zoom = zoom.coerceAtLeast(MIN_OVERLAY_RATIO)
 
         // Calculate new pan based on overlay
         val newDrawAreaRect = calculateValidImageDrawRect(overlayRect, drawAreaRect)

@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+private const val MAX_ZOOM = 10F
+
 /**
  * State of the pan, zoom and rotation. Allows to change zoom, pan via [Animatable]
  * objects' [Animatable.animateTo], [Animatable.snapTo].
@@ -37,8 +39,8 @@ open class TransformState(
     val drawAreaSize: IntSize,
     initialZoom: Float = 1f,
     initialRotation: Float = 0f,
-    minZoom: Float = 1f,
-    maxZoom: Float = 10f,
+    minZoom: Float = MIN_OVERLAY_RATIO,
+    maxZoom: Float = MAX_ZOOM,
     internal var zoomable: Boolean = true,
     internal var pannable: Boolean = true,
     internal var rotatable: Boolean = true,
@@ -55,7 +57,7 @@ open class TransformState(
         )
     )
 
-    internal val zoomMin = minZoom.coerceAtLeast(1f)
+    internal val zoomMin = minZoom.coerceAtLeast(MIN_OVERLAY_RATIO)
     internal var zoomMax = maxZoom.coerceAtLeast(1f)
     private val zoomInitial = initialZoom.coerceIn(zoomMin, zoomMax)
     private val rotationInitial = initialRotation % 360
