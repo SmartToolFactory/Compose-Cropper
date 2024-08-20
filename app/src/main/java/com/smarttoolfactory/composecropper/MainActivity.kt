@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.smarttoolfactory.composecropper.demo.ImageCropDemo
+import com.smarttoolfactory.composecropper.demo.ImageCropDemoSimple
 import com.smarttoolfactory.composecropper.ui.theme.ComposeCropperTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
-                        ImageCropDemo()
+                        ImageCropDemoSimple()
                     }
                 }
             }
