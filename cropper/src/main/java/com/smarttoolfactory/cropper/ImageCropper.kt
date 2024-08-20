@@ -10,10 +10,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -38,7 +46,11 @@ import com.smarttoolfactory.cropper.state.DynamicCropState
 import com.smarttoolfactory.cropper.state.rememberCropState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 
 @Composable
 fun ImageCropper(
@@ -49,6 +61,7 @@ fun ImageCropper(
     cropProperties: CropProperties,
     filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
     crop: Boolean = false,
+    hasChanges: MutableState<Boolean> = remember { mutableStateOf(false) },
     backgroundColor: Color = Color.Black,
     onCropStart: () -> Unit,
     onCropSuccess: (ImageBitmap) -> Unit,
@@ -136,6 +149,10 @@ fun ImageCropper(
             animationSpec = tween(300, easing = LinearEasing),
             targetValue = if (isHandleTouched) pressedStateColor else cropStyle.backgroundColor
         )
+
+        hasChanges.value = cropState.pan != Offset(0F, 0F) ||
+            cropState.rotation != 0f ||
+            cropState.zoom != 1f
 
         // Crops image when user invokes crop operation
         Crop(
