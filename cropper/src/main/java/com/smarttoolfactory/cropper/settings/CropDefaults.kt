@@ -41,6 +41,7 @@ object CropDefaults {
         fixedAspectRatio: Boolean = false,
         requiredSize: IntSize? = null,
         minDimension: IntSize? = null,
+        shouldResetRotation: Boolean = true,
     ): CropProperties {
         return CropProperties(
             cropType = cropType,
@@ -57,6 +58,7 @@ object CropDefaults {
             fixedAspectRatio = fixedAspectRatio,
             requiredSize = requiredSize,
             minDimension = minDimension,
+            shouldResetRotation = shouldResetRotation,
         )
     }
 
@@ -104,6 +106,7 @@ data class CropProperties internal constructor(
     val fixedAspectRatio: Boolean = false,
     val requiredSize: IntSize? = null,
     val minDimension: IntSize? = null,
+    val shouldResetRotation: Boolean = true,
 )
 
 /**
@@ -133,7 +136,7 @@ data class CropOutlineProperty(
 /**
  * Light, Dark or system controlled theme
  */
-enum class CropTheme{
+enum class CropTheme {
     Light,
     Dark,
     System

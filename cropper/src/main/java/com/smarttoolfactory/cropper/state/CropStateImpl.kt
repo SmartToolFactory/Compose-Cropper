@@ -57,7 +57,8 @@ abstract class CropState internal constructor(
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
-    limitPan: Boolean = false
+    limitPan: Boolean = false,
+    private val shouldResetRotation: Boolean,
 ) : TransformState(
     imageSize = imageSize,
     containerSize = containerSize,
@@ -319,12 +320,14 @@ abstract class CropState internal constructor(
             resetWithAnimation(
                 pan = Offset(newPanX, newPanY),
                 zoom = newZoom,
-                animationSpec = animationSpec
+                animationSpec = animationSpec,
+                rotation = if (shouldResetRotation) 0F else rotation,
             )
         } else {
             snapPanXto(newPanX)
             snapPanYto(newPanY)
             snapZoomTo(newZoom)
+            if (!shouldResetRotation) snapRotationTo(rotation)
         }
 
         resetTracking()

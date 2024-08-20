@@ -33,7 +33,8 @@ class StaticCropState internal constructor(
     zoomable: Boolean = true,
     pannable: Boolean = true,
     rotatable: Boolean = false,
-    limitPan: Boolean = false
+    limitPan: Boolean = false,
+    shouldResetRotation: Boolean,
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
@@ -45,7 +46,8 @@ class StaticCropState internal constructor(
     zoomable = zoomable,
     pannable = pannable,
     rotatable = rotatable,
-    limitPan = limitPan
+    limitPan = limitPan,
+    shouldResetRotation = shouldResetRotation,
 ) {
 
     override suspend fun onDown(change: PointerInputChange) = Unit

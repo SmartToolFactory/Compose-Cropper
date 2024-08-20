@@ -46,7 +46,8 @@ class DynamicCropState internal constructor(
     rotatable: Boolean,
     limitPan: Boolean,
     private val fixedAspectRatio: Boolean,
-    private val minDimension: IntSize?
+    private val minDimension: IntSize?,
+    shouldResetRotation: Boolean,
 ) : CropState(
     imageSize = imageSize,
     containerSize = containerSize,
@@ -58,7 +59,8 @@ class DynamicCropState internal constructor(
     zoomable = zoomable,
     pannable = pannable,
     rotatable = rotatable,
-    limitPan = limitPan
+    limitPan = limitPan,
+    shouldResetRotation = shouldResetRotation,
 ) {
 
     /**
