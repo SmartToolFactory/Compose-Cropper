@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.rotate
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
@@ -40,9 +41,10 @@ class CropAgent {
         cropOutline: CropOutline,
         layoutDirection: LayoutDirection,
         density: Density,
+        rotation: Float = 0f // New rotation parameter
     ): ImageBitmap {
 
-        // TODO pass mutable bitmap
+        // Crop the bitmap normally. You could also choose to rotate the full image first.
         val croppedBitmap: Bitmap = Bitmap.createBitmap(
             imageBitmap.asAndroidBitmap(),
             cropRect.left.toInt(),
@@ -52,10 +54,10 @@ class CropAgent {
         )
 
         val imageToCrop = croppedBitmap
-            .copy(Bitmap.Config.ARGB_8888, true)!!
+            .copy(Bitmap.Config.ARGB_8888, true)
             .asImageBitmap()
 
-        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, imageToCrop)
+        drawCroppedImage(cropOutline, cropRect, layoutDirection, density, imageToCrop, rotation)
 
         return imageToCrop
     }
@@ -66,24 +68,27 @@ class CropAgent {
         layoutDirection: LayoutDirection,
         density: Density,
         imageToCrop: ImageBitmap,
+        rotation: Float
     ) {
-
         when (cropOutline) {
             is CropShape -> {
 
                 val path = Path().apply {
-                    val outline =
-                        cropOutline.shape.createOutline(cropRect.size, layoutDirection, density)
+                    val outline = cropOutline.shape.createOutline(cropRect.size, layoutDirection, density)
                     addOutline(outline)
                 }
 
                 Canvas(image = imageToCrop).run {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
 
-                    // Destination
+                    // Apply rotation around the center of the cropRect.
+                    // This rotates both the destination (mask) and the source image.
+                    rotate(rotation, cropRect.center.x, cropRect.center.y)
+
+                    // Destination: draw the mask/path.
                     drawPath(path, paint)
 
-                    // Source
+                    // Source: draw the image.
                     drawImage(
                         image = imageToCrop,
                         topLeftOffset = Offset.Zero,
@@ -95,7 +100,6 @@ class CropAgent {
             is CropPath -> {
 
                 val path = Path().apply {
-
                     addPath(cropOutline.path)
 
                     val pathSize = getBounds().size
@@ -116,11 +120,8 @@ class CropAgent {
 
                 Canvas(image = imageToCrop).run {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
-
-                    // Destination
+                    rotate(rotation, cropRect.center.x, cropRect.center.y)
                     drawPath(path, paint)
-
-                    // Source
                     drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, imagePaint)
                     restore()
                 }
@@ -136,18 +137,15 @@ class CropAgent {
 
                 Canvas(image = imageToCrop).run {
                     saveLayer(nativeCanvas.clipBounds.toComposeRect(), imagePaint)
-
-                    // Destination
+                    rotate(rotation, cropRect.center.x, cropRect.center.y)
                     drawImage(imageMask, topLeftOffset = Offset.Zero, paint)
-
-                    // Source
                     drawImage(image = imageToCrop, topLeftOffset = Offset.Zero, imagePaint)
-
                     restore()
                 }
             }
         }
     }
+
 
     fun resize(
         croppedImageBitmap: ImageBitmap,

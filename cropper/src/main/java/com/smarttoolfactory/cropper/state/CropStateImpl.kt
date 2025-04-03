@@ -319,12 +319,14 @@ abstract class CropState internal constructor(
             resetWithAnimation(
                 pan = Offset(newPanX, newPanY),
                 zoom = newZoom,
+                rotation = this.rotation,
                 animationSpec = animationSpec
             )
         } else {
             snapPanXto(newPanX)
             snapPanYto(newPanY)
             snapZoomTo(newZoom)
+            snapRotationTo(this.rotation)
         }
 
         resetTracking()

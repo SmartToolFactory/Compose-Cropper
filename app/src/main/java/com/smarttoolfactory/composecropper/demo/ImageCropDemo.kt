@@ -74,7 +74,8 @@ fun ImageCropDemo() {
                     OutlineType.Rect,
                     RectCropShape(0, "Rect")
                 ),
-                handleSize = handleSize
+                handleSize = handleSize,
+                rotatable = true
             )
         )
     }
