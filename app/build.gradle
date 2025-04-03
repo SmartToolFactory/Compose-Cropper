@@ -56,7 +56,9 @@ dependencies {
     // Colorful Customizable Sliders
     implementation 'com.github.SmartToolFactory:Compose-Colorful-Sliders:1.2.0'
     // Color picker
-    implementation 'com.github.SmartToolFactory:Compose-Color-Picker-Bundle:1.0.1'
+    implementation("com.github.SmartToolFactory:Compose-Color-Picker-Bundle:1.0.1") {
+        exclude group: "com.github.SmartToolFactory", module: "Compose-Image-Cropper"
+    }
     // Gestures
     implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:3.0.0'
     // Animated List
