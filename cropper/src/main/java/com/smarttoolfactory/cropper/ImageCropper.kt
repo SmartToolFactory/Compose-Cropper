@@ -145,7 +145,8 @@ fun ImageCropper(
             cropOutline,
             onCropStart,
             onCropSuccess,
-            cropProperties.requiredSize
+            cropProperties.requiredSize,
+            cropState.rotation
         )
 
         val imageModifier = Modifier
@@ -315,6 +316,7 @@ private fun Crop(
     onCropStart: () -> Unit,
     onCropSuccess: (ImageBitmap) -> Unit,
     requiredSize: IntSize?,
+    rotation: Float
 ) {
 
     val density = LocalDensity.current
@@ -331,7 +333,8 @@ private fun Crop(
                     cropRect,
                     cropOutline,
                     layoutDirection,
-                    density
+                    density,
+                    rotation
                 )
                 if (requiredSize != null) {
                     emit(
